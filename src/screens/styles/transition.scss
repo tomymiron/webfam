@@ -1,0 +1,23 @@
+@use "../../theme.scss" as theme;
+
+.transition-slide-in {
+    background-color: theme.$black_01;
+    transform-origin: bottom;
+    position: fixed;
+    z-index: 10000;
+    height: 100vh;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
+
+.transition-slide-out {
+    background-color: theme.$black_01;
+    transform-origin: top;
+    position: fixed;
+    z-index: 10000;
+    height: 100vh;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
