@@ -60,7 +60,20 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const value = { setLogin, logout, authState, setAuthState, setValue };
+  const updateUser = async (user) => {
+    try {
+      setAuthState((prevState) => {
+        const updatedState = { ...prevState, user: user };
+        Cookies.set("USER_KEY", JSON.stringify(user), { expires: 30 });
+        return updatedState;
+      });
+      return "success";
+    } catch (err) {
+      return "error";
+    }
+  };
+
+  const value = { setLogin, logout, authState, setAuthState, setValue, updateUser };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

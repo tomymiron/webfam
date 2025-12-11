@@ -1,0 +1,211 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#Meet {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+
+  nav {
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    padding-top: 32px;
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    width: 100%;
+    top: 0;
+
+    #backButton {
+      background-color: theme.$purple_01;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px;
+      width: 102px;
+      display: flex;
+      height: 64px;
+    }
+
+    #profileButton {
+      background-color: theme.$white_01;
+      border: 1px solid theme.$black_01;
+      justify-content: flex-end;
+      border-radius: 24px;
+      align-items: center;
+      margin-right: 24px;
+      padding: 12px;
+      display: flex;
+      height: 48px;
+      gap: 4px;
+
+      p {
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        margin-right: 6px;
+        font-weight: 600;
+      }
+    }
+  }
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    flex-direction: row;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+
+    section {
+      flex: 1 1 calc(50% - 12px);
+      width: calc(50% - 12px);
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+
+      #meetHeader {
+        flex-direction: column;
+        display: flex;
+
+        #meetTimeLeft {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+        }
+
+        #meetDate {
+          font-size: calc(theme.$f1 + 6px);
+          color: theme.$black_01;
+          font-weight: 900;
+          margin: 2px 0;
+        }
+
+        #meetName {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 500;
+        }
+
+        #meetTags {
+          flex-direction: row;
+          margin-top: 8px;
+          display: flex;
+          gap: 8px;
+
+          .tag {
+            background-color: theme.$black_01;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 18px;
+            min-height: 32px;
+            min-width: 64px;
+            display: flex;
+            gap: 4px;
+
+            p {
+              color: theme.$white_01;
+              font-size: theme.$f4;
+              font-weight: 500;
+            }
+          } 
+
+          button {
+            background-color: theme.$purple_01;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 18px;
+            min-height: 32px;
+            min-width: 64px;
+            display: flex;
+            gap: 4px;
+
+            p {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 700;
+            }
+          }
+        }
+      }
+
+      #headerSpacer {
+        height: 156px;
+      }
+
+      #meetEvents {
+        flex-direction: column;
+        display: flex;
+
+        h4 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          margin-bottom: 8px;
+          font-weight: 900;
+        }
+
+        .meetEventsContainer {
+          flex-direction: column;
+          margin-bottom: 24px;
+          display: flex;
+          gap: 2px;
+
+          .meetEventsTitle {
+            font-size: calc(theme.$f1 + 6px);
+            color: theme.$black_01;
+            margin-bottom: 6px;;
+            font-weight: 900;
+          }
+        }
+      }
+
+      #meetInscription {
+        flex-direction: column;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 2px;
+
+        h4 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          margin-bottom: 8px;
+          font-weight: 900;
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 926px) {
+    main {
+      flex-direction: column;
+      
+      section {
+        max-height: min-content;
+        width: 100%;
+
+        #headerSpacer {
+          display: none;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,121 @@
+@use "../../theme.scss" as theme;
+
+.ranking-table-container {
+  margin-top: 24px;
+  overflow-x: auto;
+  width: 100%;
+  padding: 0; // ensure table spans full container width
+  flex-direction: row;
+  display: flex;
+  box-sizing: border-box;
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .table {
+    background-color: theme.$white_01;
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+
+    .header {
+      border-bottom: 1px solid theme.$black_01;
+      background-color: theme.$white_01;
+      position: sticky;
+      z-index: 10;
+      top: 0;
+
+      .tr {
+        display: flex;
+        width: 100%;
+        min-width: 100%;
+      }
+
+      .th {
+        color: theme.$black_01;
+        font-size: theme.$f5;
+        border-bottom: none;
+        font-weight: 900;
+        text-align: left;
+        padding: 18px;
+        flex: 1;
+      }
+    }
+
+    .body {
+      .tr {
+        border-bottom: 1px solid theme.$gray_01;
+        display: flex;
+        width: 100%;
+        min-width: 100%;
+
+        &:nth-child(even) {
+          background-color: theme.$white_01;
+        }
+
+        &:nth-child(odd) {
+          background-color: theme.$white_01;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .td {
+          background-color: inherit;
+          // border: 1px solid red;
+          font-size: theme.$f4;
+          padding: 14px 18px;
+          font-weight: 400;
+          flex: 1;
+          border-right: none;
+
+          &:last-child {
+            border-right: none;
+          }
+          p {
+            min-width: 100%;
+            // background-color: red;
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .table {
+      
+      .header {
+        min-width: 100%;
+        
+        .tr {
+          min-width: 100%;
+        }
+        
+        .th {
+          font-size: theme.$f6;
+          padding: 8px 12px;
+          width: 100%;
+          min-width: 100%;
+        }
+      }
+      
+      .body .tr .td {
+        font-size: theme.$f6;
+        padding: 8px 12px;
+        width: 100%;
+
+        p {
+          height: 100%;
+          width: 100%;
+        }
+      }
+    }
+  }
+
+} 

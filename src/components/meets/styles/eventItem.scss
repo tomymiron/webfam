@@ -1,0 +1,39 @@
+@use "../../../theme.scss" as theme;
+
+.eventItem {
+  background-color: theme.$black_01;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  position: relative;
+  padding: 12px 18px;
+  min-height: 64px;
+  display: flex;
+  flex: 1;
+
+  .timeAndCategories {
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    display: flex;
+    gap: 2px;
+
+    .time {
+      color: theme.$white_01;
+      font-size: theme.$f3;
+      font-weight: 900;
+    }
+
+    .categories {
+      color: theme.$purple_01;
+      font-size: theme.$f5;
+      font-weight: 700;
+    }
+  }
+
+  .event {
+    color: theme.$white_01;
+    font-size: theme.$f1;
+    font-weight: 900;
+  }
+}

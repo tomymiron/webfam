@@ -1,0 +1,45 @@
+@use "../../../theme.scss" as theme;
+
+.athleteResultItem {
+  background-color: theme.$white_01;
+  flex-direction: column;
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  gap: 0;
+
+  .top, .bottom {
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    display: flex;
+  }
+
+  .top {
+    background-color: theme.$black_01;
+    padding: 18px;
+    
+    p {
+      color: theme.$white_01;
+      font-size: theme.$f4;
+      font-weight: 700;
+    }
+  }
+
+  .bottom {
+    transition: max-height 240ms ease, padding 240ms ease;
+    background-color: theme.$gray_01;
+    color: theme.$white_01;
+    padding-bottom: 0px;
+    padding-top: 0px;
+    overflow: hidden;
+    max-height: 0px;
+  }
+
+  &.open {
+    .bottom {
+      max-height: 96px;
+      padding: 18px;
+    }
+  }
+}

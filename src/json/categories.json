@@ -1,0 +1,9 @@
+[
+  { "value": 1, "label": "U12" },
+  { "value": 2, "label": "U14" },
+  { "value": 3, "label": "U16" },
+  { "value": 4, "label": "U18" },
+  { "value": 5, "label": "U20" },
+  { "value": 6, "label": "U23" },
+  { "value": 7, "label": "Mayores" }
+]

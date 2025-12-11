@@ -1,0 +1,139 @@
+@use "../../../theme.scss" as theme;
+
+.inscriptionItem {
+  background-color: theme.$white_01;
+  flex-direction: column;
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  gap: 0;
+
+  &.loading {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .top {
+    background-color: theme.$white_01;
+    border: 3px solid theme.$black_01;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+    display: flex;  
+    padding: 0;
+    
+    .event {
+      color: theme.$black_01;
+      font-size: theme.$f1;
+      font-weight: 900;
+      padding: 16px;
+    }
+
+    .optionButton {
+      background-color: theme.$black_01;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 1/1;
+      height: 64px;
+      padding-left: 3px;
+      display: flex;
+
+      &.inscripted {
+        background-color: theme.$purple_01;
+        border-bottom: 3px solid theme.$black_01;
+        border-top: 3px solid theme.$black_01;
+      }
+    }
+  }
+
+  .bottom {
+    transition: max-height 240ms ease, padding 240ms ease;
+    background-color: theme.$black_01;
+    justify-content: space-between;
+    color: theme.$white_01;
+    padding-bottom: 0px;
+    align-items: center;
+    padding-top: 0px;
+    overflow: hidden;
+    max-height: 0px;
+    display: flex;  
+
+    .details {
+      flex-direction: column;
+      margin-left: 10px;
+      display: flex;
+      gap: 2px;
+
+      .price {
+        color: theme.$white_01;
+        font-size: theme.$f3;
+        font-weight: 900;
+      }
+
+      .mark {
+        color: theme.$white_01;
+        font-size: theme.$f5;
+        font-weight: 400;
+
+        strong {
+          color: theme.$purple_01;
+          font-weight: 900;
+        }
+      }
+    }
+
+    .participate {
+      background-color: theme.$purple_01;
+      color: theme.$black_01;
+      font-size: theme.$f4;
+      font-weight: 900;
+      padding: 0 24px;
+      height: 100%;
+      height: 48px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background-color: theme.$purple_01;
+        transform: translateY(-1px);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+      }
+
+      &.loading {
+        background-color: theme.$purple_01;
+        cursor: not-allowed;
+      }
+
+      &.success {
+        background-color: theme.$blue_01;
+        color: theme.$white_01;
+        cursor: not-allowed;
+      }
+
+      &.error {
+        background-color: #f44336;
+        color: theme.$white_01;
+      }
+
+      &.inscripted {
+        background-color: theme.$white_01;
+        color: theme.$black_01;
+      }
+    }
+  }
+
+  &.open {
+    .bottom {
+      max-height: 92px;
+      padding: 8px;
+    }
+  }
+}

@@ -20,6 +20,48 @@ button {
   border: none;
 }
 
+input[type="range"] {
+  -webkit-appearance: none;
+  border-radius: 16px;
+  appearance: none; 
+  cursor: pointer;
+  overflow: hidden;
+  outline: none;
+  width: 100%;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #ccc;
+  border-radius: 16px;
+  height: 18px;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #ccc;
+  border-radius: 16px;
+  height: 18px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  box-shadow: -407px 0 0 400px #976CF6;
+  border: 2px solid #976CF6;
+  background-color: #EEF0FA;
+  -webkit-appearance: none;
+  border-radius: 50%;
+  appearance: none; 
+  height: 18px;
+  width: 18px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  box-shadow: -407px 0 0 400px #976CF6;
+  border: 1px solid #976CF6;
+  background-color: #EEF0FA;
+  border-radius: 50%;
+  height: 18px;
+  width: 18px;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -50,7 +92,7 @@ h1, h2 {
   margin: 0;
 }
 
-p {
+h3, h4, h5, p {
   line-height: 100%;
   margin: 0;
 }

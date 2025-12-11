@@ -1,0 +1,21 @@
+[
+  { "value": "AR", "label": "Argentina" },
+  { "value": "BR", "label": "Brasil" },
+  { "value": "CL", "label": "Chile" },
+  { "value": "UY", "label": "Uruguay" },
+  { "value": "PY", "label": "Paraguay" },
+  { "value": "BO", "label": "Bolivia" },
+  { "value": "PE", "label": "Perú" },
+  { "value": "EC", "label": "Ecuador" },
+  { "value": "CO", "label": "Colombia" },
+  { "value": "VE", "label": "Venezuela" },
+  { "value": "MX", "label": "México" },
+  { "value": "ES", "label": "España" },
+  { "value": "US", "label": "Estados Unidos" },
+  { "value": "IT", "label": "Italia" },
+  { "value": "FR", "label": "Francia" },
+  { "value": "DE", "label": "Alemania" },
+  { "value": "GB", "label": "Reino Unido" },
+  { "value": "OTHER", "label": "Otro" }
+]
+

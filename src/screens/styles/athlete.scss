@@ -1,0 +1,905 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#Athlete {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    flex-direction: row;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+
+    section {
+      flex: 1 1 calc(50% - 12px);
+      width: calc(50% - 12px);
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+      
+      h4 {
+        color: theme.$black_01;
+        font-size: theme.$f3;
+        font-weight: 700;
+        margin: 0 0 4px;
+      }
+
+      #athleteInfo {
+        flex-direction: column;
+        display: flex;
+        gap: 12px;
+
+        #athleteInfoHeader {
+          align-items: center;
+          flex-direction: row;
+          display: flex;
+          gap: 8px;
+
+          #athleteImage {
+            border-radius: 8px;
+            min-height: 100px;
+            min-width: 100px;
+            overflow: hidden;
+            height: 100px;
+            width: 100px;
+
+            img {
+              height: 100%;
+              width: 100%;
+            }
+          }
+
+          #subAthleteInfoHeader {
+            align-items: flex-start;
+            flex-direction: column;
+            display: flex;
+            gap: 8px;
+
+            h2 {
+              color: theme.$black_01;
+              font-size: calc(theme.$f1 + 6px);
+              font-weight: 900;
+            }
+
+            .lineSeparator {
+              background-color: theme.$black_01;
+              border-radius: 2px;
+              height: 2px;
+              width: 65%;
+              margin: 0;
+            }
+
+            p {
+              font-size: calc(theme.$f4 + 6px);
+              color: theme.$black_01;
+              font-weight: 500;
+            } 
+          }
+        }
+
+        #athleteInfoBody {
+          flex-direction: row;
+          flex-wrap: wrap;
+          display: flex;
+          gap: 6px;
+
+          p {
+            border: 2px solid theme.$black_01;
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            padding: 12px 18px;
+            font-weight: 700;
+          }
+
+          button {
+            background-color: theme.$black_01;
+            color: theme.$white_01;
+            min-width: max-content;
+            font-size: theme.$f4;
+            padding: 12px 18px;
+            font-weight: 700;
+
+            &.red {
+              background-color: theme.$red_01;
+              color: theme.$white_01;
+            }
+          }
+        }
+      }
+
+      #clubInfo {
+        flex-direction: column;
+        display: flex;
+        gap: 8px;
+
+        #clubInfoHeader {
+          background-color: theme.$black_01;
+          align-items: center;
+          flex-direction: row;
+          padding: 18px;
+          display: flex;
+          gap: 18px;
+
+          #clubImage {
+            border-radius: 8px;
+            min-height: 100px;
+            min-width: 100px;
+            overflow: hidden;
+            height: 100px;
+            width: 100px;
+
+            img {
+              height: 100%;
+              width: 100%;
+            }
+          }
+
+          #subClubInfoHeader {
+            align-items: flex-start;
+            flex-direction: column;
+            display: flex;
+            gap: 8px;
+
+            h2 {
+              color: theme.$white_01;
+              font-size: theme.$f1;
+              font-weight: 900;
+            }
+
+            .lineSeparator {
+              background-color: theme.$white_01;
+              border-radius: 2px;
+              height: 2px;
+              width: 65%;
+              margin: 0;
+            }
+
+            p {
+              color: theme.$white_01;
+              font-size: theme.$f3;
+              font-weight: 500;
+            } 
+          }
+        }
+
+        #clubRequestContainer {
+          border: 2px solid theme.$black_01;
+          background-color: theme.$white_01;
+          align-items: flex-end;
+          flex-direction: row;
+          padding: 8px;
+          display: flex;
+          width: 100%;
+          gap: 8px;
+
+          #clubRequestIconSection {
+            background-color: theme.$black_01;
+            justify-content: center;
+            align-items: center;
+            aspect-ratio: 1/1;
+            height: 100px;
+            width: 100px;
+            display: flex;
+          }
+
+          #clubRequestContent {
+            background-color: theme.$white_01;
+            justify-content: center;
+            flex-direction: column;
+            display: flex;
+            flex: 1;
+
+            h3 {
+              color: theme.$black_01;
+              font-size: theme.$f3;
+              font-weight: 900;
+              margin: 0;
+            }
+
+            p {
+              color: theme.$black_01;
+              font-size: calc(theme.$f6 + 2px);
+              font-weight: 400;
+              margin: 0;
+            }
+
+            button {
+              background-color: theme.$blue_01;
+              transition: all 0.2s ease;
+              color: theme.$white_01;
+              align-self: flex-start;
+              font-size: theme.$f4;
+              font-weight: 900;
+              padding: 0 32px;
+              cursor: pointer;
+              margin-top: 6px;
+              height: 48px;
+              border: none;
+
+              &:hover {
+                box-shadow: 0 4px 12px rgba(theme.$blue_01, 0.3);
+                background-color: rgba(116, 154, 237, 0.9);
+                transform: translateY(-1px);
+              }
+
+              &:active {
+                box-shadow: 0 2px 6px rgba(theme.$blue_01, 0.2);
+                transform: translateY(0);
+              }
+            }
+          }
+        }
+      }
+
+      #certUploadContainer {
+        flex-direction: column;
+        display: flex;
+        margin: -20px 0 -16px;
+        gap: 8px;
+
+        #certUploadContent {
+          border: 2px solid theme.$blue_01;
+          background-color: theme.$white_01;
+          flex-direction: column;
+          padding: 8px;
+          display: flex;
+          gap: 18px;
+
+          #certCurrentFile {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+
+            #certFileInfo {
+              align-items: center;
+              flex-direction: row;
+              display: flex;
+              gap: 12px;
+              flex: 1;
+
+              #certPreview {
+                // border: 2px solid theme.$blue_01;
+                // border-radius: 8px;
+                overflow: hidden;
+                min-width: 120px;
+                min-height: 120px;
+                max-width: 120px;
+                max-height: 120px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: theme.$white_01;
+
+                &.certPreviewClickable {
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    border-color: rgba(theme.$blue_01, 0.7);
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 12px rgba(theme.$blue_01, 0.2);
+                  }
+                }
+
+                .certPreviewImage {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: cover;
+                }
+
+                .certPreviewPdf {
+                  width: 100%;
+                  height: 100%;
+                  border: none;
+                  pointer-events: none;
+                }
+              }
+
+              #certFileDetails {
+                flex-direction: column;
+                display: flex;
+                gap: 4px;
+
+                .certFileName {
+                  color: theme.$black_01;
+                  font-size: theme.$f4;
+                  font-weight: 700;
+                  margin: 0;
+                  word-break: break-word;
+                }
+
+                .certFileDate {
+                  color: theme.$black_01;
+                  font-size: theme.$f6;
+                  font-weight: 400;
+                  opacity: 0.7;
+                  margin: 0;
+                }
+
+                .certClickHint {
+                  color: theme.$blue_01;
+                  font-size: theme.$f6;
+                  font-weight: 500;
+                  margin: 0;
+                  font-style: italic;
+                }
+              }
+            }
+
+            #certStatus {
+              padding: 8px 16px;
+              font-size: theme.$f6;
+              font-weight: 900;
+              // border-radius: 4px;
+              white-space: nowrap;
+              justify-content: center;
+              align-items: center;
+              display: flex; // Centra vertical y horizontalmente
+              text-align: center; // Centra el texto
+
+              &.status-1 {
+                border: 2px solid #FFA726;
+                color: #FFA726;
+              }
+
+              &.status-2 {
+                border: 2px solid #66BB6A;
+                color: #66BB6A;
+              }
+
+              &.status-3 {
+                border: 2px solid theme.$red_01;
+                color: theme.$red_01;
+              }
+            }
+          }
+
+          #certUploadInfo {
+            align-items: center;
+            flex-direction: row;
+            display: flex;
+            gap: 12px;
+
+            #certUploadText {
+              flex-direction: column;
+              display: flex;
+              gap: 4px;
+
+              .certTitle {
+                color: theme.$black_01;
+                font-size: theme.$f3;
+                font-weight: 700;
+                margin: 0;
+              }
+
+              .certSubtitle {
+                color: theme.$black_01;
+                font-size: theme.$f6;
+                font-weight: 400;
+                opacity: 0.7;
+                margin: 0;
+              }
+            }
+          }
+
+          #certUploadActions {
+            flex-direction: column;
+            display: flex;
+            gap: 4px;
+
+            .certReuploadText {
+              color: theme.$black_01;
+              font-size: theme.$f6;
+              font-weight: 400;
+              opacity: 0.8;
+              margin: 0;
+            }
+
+            .certSelectButton {
+              background-color: theme.$blue_01;
+              transition: all 0.2s ease;
+              color: theme.$white_01;
+              font-size: theme.$f4;
+              font-weight: 900;
+              padding: 18px;
+              cursor: pointer;
+              text-align: center;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+
+              &:hover {
+                background-color: rgba(theme.$blue_01, 0.05);
+              }
+
+              &:active {
+                background-color: rgba(theme.$blue_01, 0.1);
+              }
+            }
+
+            .certUploadButton {
+              background-color: theme.$blue_01;
+              transition: all 0.2s ease;
+              color: theme.$white_01;
+              font-size: theme.$f5;
+              font-weight: 700;
+              padding: 12px 32px;
+              cursor: pointer;
+              border: none;
+              margin-top: 4px;
+              align-self: flex-start;
+
+              &:hover:not(:disabled) {
+                box-shadow: 0 4px 12px rgba(theme.$blue_01, 0.3);
+                background-color: rgba(116, 154, 237, 0.9);
+                transform: translateY(-1px);
+              }
+
+              &:active:not(:disabled) {
+                box-shadow: 0 2px 6px rgba(theme.$blue_01, 0.2);
+                transform: translateY(0);
+              }
+
+              &:disabled {
+                background-color: rgba(theme.$blue_01, 0.5);
+                cursor: not-allowed;
+                opacity: 0.6;
+              }
+            }
+          }
+
+          #certApprovedMessage {
+            padding: 12px 18px;
+            background-color: #E8F5E9;
+            border-left: 4px solid #66BB6A;
+
+            p {
+              color: #2E7D32;
+              font-size: theme.$f5;
+              font-weight: 600;
+              margin: 0;
+            }
+          }
+        }
+      }
+
+      // Estilos para recibo de afiliación/revalida (receipt)
+      #receiptUploadContainer {
+        flex-direction: column;
+        display: flex;
+        gap: 8px;
+
+        #receiptUploadContent {
+          border: 2px solid theme.$blue_01;
+          background-color: theme.$white_01;
+          flex-direction: column;
+          padding: 8px;
+          display: flex;
+          gap: 18px;
+
+          #receiptCurrentFile {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+
+            #receiptFileInfo {
+              align-items: center;
+              flex-direction: row;
+              display: flex;
+              gap: 12px;
+              flex: 1;
+
+              #receiptPreview {
+                overflow: hidden;
+                min-width: 120px;
+                min-height: 120px;
+                max-width: 120px;
+                max-height: 120px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: theme.$white_01;
+
+                &.receiptPreviewClickable {
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    border-color: rgba(theme.$blue_01, 0.7);
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 12px rgba(theme.$blue_01, 0.2);
+                  }
+                }
+
+                .receiptPreviewImage {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: cover;
+                }
+
+                .receiptPreviewPdf {
+                  width: 100%;
+                  height: 100%;
+                  border: none;
+                  pointer-events: none;
+                }
+              }
+
+              #receiptFileDetails {
+                flex-direction: column;
+                display: flex;
+                gap: 4px;
+
+                .receiptFileName {
+                  color: theme.$black_01;
+                  font-size: theme.$f4;
+                  font-weight: 700;
+                  margin: 0;
+                  word-break: break-word;
+                }
+
+                .receiptFileDate {
+                  color: theme.$black_01;
+                  font-size: theme.$f6;
+                  font-weight: 400;
+                  opacity: 0.7;
+                  margin: 0;
+                }
+
+                .receiptClickHint {
+                  color: theme.$blue_01;
+                  font-size: theme.$f6;
+                  font-weight: 500;
+                  margin: 0;
+                  font-style: italic;
+                }
+              }
+            }
+
+            #receiptStatus {
+              padding: 8px 16px;
+              font-size: theme.$f6;
+              font-weight: 900;
+              white-space: nowrap;
+              justify-content: center;
+              align-items: center;
+              display: flex;
+              text-align: center;
+
+              &.status-1 {
+                border: 2px solid #FFA726;
+                color: #FFA726;
+              }
+
+              &.status-2 {
+                border: 2px solid #66BB6A;
+                color: #66BB6A;
+              }
+
+              &.status-3 {
+                border: 2px solid theme.$red_01;
+                color: theme.$red_01;
+              }
+            }
+          }
+
+          #receiptUploadInfo {
+            align-items: center;
+            flex-direction: row;
+            display: flex;
+            gap: 12px;
+
+            #receiptUploadText {
+              flex-direction: column;
+              display: flex;
+              gap: 4px;
+
+              .receiptTitle {
+                color: theme.$black_01;
+                font-size: theme.$f3;
+                font-weight: 700;
+                margin: 0;
+              }
+
+              .receiptSubtitle {
+                color: theme.$black_01;
+                font-size: theme.$f6;
+                font-weight: 400;
+                opacity: 0.7;
+                margin: 0;
+
+                strong {
+                  font-size: theme.$f5;
+                  font-weight: 900;
+                  opacity: 1;
+                }
+              }
+            }
+          }
+
+          #receiptUploadActions {
+            flex-direction: column;
+            display: flex;
+            gap: 4px;
+
+            .receiptReuploadText {
+              color: theme.$black_01;
+              font-size: theme.$f6;
+              font-weight: 400;
+              opacity: 0.8;
+              margin: 0;
+            }
+
+            .receiptSelectButton {
+              background-color: theme.$blue_01;
+              transition: all 0.2s ease;
+              color: theme.$white_01;
+              font-size: theme.$f4;
+              font-weight: 900;
+              padding: 18px;
+              cursor: pointer;
+              text-align: center;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+
+              &:hover {
+                background-color: rgba(116, 154, 237, 0.9);
+              }
+
+              &:active {
+                background-color: rgba(116, 154, 237, 0.8);
+              }
+            }
+
+            .receiptUploadButton {
+              background-color: theme.$blue_01;
+              transition: all 0.2s ease;
+              color: theme.$white_01;
+              font-size: theme.$f5;
+              font-weight: 700;
+              padding: 12px 32px;
+              cursor: pointer;
+              border: none;
+              margin-top: 4px;
+              align-self: flex-start;
+
+              &:hover:not(:disabled) {
+                box-shadow: 0 4px 12px rgba(theme.$blue_01, 0.3);
+                background-color: rgba(116, 154, 237, 0.9);
+                transform: translateY(-1px);
+              }
+
+              &:active:not(:disabled) {
+                box-shadow: 0 2px 6px rgba(theme.$blue_01, 0.2);
+                transform: translateY(0);
+              }
+
+              &:disabled {
+                background-color: rgba(theme.$blue_01, 0.5);
+                cursor: not-allowed;
+                opacity: 0.6;
+              }
+            }
+          }
+        }
+      }
+
+      #lastResultsContainer, #bestResultsContainer {
+        flex-direction: column;
+        display: flex;
+        gap: 4px;
+      }
+    }
+
+  }
+
+  // Modal para ver certificado
+  #certModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    #certModalContent {
+      background-color: theme.$white_01;
+      border-radius: 12px;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+      #certModalHeader {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 2px solid theme.$black_01;
+        display: flex;
+        gap: 16px;
+
+        h3 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+          margin: 0;
+          flex: 1;
+          word-break: break-word;
+        }
+
+        #certModalClose {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+
+          &:hover {
+            opacity: 0.7;
+            transform: scale(1.1);
+          }
+        }
+      }
+
+      #certModalBody {
+        padding: 24px;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-height: calc(90vh - 80px);
+
+        #certModalImage {
+          max-width: 100%;
+          max-height: calc(90vh - 120px);
+          object-fit: contain;
+          border-radius: 8px;
+        }
+
+        #certModalPdf {
+          width: 100%;
+          min-height: 600px;
+          border: none;
+          border-radius: 8px;
+        }
+      }
+    }
+  }
+
+  // Modal para ver recibo
+  #receiptModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    #receiptModalContent {
+      background-color: theme.$white_01;
+      border-radius: 12px;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+      #receiptModalHeader {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 2px solid theme.$black_01;
+        display: flex;
+        gap: 16px;
+
+        h3 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+          margin: 0;
+          flex: 1;
+          word-break: break-word;
+        }
+
+        #receiptModalClose {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+
+          &:hover {
+            opacity: 0.7;
+            transform: scale(1.1);
+          }
+        }
+      }
+
+      #receiptModalBody {
+        padding: 24px;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-height: calc(90vh - 80px);
+
+        #receiptModalImage {
+          max-width: 100%;
+          max-height: calc(90vh - 120px);
+          object-fit: contain;
+          border-radius: 8px;
+        }
+
+        #receiptModalPdf {
+          width: 100%;
+          min-height: 600px;
+          border: none;
+          border-radius: 8px;
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 926px) {
+    main {
+      flex-direction: column;
+      
+      section {
+        max-height: min-content;
+        width: 100%;
+      }
+    }
+  }
+}

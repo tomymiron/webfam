@@ -1,0 +1,732 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#ClubMeet {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+
+  nav {
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    padding-top: 32px;
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    width: 100%;
+    top: 0;
+
+    #backButton {
+      background-color: theme.$purple_01;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px;
+      width: 102px;
+      display: flex;
+      height: 64px;
+    }
+
+    #profileButton {
+      background-color: theme.$white_01;
+      border: 1px solid theme.$black_01;
+      justify-content: flex-end;
+      border-radius: 24px;
+      align-items: center;
+      margin-right: 24px;
+      padding: 12px;
+      display: flex;
+      height: 48px;
+      gap: 4px;
+
+      p {
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        margin-right: 6px;
+        font-weight: 600;
+      }
+    }
+  }
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    flex-direction: row;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+
+    section {
+      flex: 1 1 calc(50% - 12px);
+      width: calc(50% - 12px);
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+
+      #meetHeader {
+        flex-direction: column;
+        display: flex;
+
+        #meetTimeLeft {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+        }
+
+        #meetDate {
+          font-size: calc(theme.$f1 + 6px);
+          color: theme.$black_01;
+          font-weight: 900;
+          margin: 2px 0;
+        }
+
+        #meetName {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 500;
+        }
+
+        #meetTags {
+          flex-direction: row;
+          margin-top: 8px;
+          display: flex;
+          gap: 8px;
+
+          .tag {
+            background-color: theme.$black_01;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 18px;
+            min-height: 32px;
+            min-width: 64px;
+            display: flex;
+            gap: 4px;
+
+            p {
+              color: theme.$white_01;
+              font-size: theme.$f4;
+              font-weight: 500;
+            }
+          } 
+
+          button {
+            background-color: theme.$purple_01;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 18px;
+            min-height: 32px;
+            min-width: 64px;
+            display: flex;
+            gap: 4px;
+
+            p {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 700;
+            }
+          }
+        }
+      }
+
+      #headerSpacer {
+        height: 156px;
+      }
+
+      #meetEvents {
+        flex-direction: column;
+        display: flex;
+
+        h4 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          margin-bottom: 8px;
+          font-weight: 900;
+        }
+
+        .meetEventsContainer {
+          flex-direction: column;
+          margin-bottom: 24px;
+          display: flex;
+          gap: 2px;
+
+          .meetEventsTitle {
+            font-size: calc(theme.$f1 + 6px);
+            color: theme.$black_01;
+            margin-bottom: 6px;
+            font-weight: 900;
+          }
+        }
+      }
+
+      #athletesSelection {
+        flex-direction: column;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 12px;
+
+        h4 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 900;
+        }
+
+        #searchContainer {
+          background-color: theme.$white_01;
+          border: 2px solid theme.$black_01;
+          border-radius: 12px;
+          align-items: center;
+          padding: 12px 16px;
+          display: flex;
+          gap: 12px;
+
+          #athleteSearch {
+            border: none;
+            outline: none;
+            background: transparent;
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            font-weight: 500;
+            flex: 1;
+            width: 100%;
+
+            &::placeholder {
+              color: theme.$black_01;
+              opacity: 0.5;
+            }
+          }
+        }
+
+        #athletesList {
+          flex-direction: column;
+          display: flex;
+          gap: 8px;
+
+          .athleteCard {
+            background-color: theme.$white_01;
+            border: 2px solid theme.$black_01;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            transition: all 0.2s;
+            position: relative;
+
+            &:hover {
+              background-color: theme.$purple_01;
+            }
+
+            &.selected {
+              background-color: theme.$blue_01;
+              border-color: theme.$blue_01;
+
+              .athleteInfo p {
+                color: theme.$white_01;
+              }
+            }
+
+            img {
+              width: 48px;
+              height: 48px;
+              border-radius: 50%;
+              object-fit: cover;
+            }
+
+            .athleteInfo {
+              flex-direction: column;
+              display: flex;
+              gap: 4px;
+              flex: 1;
+
+              .athleteName {
+                color: theme.$black_01;
+                font-size: theme.$f4;
+                font-weight: 700;
+              }
+
+              .athleteCategory {
+                color: theme.$black_01;
+                font-size: theme.$f5;
+                font-weight: 500;
+              }
+
+              .athleteInscriptions {
+                color: theme.$black_01;
+                font-size: theme.$f5;
+                font-weight: 400;
+                opacity: 0.7;
+                margin-top: 2px;
+              }
+            }
+
+            .inscriptionBadge {
+              background-color: theme.$black_01;
+              color: theme.$white_01;
+              border-radius: 50%;
+              min-width: 28px;
+              height: 28px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: theme.$f5;
+              font-weight: 700;
+            }
+          }
+        }
+
+        .emptyMessage {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          text-align: center;
+          padding: 24px;
+        }
+      }
+
+      #eventsSelection {
+        flex-direction: column;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 12px;
+
+        #athleteHeaderInfo {
+          flex-direction: column;
+          display: flex;
+          gap: 16px;
+
+          > div:first-child {
+            h4 {
+              color: theme.$black_01;
+              font-size: theme.$f3;
+              font-weight: 900;
+            }
+
+            .categoryInfo {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 500;
+            }
+          }
+
+          #existingInscriptions {
+            background-color: theme.$white_01;
+            border: 2px solid theme.$black_01;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            .inscriptionsTitle {
+              color: theme.$black_01;
+              font-size: theme.$f5;
+              font-weight: 600;
+              margin-bottom: 4px;
+            }
+
+            .inscriptionsList {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 8px;
+
+              .inscriptionTag {
+                background-color: theme.$purple_01;
+                color: theme.$white_01;
+                border-radius: 8px;
+                padding: 6px 12px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                p {
+                  font-size: theme.$f5;
+                  font-weight: 500;
+                  margin: 0;
+                }
+
+                p:first-child {
+                  font-weight: 700;
+                }
+              }
+            }
+          }
+        }
+
+        #eventsList {
+          flex-direction: column;
+          display: flex;
+          gap: 8px;
+
+          .eventCard {
+            background-color: theme.$white_01;
+            border: 2px solid theme.$black_01;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            transition: all 0.2s;
+            cursor: pointer;
+
+            &:hover:not(:disabled) {
+              background-color: theme.$purple_01;
+            }
+
+            &:disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
+
+            &.selected {
+              background-color: theme.$blue_01;
+              border-color: theme.$blue_01;
+
+              .eventInfo p {
+                color: theme.$white_01;
+              }
+
+              .eventCheck {
+                background-color: theme.$black_01;
+              }
+            }
+
+            &.inscribed {
+              background-color: theme.$purple_01;
+              border-color: theme.$purple_01;
+              cursor: not-allowed;
+
+              .eventInfo p {
+                color: theme.$white_01;
+              }
+            }
+
+            .eventInfo {
+              flex-direction: column;
+              display: flex;
+              gap: 4px;
+              flex: 1;
+
+              .eventTimeDiscipline {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+
+                .eventTime {
+                  color: theme.$black_01;
+                  font-size: theme.$f5;
+                  font-weight: 700;
+                  min-width: 60px;
+                }
+
+                .eventName {
+                  color: theme.$black_01;
+                  font-size: theme.$f4;
+                  font-weight: 700;
+                }
+              }
+
+              .eventPrice {
+                color: theme.$black_01;
+                font-size: theme.$f4;
+                font-weight: 600;
+                margin-top: 4px;
+              }
+            }
+
+            &.selected, &.inscribed {
+              .eventInfo {
+                .eventTimeDiscipline {
+                  .eventTime, .eventName {
+                    color: theme.$white_01;
+                  }
+                }
+
+                .eventPrice {
+                  color: theme.$white_01;
+                }
+              }
+            }
+
+            .eventCheck {
+              background-color: theme.$purple_01;
+              border-radius: 4px;
+              min-width: 32px;
+              height: 32px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+          }
+        }
+
+        .emptyMessage {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          text-align: center;
+          padding: 24px;
+        }
+      }
+
+      #noAthleteSelected {
+        background-color: theme.$white_01;
+        border: 2px solid theme.$black_01;
+        border-radius: 12px;
+        padding: 48px 24px;
+        text-align: center;
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+          opacity: 0.7;
+        }
+      }
+
+      #checkoutButton {
+        position: sticky;
+        bottom: 24px;
+        width: 100%;
+
+        button {
+          background-color: theme.$black_01;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 24px;
+          width: 100%;
+          display: flex;
+          gap: 12px;
+
+          &:hover {
+            background-color: theme.$blue_01;
+          }
+
+          p {
+            color: theme.$white_01;
+            font-size: theme.$f3;
+            font-weight: 700;
+          }
+
+          .totalAmount {
+            color: theme.$purple_01;
+            font-size: theme.$f2;
+            font-weight: 900;
+          }
+        }
+      }
+    }
+  }
+
+  #checkoutModal {
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    display: flex;
+    z-index: 2000;
+    height: 100vh;
+    width: 100vw;
+    left: 0;
+    top: 0;
+
+    #checkoutContent {
+      background-color: theme.$white_01;
+      flex-direction: column;
+      max-height: 90vh;
+      max-width: 600px;
+      overflow: hidden;
+      display: flex;
+      width: 90%;
+
+      #checkoutHeader {
+        justify-content: space-between;
+        background-color: theme.$black_01;
+        align-items: center;
+        padding: 20px 24px;
+        display: flex;
+
+        h3 {
+          color: theme.$white_01;
+          font-size: theme.$f2;
+          font-weight: 900;
+        }
+
+        button {
+          background-color: transparent;
+          color: theme.$white_01;
+          font-size: theme.$f1;
+          font-weight: 700;
+          padding: 0;
+          border: none;
+        }
+      }
+
+      #checkoutBody {
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 24px;
+        display: flex;
+        gap: 24px;
+        flex: 1;
+
+        .checkoutAthlete {
+          border: 2px solid theme.$black_01;
+          flex-direction: column;
+          padding: 16px;
+          display: flex;
+          gap: 12px;
+
+          .athleteHeader {
+            align-items: center;
+            display: flex;
+            gap: 12px;
+
+            img {
+              width: 48px;
+              height: 48px;
+              border-radius: 50%;
+              object-fit: cover;
+            }
+
+            .athleteName {
+              color: theme.$black_01;
+              font-size: theme.$f3;
+              font-weight: 700;
+            }
+
+            .athleteCategory {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 500;
+            }
+          }
+
+          .athleteEvents {
+            flex-direction: column;
+            padding-left: 60px;
+            display: flex;
+            gap: 8px;
+
+            .checkoutEvent {
+              justify-content: space-between;
+              align-items: flex-start;
+              padding: 8px 0;
+              display: flex;
+              gap: 12px;
+
+              > div {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+
+                .eventTime {
+                  color: theme.$black_01;
+                  font-size: theme.$f5;
+                  font-weight: 600;
+                  opacity: 0.7;
+                }
+
+                p:not(.eventTime) {
+                  color: theme.$black_01;
+                  font-size: theme.$f4;
+                  font-weight: 500;
+                }
+              }
+
+              .eventPrice {
+                color: theme.$black_01;
+                font-size: theme.$f4;
+                font-weight: 700;
+                white-space: nowrap;
+              }
+            }
+          }
+        }
+      }
+
+      #checkoutFooter {
+        border-top: 2px solid theme.$black_01;
+        flex-direction: column;
+        padding: 24px;
+        display: flex;
+        gap: 16px;
+
+        #checkoutTotal {
+          justify-content: space-between;
+          align-items: center;
+          display: flex;
+
+          p {
+            color: theme.$black_01;
+            font-size: theme.$f3;
+            font-weight: 700;
+
+            &.totalAmount {
+              color: theme.$blue_01;
+              font-size: theme.$f1;
+              font-weight: 900;
+            }
+          }
+        }
+
+        #payButton {
+          background-color: theme.$blue_01;
+          justify-content: center;
+          align-items: center;
+          padding: 20px;
+          display: flex;
+          width: 100%;
+
+          &:hover {
+            background-color: theme.$black_01;
+          }
+
+          &:disabled {
+            background-color: theme.$black_01;
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
+          color: theme.$white_01;
+          font-size: theme.$f2;
+          font-weight: 900;
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 926px) {
+    main {
+      flex-direction: column;
+      
+      section {
+        max-height: min-content;
+        width: 100%;
+
+        #headerSpacer {
+          display: none;
+        }
+      }
+    }
+  }
+}
+

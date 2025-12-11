@@ -1,0 +1,414 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#ClubsRequest {
+  background-color: theme.$white_01;
+  overflow-y: scroll !important;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  overflow-x: hidden;
+  display: flex;
+  width: 100vw;
+  min-height: 100vh;
+  padding: 0;
+  top: 0;
+
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 128px;
+    flex-direction: row;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+
+    #clubsRequestContent {
+      flex: 1 1 100%;
+      width: 100%;
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+
+      h1 {
+        font-size: calc(theme.$f1 + 12px);
+        text-transform: uppercase;
+        color: theme.$black_01;
+        font-weight: 900;
+        margin: 0;
+      }
+
+      #description {
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        font-weight: 400;
+        margin: 0;
+      }
+
+      #searchInput {
+        background-color: theme.$white_01;
+        border: 1px solid theme.$black_01;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+        padding: 0 16px;
+        display: flex;
+        height: 48px;
+        width: 100%;
+        max-width: 588px;
+        transition: all 0.2s ease;
+        margin: 12px 0 32px;
+
+        color: theme.$black_01;
+        font-size: theme.$f5;
+        font-weight: 600;
+
+        &::placeholder {
+          color: theme.$gray_01;
+          font-weight: 600;
+          opacity: 0.7;
+        }
+
+        &:hover:not(:disabled) {
+          border-color: rgba(theme.$blue_01, 0.5);
+        }
+
+        &:focus {
+          border: 2px solid theme.$blue_01;
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(theme.$blue_01, 0.1);
+        }
+      }
+
+      #clubsSection {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        h2 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+          margin: 0;
+        }
+
+        #clubsList {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          width: 100%;
+
+          #noClubs {
+            padding: 32px;
+            text-align: center;
+
+            p {
+              color: theme.$gray_01;
+              font-size: theme.$f4;
+              font-weight: 500;
+            }
+          }
+
+          .clubItem {
+            background-color: theme.$black_01;
+            align-items: center;
+            flex-direction: row;
+            padding: 8px;
+            display: flex;
+            width: 100%;
+            gap: 12px;
+
+            .clubMainInfo {
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              gap: 8px;
+              flex: 1;
+              min-width: 0;
+
+              .clubLogo {
+                background-color: theme.$white_01;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+                height: 100px;
+                flex-shrink: 0;
+                width: 100px;
+                display: flex;
+
+                img {
+                  object-fit: cover;
+                  height: 100%;
+                  width: 100%;
+                }
+              }
+
+              .clubInfo {
+                flex-direction: column;
+                justify-content: center;
+                display: flex;
+                min-width: 0;
+                flex: 1;
+
+                h3 {
+                  text-transform: uppercase;
+                  color: theme.$white_01;
+                  font-size: theme.$f2;
+                  font-weight: 900;
+                  margin: 0;
+                }
+
+                .clubInfoSeparator {
+                  background-color: theme.$white_01;
+                  border-radius: 2px;
+                  margin: 6px 0 8px;
+                  width: 100px;
+                  height: 2px;
+                }
+
+                p {
+                  color: theme.$white_01;
+                  font-size: theme.$f5;
+                  font-weight: 400;
+                  margin: 0;
+                  opacity: 0.9;
+                }
+              }
+            }
+
+            .requestButton {
+              background-color: theme.$blue_01;
+              color: theme.$white_01;
+              font-size: theme.$f3;
+              font-weight: 900;
+              cursor: pointer;
+              padding: 0 32px;
+              height: 100%;
+              border: none;
+              transition: all 0.2s ease;
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              justify-content: center;
+              text-align: right;
+              flex: .2;
+              gap: 4px;
+
+
+              &:hover:not(:disabled) {
+                background-color: rgba(116, 154, 237, 0.9);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(theme.$blue_01, 0.3);
+              }
+
+              &:active:not(:disabled) {
+                transform: translateY(0);
+                box-shadow: 0 2px 6px rgba(theme.$blue_01, 0.2);
+              }
+
+              &.disabled {
+                background-color: theme.$gray_01;
+                opacity: 0.5;
+                cursor: not-allowed;
+              }
+
+              &.pendingCancel {
+                background-color: theme.$orange_01;
+                white-space: normal;
+                min-width: 180px;
+                align-items: center;
+                text-align: center;
+
+                .pendingText {
+                  font-size: theme.$f4;
+                  font-weight: 700;
+                  color: theme.$white_01;
+                  line-height: 1.2;
+                }
+
+                .cancelText {
+                  font-size: theme.$f5;
+                  font-weight: 600;
+                  color: theme.$white_01;
+                  opacity: 0.9;
+                  text-decoration: underline;
+                  line-height: 1.2;
+                }
+
+                &:hover {
+                  background-color: rgba(255, 135, 60, 0.9);
+                  transform: translateY(-1px);
+                  box-shadow: 0 4px 12px rgba(theme.$orange_01, 0.3);
+                }
+
+                &:active {
+                  transform: translateY(0);
+                  box-shadow: 0 2px 6px rgba(theme.$orange_01, 0.2);
+                }
+              }
+            }
+
+            .statusBadge {
+              justify-content: center;
+              min-width: max-content;
+              padding: 0 32px;
+              height: 100%;
+              font-size: theme.$f4;
+              align-items: center;
+              white-space: nowrap;
+              text-align: center;
+              font-weight: 700;
+              flex-shrink: 0;
+              display: flex;
+
+              &.pending {
+                background-color: theme.$orange_01;
+                color: theme.$white_01;
+              }
+
+              &.approved {
+                background-color: theme.$white_01;
+                color: theme.$black_01;
+              }
+
+              &.rejected {
+                border: 2px solid theme.$red_01;
+                background-color: transparent;
+                color: theme.$red_01;
+              }
+            }
+
+            .statusContainer {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              gap: 8px;
+              flex-shrink: 0;
+            }
+
+            .cancelButton {
+              background-color: theme.$red_01;
+              color: theme.$white_01;
+              border: none;
+              border-radius: 8px;
+              font-size: theme.$f4;
+              font-weight: 700;
+              padding: 12px 20px;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              white-space: nowrap;
+              min-width: max-content;
+              flex-shrink: 0;
+
+              &:hover {
+                background-color: rgba(245, 74, 74, 0.9);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(theme.$red_01, 0.3);
+              }
+
+              &:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 6px rgba(theme.$red_01, 0.2);
+              }
+            }
+          }
+        }
+      }
+
+      .loadingContainer,
+      .errorContainer {
+        padding: 64px;
+        text-align: center;
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 768px) {
+    main {
+      #clubsRequestContent {
+        width: 100%;
+
+        #clubsSection {
+          #clubsList {
+            .clubItem {
+              flex-direction: column;
+              align-items: stretch;
+              padding: 12px;
+              gap: 8px;
+
+              .clubMainInfo {
+                flex-direction: row;
+                width: 100%;
+              }
+
+              .requestButton,
+              .statusBadge {
+                width: 100%;
+                height: auto;
+                min-height: 56px;
+                flex: none;
+                padding: 14px 16px;
+                align-items: center;
+                text-align: center;
+                font-size: theme.$f3;
+
+                &.pendingCancel {
+                  width: 100%;
+                  min-width: 100%;
+                  
+                  .pendingText {
+                    font-size: theme.$f4;
+                  }
+
+                  .cancelText {
+                    font-size: theme.$f5;
+                  }
+                }
+              }
+
+              .statusContainer {
+                width: 100%;
+                align-items: stretch;
+                gap: 8px;
+                flex-direction: column;
+
+                .statusBadge {
+                  width: 100%;
+                  min-width: 100%;
+                }
+
+                .requestButton {
+                  width: 100%;
+                  min-width: 100%;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

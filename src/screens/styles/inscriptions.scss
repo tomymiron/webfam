@@ -1,0 +1,280 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#Inscriptions {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+
+  nav {
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    padding-top: 32px;
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    width: 100%;
+    top: 0;
+
+    #backButton {
+      background-color: theme.$purple_01;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px;
+      width: 102px;
+      display: flex;
+      height: 64px;
+    }
+
+    #profileButton {
+      background-color: theme.$white_01;
+      border: 1px solid theme.$black_01;
+      justify-content: flex-end;
+      border-radius: 24px;
+      align-items: center;
+      margin-right: 24px;
+      padding: 12px;
+      display: flex;
+      height: 48px;
+      gap: 4px;
+
+      p {
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        margin-right: 6px;
+        font-weight: 600;
+      }
+    }
+  }
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    flex-direction: row;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+
+    section {
+      flex: 1 1 calc(50% - 12px);
+      width: calc(50% - 12px);
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+
+      #meetHeader {
+        flex-direction: column;
+        display: flex;
+
+        #meetTimeLeft {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+        }
+
+        #meetDate {
+          font-size: calc(theme.$f1 + 6px);
+          color: theme.$black_01;
+          font-weight: 900;
+          margin: 2px 0;
+        }
+
+        #meetName {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 500;
+        }
+
+        #meetTags {
+          flex-direction: row;
+          margin-top: 12px;
+          min-height: 54px;
+          flex-wrap: wrap;
+          display: flex;
+          gap: 8px;
+
+          #eventSelect {
+            min-width: 250px;
+            max-width: 380px;
+            flex: 1;
+          }
+
+          button {
+            background-color: theme.$white_01;
+            border: 1px solid theme.$black_01;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 16px;
+            min-width: 140px;
+            cursor: pointer;
+            height: 54px;
+            display: flex;
+            gap: 4px;
+
+            p {
+              color: theme.$black_01;
+              font-size: theme.$f5;
+              font-weight: 600;
+            }
+
+            &.active {
+              background-color: theme.$black_01;
+              border: none;
+
+              p {
+                color: theme.$white_01;
+              }
+            }
+          }
+        }
+      }
+
+      #headerSpacer {
+        height: 156px;
+      }
+
+      #eventInscriptions {
+        flex-direction: column;
+        display: flex;
+
+        #eventInscriptionsHeader {
+          flex-direction: column;
+          display: flex;
+          gap: 8px;
+
+          h2 {
+            color: theme.$black_01;
+            font-size: theme.$f0;
+            font-weight: 900;
+          }
+
+          p {
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            margin-left: 8px;
+            font-weight: 500;
+
+            strong {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 900;
+              margin: 0 8px;
+            }
+          }
+        }
+
+        #noInscriptionsContainer {
+          border: 1px solid theme.$black_01;
+          justify-content: center;
+          flex-direction: column;
+          align-items: center;
+          border-radius: 24px;
+          margin-top: 24px;
+          height: 128px;
+          display: flex;
+          gap: 8px;
+
+          p {
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            font-weight: 400;
+          }
+        }
+
+        #inscriptionsLoadingContainer {
+          border: 1px solid theme.$black_01;
+          justify-content: center;
+          flex-direction: column;
+          align-items: center;
+          border-radius: 24px;
+          margin-top: 24px;
+          height: 128px;
+          display: flex;
+          gap: 8px;
+
+
+          .loadingSpinner {
+            border: 6px solid theme.$purple_01;
+            animation: spin 1s linear infinite;
+            border-radius: 50%;
+            height: 58px;
+            width: 58px;
+
+            border-top: 6px solid theme.$black_01;
+          }
+        }
+
+        @keyframes spin {
+          100% { transform: rotate(360deg); }
+          0% { transform: rotate(0deg); }
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 926px) {
+    main {
+      flex-direction: column;
+      
+      section {
+        max-height: min-content;
+        width: 100%;
+
+        #headerSpacer {
+          display: none;
+        }
+
+        #meetTags {
+          #eventSelect {
+            min-width: 200px;
+            max-width: 100%;
+            flex: 1 1 100%;
+            margin-bottom: 8px;
+          }
+
+          button {
+            flex: 1;
+            min-width: calc(50% - 4px);
+            max-width: calc(50% - 4px);
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    main section #meetTags {
+      #eventSelect {
+        min-width: 100%;
+        flex: 1 1 100%;
+      }
+
+      button {
+        flex: 1;
+        min-width: calc(33.333% - 6px);
+        max-width: calc(33.333% - 6px);
+      }
+    }
+  }
+}

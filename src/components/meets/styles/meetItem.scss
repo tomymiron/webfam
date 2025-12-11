@@ -1,0 +1,80 @@
+@use "../../../theme.scss" as theme;
+
+.meetItem {
+  background-color: theme.$purple_01;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  position: relative;
+  max-width: 380px;
+  cursor: pointer;
+  min-height: 194px;
+  padding: 12px;
+  display: flex;
+  flex: 1;
+
+  .date {
+    color: theme.$black_01;
+    font-size: theme.$f1;
+    font-weight: 900;
+    margin-top: 6px;
+  }
+
+  .eventsTitle {
+    color: theme.$black_01;
+    font-size: theme.$f6;
+    font-weight: 400;
+    margin-top: 4px;
+  }
+
+  .events {
+    flex-direction: row;
+    margin-top: 2px;
+    column-gap: 4px;
+    flex-wrap: wrap;
+    display: flex;
+    row-gap: 2px;
+
+    p {
+      background-color: theme.$black_01;
+      color: theme.$purple_01;
+      font-size: theme.$f5;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 700;
+      min-width: 64px;
+      padding: 6px;
+    }
+  }
+
+  .spacer {
+    flex: 1;
+  }
+
+  .name {
+    color: theme.$black_01;
+    font-size: theme.$f4;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .location {
+    color: theme.$black_01;
+    font-size: theme.$f6;
+    text-align: left;
+    font-weight: 500;
+    margin-top: 2px;
+    opacity: .5;
+  }
+
+  .timeLeft {
+    color: theme.$black_01;
+    font-size: theme.$f4;
+    position: absolute;
+    font-weight: 900;
+    bottom: 12px;
+    right: 12px;
+  }
+}

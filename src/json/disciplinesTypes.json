@@ -1,0 +1,9 @@
+[
+  { "value": 1, "label": "Velocidad" },
+  { "value": 2, "label": "Medio Fondo" },
+  { "value": 3, "label": "Fondo" },
+  { "value": 4, "label": "Salto" },
+  { "value": 5, "label": "Lanzamiento" },
+  { "value": 6, "label": "Combinado" }
+]
+

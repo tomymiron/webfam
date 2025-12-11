@@ -1,0 +1,158 @@
+@use "../../theme.scss" as theme;
+
+#Login {
+  background-color: theme.$white_01;
+  overflow-y: scroll !important;
+  letter-spacing: normal;
+  flex-direction: column;
+  position: absolute;
+  overflow-x: hidden;
+  display: flex;
+  width: 100vw;
+  height: 100%;
+  padding: 0;
+  top: 0;
+
+  main {
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    padding: 84px 0;
+    display: flex;
+    width: 100%;
+    flex: 1;
+
+    #loginForm {
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-direction: column;
+      padding: 0 18px;
+      display: flex;
+      width: 100%;
+
+      @media (min-width: 500px) {
+        width: 400px;
+      }
+
+      #logoContainer {
+        background-color: theme.$black_01;
+        justify-content: center;
+        border-radius: 12px;
+        align-items: center;
+        display: flex;
+        height: 64px;
+        width: 64px;
+      }
+
+      h2 {
+        color: theme.$black_01;
+        font-size: theme.$f3;
+        margin: 12px 0 8px;
+        font-weight: 900;
+      }
+
+      #subTitle {
+        color: theme.$black_01;
+        font-size: theme.$f5;
+        margin-bottom: 12px;
+        font-weight: 500;
+      }
+
+      input {
+        background-color: theme.$white_01;
+        border: 1px solid theme.$black_01;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+        margin-top: 4px;
+        padding: 0 12px;
+        display: flex;
+        height: 48px;
+        width: 100%;
+
+        color: theme.$black_01;
+        font-size: theme.$f5;
+        font-weight: 600;
+
+        &::placeholder {
+          color: theme.$gray_01;
+          font-weight: 600;
+        }
+
+        &:focus {
+          border: 2px solid theme.$blue_01;
+          outline: none;
+        }
+      }
+
+      #loginButton {
+        background-color: theme.$blue_01;
+        transition: opacity .2s ease;
+        border-radius: 12px;
+        margin-top: 12px;
+        height: 64px;
+        width: 100%;
+
+        &:disabled {
+          opacity: .6;
+          cursor: not-allowed;
+        }
+
+        p {
+          color: theme.$white_01;
+          font-size: theme.$f3;
+          font-weight: 900;
+          margin-top: 2px;
+        }
+      }
+
+      #notAccountContainer {
+        justify-content: center;
+        margin: 24px 0 12px;
+        align-items: center;
+        flex-direction: row;
+        align-self: center;
+        display: flex;
+        width: 80%;
+        gap: 8px;
+
+        .lineSeparator {
+          background-color: theme.$black_01;
+          height: 2px;
+          flex: .5;
+        }
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f6;
+          min-width: max-content;
+          font-weight: 500;
+          margin-top: -2px;;
+        }
+      }
+
+      #registerButton {
+        background-color: theme.$white_01;
+        border: 2px solid theme.$black_01;
+        border-radius: 8px;
+        height: 48px;
+        width: 100%;
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+          margin-top: 2px;
+        }
+      }
+
+      a {
+        text-decoration: underline;
+        color: theme.$black_01;
+        font-size: theme.$f5;
+        font-weight: 700;
+        margin-top: 12px;
+      }
+    }
+  }
+}

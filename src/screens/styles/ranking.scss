@@ -1,0 +1,243 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#Ranking {
+  background-color: theme.$orange_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    flex-direction: row;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+
+    section {
+      flex: 1 1 calc(50% - 12px);
+      width: calc(50% - 12px);
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+
+      #rankingHeader {
+        flex-direction: column;
+        align-items: center;
+        display: flex;
+        gap: 8px;
+
+        #rankingTitle {
+          font-size: theme.$f0;
+          color: theme.$black_01;
+          font-weight: 900;
+          margin: 0;
+        }
+
+        #rankingSeparator {
+          background-color: theme.$black_01;
+          width: calc(theme.$f0 * 3);
+          border-radius: 2px;
+          height: 2px;
+        }
+
+        #rankingSubTitle {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 400;
+          margin: 0;
+        } 
+      }
+      #rankingFilters {
+        align-self: center;
+        max-width: 588px;
+        margin-top: 24px;
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        gap: 8px;
+        
+        // Common button styles
+        .filterButton {
+          transition: background-color 0.1s ease, color 0.2s ease, border 0.2s ease;
+          background-color: theme.$black_01;
+          color: theme.$orange_01;
+          font-size: theme.$f5;
+          font-weight: 600;
+          cursor: pointer;
+          border: none;
+          
+          &.selected {
+            background-color: theme.$orange_01;
+            color: theme.$black_01;
+          }
+          
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+
+        #leftColumn {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          flex: 1;
+        }
+
+        #rightColumn {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          flex: 1;
+
+          #genderSelection {
+            display: flex;
+            gap: 8px;
+
+            .genderButton {
+              @extend .filterButton;
+              padding: 12px 16px;
+              flex: 1;
+              min-height: 54px;
+              height: 54px;
+
+              &.selected {
+                border: 2px solid theme.$black_01;
+              }
+            }
+          }
+
+          #categoriesContainer {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            background-color: theme.$black_01;
+            max-height: calc(54px * 2 + 8px);
+            align-content: start;
+            overflow: hidden;
+            display: grid;
+            padding: 8px;
+            gap: 4px;
+
+            .categoryButton {
+              background-color: theme.$black_01;
+              justify-content: center;
+              color: theme.$orange_01;
+              font-size: theme.$f5;
+              align-items: center;
+              text-align: center;
+              padding: 8px 4px;
+              font-weight: 600;
+              cursor: pointer;
+              min-height: 0;
+              border: none;
+              height: auto;
+              display: flex;
+
+              &.selected {
+                background-color: theme.$orange_01;
+                color: theme.$black_01;
+              }
+              
+              &:hover {
+                opacity: 0.8;
+              }
+            }
+          }
+        }
+      }
+
+      #searchButton {
+        background-color: theme.$black_01;
+        color: theme.$orange_01;
+        font-size: theme.$f5;
+        align-self: center;
+        font-weight: 700;
+        max-width: 588px;
+        height: 52px;
+        padding: 16px;
+        width: 100%;
+      }
+
+      .noTableContainer {
+        border: 1px solid theme.$black_01;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 12px;
+        align-self: center;
+        margin-top: 24px;
+        max-width: 588px;
+        height: 92px;
+        display: flex;
+        width: 100%;
+        gap: 8px;
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 400;
+        }
+      }
+
+      #loadingTableContainer {
+        border: 1px solid theme.$black_01;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 24px;
+        margin-top: 24px;
+        height: 128px;
+        display: flex;
+        gap: 8px;
+
+
+        .loadingSpinner {
+          border: 6px solid theme.$purple_01;
+          animation: spin 1s linear infinite;
+          border-radius: 50%;
+          height: 58px;
+          width: 58px;
+
+          border-top: 6px solid theme.$black_01;
+        }
+      }
+
+      @keyframes spin {
+        100% { transform: rotate(360deg); }
+        0% { transform: rotate(0deg); }
+      }
+    }
+  }
+  
+  @media (max-width: 926px) {
+    main {
+      section {
+        width: 100%;
+
+        #rankingFilters {
+          flex-direction: column;
+        }
+      }
+    }
+  }
+}

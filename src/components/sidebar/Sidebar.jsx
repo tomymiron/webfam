@@ -23,13 +23,13 @@ const variants = {
   },
 };
 
-export default function Sidebar({pageLoad}) {
+export default function Sidebar({pageLoad = true, userType = "athlete"}) {
   const [open, setOpen] = useState(false);
   
   return (
-    <motion.div className="sidebar" animate={open ? "open" : "closed"} initial={false}>
+    <motion.div className={`sidebar ${open ? 'sidebar-open' : ''}`} animate={open ? "open" : "closed"} initial={false}>
       {pageLoad && <motion.div className="background" variants={variants}>
-        <Links />
+        <Links userType={userType} />
       </motion.div>}
       <ToggleButton setOpen={setOpen}/>
     </motion.div>

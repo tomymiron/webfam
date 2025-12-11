@@ -1,0 +1,18 @@
+[
+  { "value": 1, "label": "100m", "type": 1 },
+  { "value": 2, "label": "200m", "type": 1 },
+  { "value": 3, "label": "400m", "type": 1 },
+  { "value": 4, "label": "800m", "type": 2 },
+  { "value": 5, "label": "1500m", "type": 2 },
+  { "value": 6, "label": "5000m", "type": 3 },
+  { "value": 7, "label": "10000m", "type": 3 },
+  { "value": 8, "label": "Maratón", "type": 3 },
+  { "value": 9, "label": "Salto Largo", "type": 4 },
+  { "value": 10, "label": "Salto Alto", "type": 4 },
+  { "value": 11, "label": "Triple Salto", "type": 4 },
+  { "value": 12, "label": "Lanzamiento de Disco", "type": 5 },
+  { "value": 13, "label": "Salto con Pértiga", "type": 4 },
+  { "value": 14, "label": "Lanzamiento de Peso", "type": 5 },
+  { "value": 15, "label": "Lanzamiento de Martillo", "type": 5 },
+  { "value": 16, "label": "Lanzamiento de Jabalina", "type": 5 }
+]

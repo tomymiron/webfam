@@ -1,4 +1,5 @@
 import { COLORS } from "./theme";
+import { useMemo, memo } from "react";
 
 const defaultSvg = `<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="red" stroke-width="2" fill="none"/></svg>`;
 
@@ -14,12 +15,17 @@ const edit18 = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmln
   <path d="M3 15.0001H15M3 15.0001V12.0001L11.1515 3.8486L11.1528 3.84732C11.4489 3.55116 11.5973 3.40282 11.7683 3.34725C11.9189 3.29831 12.0812 3.29831 12.2318 3.34725C12.4027 3.40278 12.5509 3.55095 12.8466 3.84669L14.1515 5.15154C14.4485 5.44855 14.597 5.59713 14.6527 5.76837C14.7016 5.91901 14.7016 6.08127 14.6527 6.2319C14.5971 6.40302 14.4487 6.55137 14.1521 6.84796L14.1515 6.8486L6 15.0001L3 15.0001Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
 
+const noteEdit18 = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M7.50015 3H5.40015C4.56007 3 4.13972 3 3.81885 3.16349C3.5366 3.3073 3.3073 3.5366 3.16349 3.81885C3 4.13972 3 4.56007 3 5.40015V12.6001C3 13.4402 3 13.86 3.16349 14.1809C3.3073 14.4632 3.5366 14.6929 3.81885 14.8367C4.1394 15 4.55925 15 5.39768 15H12.6023C13.4408 15 13.86 15 14.1805 14.8367C14.4628 14.6929 14.6929 14.4629 14.8367 14.1807C15 13.8601 15 13.4408 15 12.6023V10.5M12 3.75L7.5 8.25V10.5H9.75L14.25 6M12 3.75L14.25 1.5L16.5 3.75L14.25 6M12 3.75L14.25 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+
+
 const check18 = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
   <g id="Interface / Check"><path id="Vector" d="M4.5 8.99988L7.68198 12.1819L14.0453 5.81787" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g>
   </svg>`;
 
 const close24 = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M16 16L12 12M12 12L8 8M12 12L16 8M12 12L8 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <g id="Menu / Close_MD"><path id="Vector" d="M18 18L12 12M12 12L6 6M12 12L18 6M12 12L6 18" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
   </svg>`;
 
 const close18 = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -110,11 +116,24 @@ const fam24 = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns
   <g clip-path="url(#clip0_1222_1427)"><path d="M14.9951 19.5397C13.9624 21.5876 11.0386 21.5876 10.0059 19.5397L4.33203 8.28967C3.39514 6.43143 4.74603 4.23792 6.82715 4.23792L18.1738 4.23792C20.2549 4.2381 21.605 6.43147 20.668 8.28967L14.9951 19.5397Z" stroke="white" stroke-width="1.33048"/><path d="M10.9057 17.759C10.9057 17.8726 10.7516 17.9072 10.703 17.8045L5.50136 6.8147C5.26068 6.30563 5.63162 5.71922 6.19472 5.71899H10.7992C10.858 5.71899 10.9057 5.76665 10.9057 5.82543V17.759ZM18.8041 5.71899C19.3671 5.71926 19.7381 6.30565 19.4975 6.8147L14.3554 17.6795C14.3068 17.7821 14.1527 17.7475 14.1527 17.634V5.82543C14.1527 5.76665 14.2004 5.71899 14.2592 5.71899H18.8041Z" fill="white"/></g><defs><clipPath id="clip0_1222_1427"><rect width="21" height="21" fill="white" transform="translate(1.5 1.5)"/></clipPath></defs>
   </svg>`;
 
+const fam40 = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g clip-path="url(#clip0_1222_4157)"><path d="M24.1572 33.7328C22.436 37.146 17.563 37.146 15.8418 33.7328L6.38574 14.9828C4.82414 11.8857 7.07537 8.22986 10.5439 8.22986H29.4551C32.9235 8.23018 35.174 11.8858 33.6123 14.9828L24.1572 33.7328Z" stroke="white" stroke-width="2.21747"/><path fill-rule="evenodd" clip-rule="evenodd" d="M17.3439 10.876C17.3439 10.778 17.2645 10.6986 17.1665 10.6986H9.49376C8.55478 10.6986 7.93573 11.6765 8.33741 12.5252L17.0062 30.842C17.0871 31.0131 17.3439 30.9554 17.3439 30.7662V10.876ZM22.7564 30.5583C22.7564 30.7476 23.0132 30.8053 23.0942 30.6342L31.6646 12.5252C32.0662 11.6765 31.4472 10.6986 30.5082 10.6986H22.9338C22.8358 10.6986 22.7564 10.778 22.7564 10.876V30.5583Z" fill="white"/></g><defs><clipPath id="clip0_1222_4157"><rect width="35" height="35" fill="white" transform="translate(3 5)"/></clipPath></defs>
+  </svg>`;
+
+const map18 = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M11.25 4.5V15.75M11.25 4.5L15.75 2.25V13.5L11.25 15.75M11.25 4.5L6.75 2.25M11.25 15.75L6.75 13.5M6.75 13.5L2.25 15.75V4.5L6.75 2.25M6.75 13.5V2.25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+
+const usersGroup24 = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M17 20C17 18.3431 14.7614 17 12 17C9.23858 17 7 18.3431 7 20M21 17.0004C21 15.7702 19.7659 14.7129 18 14.25M3 17.0004C3 15.7702 4.2341 14.7129 6 14.25M18 10.2361C18.6137 9.68679 19 8.8885 19 8C19 6.34315 17.6569 5 16 5C15.2316 5 14.5308 5.28885 14 5.76389M6 10.2361C5.38625 9.68679 5 8.8885 5 8C5 6.34315 6.34315 5 8 5C8.76835 5 9.46924 5.28885 10 5.76389M12 14C10.3431 14 9 12.6569 9 11C9 9.34315 10.3431 8 12 8C13.6569 8 15 9.34315 15 11C15 12.6569 13.6569 14 12 14Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+
 const assets = [
+  { name: "note-edit", size: 18, asset: noteEdit18 },
   { name: "search", size: 18, asset: search18 },
   { name: "trash", size: 18, asset: trash18 },
-  { name: "edit", size: 18, asset: edit18 },
   { name: "check", size: 18, asset: check18 },
+  { name: "edit", size: 18, asset: edit18 },
 
   { name: "reload-arrow", size: 32, asset: reloadArrow32 },
   { name: "right-arrow", size: 24, asset: rightArrow24 },
@@ -131,6 +150,7 @@ const assets = [
   { name: "click", size: 24, asset: click24 },
   { name: "user", size: 24, asset: user24 },
   { name: "user-check", size: 24, asset: userCheck24 },
+  { name: "users-group", size: 24, asset: usersGroup24 },
 
   { name: "instagram", size: 24, asset: instagram24 },
   { name: "whatsapp", size: 24, asset: whatsapp24 },
@@ -145,14 +165,87 @@ const assets = [
   { name: "music", size: 32, asset: music32 },
 
   { name: "fam", size: 24, asset: fam24 },
+  { name: "fam", size: 40, asset: fam40 },
+
+  { name: "map", size: 18, asset: map18 },
 ];
 
-export default function Icon({ name, size = 24, size2 = null, color = COLORS.white_01 }) {
-  const matchedAssets = assets.filter(a => a.name === name);
-  const closestAsset = matchedAssets.length > 0 ? matchedAssets.reduce((prev, curr) => Math.abs(curr.size - size) < Math.abs(prev.size - size) ? curr : prev) : null;
-  const svgMarkup = closestAsset?.asset || defaultSvg;
 
-  const SvgImage = () => <div style={{ width: size, height: size2 || size }} dangerouslySetInnerHTML={{ __html: svgMarkup.replace(/stroke="white"/g, `stroke="${color}"`).replace(/fill="white"/g, `fill="${color}"`) }} />;
+// Cache para SVG con colores
+const svgCache = new Map(); // key: `${name}|${size}|${color}`
 
-  return <SvgImage />;
+function toNum(n) {
+  return typeof n === "number" ? n : Number(n);
 }
+
+function getClosestAsset(name, desiredSize) {
+  const matchedAssets = assets.filter(a => a.name === name);
+  if (!matchedAssets || matchedAssets.length === 0) return null;
+  
+  let best = matchedAssets[0];
+  let bestDiff = Math.abs(best.size - desiredSize);
+  
+  for (let i = 1; i < matchedAssets.length; i++) {
+    const diff = Math.abs(matchedAssets[i].size - desiredSize);
+    if (diff < bestDiff) {
+      best = matchedAssets[i];
+      bestDiff = diff;
+    }
+  }
+  return best;
+}
+
+function getSvgWithColor(name, desiredSize, color) {
+  const asset = getClosestAsset(name, desiredSize);
+  const raw = (asset && asset.asset) || defaultSvg;
+
+  if (!color || color === COLORS.white_01) return raw;
+
+  const key = `${name}|${asset ? asset.size : desiredSize}|${color}`;
+  const cached = svgCache.get(key);
+  if (cached) return cached;
+
+  const withColor = raw.replace(/stroke="white"/g, `stroke="${color}"`).replace(/fill="white"/g, `fill="${color}"`);
+  svgCache.set(key, withColor);
+  return withColor;
+}
+
+function Icon({ name, size = 24, size2 = null, color = COLORS.white_01 }) {
+  const numericSize = toNum(size);
+
+  const { svgMarkup, originalSize } = useMemo(() => {
+    const svg = getSvgWithColor(name, numericSize, color);
+    const asset = getClosestAsset(name, numericSize);
+    
+    return { 
+      svgMarkup: svg, 
+      originalSize: asset ? asset.size : 24 
+    };
+  }, [name, numericSize, color]);
+
+  const width = typeof size === "string" ? size : `${numericSize}px`;
+  const height = size2 != null ? (typeof size2 === "string" ? size2 : `${toNum(size2)}px`) : width;
+
+  return (
+    <div 
+      style={{ 
+        width: width, 
+        height: height,
+        lineHeight: 0,
+        display: 'inline-block',
+        transformOrigin: 'top left',
+        transform: originalSize !== numericSize ? `scale(${numericSize / originalSize})` : 'none',
+      }} 
+      role="img"
+      aria-label={`${name} icon`}
+      dangerouslySetInnerHTML={{ __html: svgMarkup }}
+    />
+  );
+}
+
+export default memo(Icon, (prev, next) => {
+  return prev.name === next.name && 
+         prev.size === next.size && 
+         prev.size2 === next.size2 && 
+         prev.color === next.color;
+});

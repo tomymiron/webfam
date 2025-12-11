@@ -1,0 +1,539 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#ClubHome {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    flex-direction: row;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+
+    section {
+      flex: 1 1 calc(50% - 12px);
+      width: calc(50% - 12px);
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+      
+      h4 {
+        color: theme.$black_01;
+        font-size: theme.$f3;
+        font-weight: 700;
+        margin: 0 0 4px;
+
+        .priceInTitle {
+          color: theme.$blue_01;
+          font-weight: 700;
+        }
+      }
+
+      #clubInfo {
+        flex-direction: column;
+        display: flex;
+        gap: 12px;
+
+        #clubInfoHeader {
+          align-items: center;
+          flex-direction: row;
+          display: flex;
+          gap: 8px;
+
+          #clubImage {
+            border-radius: 8px;
+            min-height: 100px;
+            min-width: 100px;
+            overflow: hidden;
+            height: 100px;
+            width: 100px;
+
+            img {
+              height: 100%;
+              width: 100%;
+              object-fit: cover;
+            }
+          }
+
+          #subClubInfoHeader {
+            align-items: flex-start;
+            flex-direction: column;
+            display: flex;
+            gap: 8px;
+
+            h2 {
+              color: theme.$black_01;
+              font-size: calc(theme.$f1 + 6px);
+              font-weight: 900;
+            }
+
+            .lineSeparator {
+              background-color: theme.$black_01;
+              border-radius: 2px;
+              height: 2px;
+              width: 65%;
+              margin: 0;
+            }
+
+            p {
+              font-size: calc(theme.$f4 + 6px);
+              color: theme.$black_01;
+              font-weight: 500;
+            } 
+          }
+        }
+
+        #clubInfoBody {
+          flex-direction: row;
+          flex-wrap: wrap;
+          display: flex;
+          gap: 6px;
+
+          p {
+            border: 2px solid theme.$black_01;
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            padding: 12px 18px;
+            font-weight: 700;
+          }
+
+          button {
+            background-color: theme.$black_01;
+            color: theme.$white_01;
+            min-width: max-content;
+            font-size: theme.$f4;
+            padding: 12px 18px;
+            font-weight: 700;
+
+            &.red {
+              background-color: theme.$red_01;
+              color: theme.$white_01;
+            }
+          }
+        }
+      }
+
+      #clubReceiptContainer {
+        flex-direction: column;
+        display: flex;
+        gap: 12px;
+
+        h4 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+          margin: 0 0 4px;
+        }
+
+        #clubReceiptUploadContent {
+          border: 2px solid theme.$black_01;
+          background-color: theme.$white_01;
+          padding: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+
+          #clubReceiptPriceBadge {
+            background-color: rgba(theme.$blue_01, 0.1);
+            border: 2px solid theme.$blue_01;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-radius: 4px;
+
+            .clubReceiptPriceLabel {
+              color: theme.$black_01;
+              font-size: theme.$f5;
+              font-weight: 600;
+            }
+
+            .clubReceiptPriceValue {
+              color: theme.$blue_01;
+              font-size: theme.$f3;
+              font-weight: 900;
+            }
+          }
+
+          #clubReceiptCurrentFile {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            #clubReceiptFileInfo {
+              display: flex;
+              gap: 16px;
+              align-items: flex-start;
+
+              #clubReceiptPreview {
+                width: 120px;
+                height: 120px;
+                border: 2px solid theme.$black_01;
+                overflow: hidden;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: rgba(theme.$black_01, 0.05);
+
+                &.clubReceiptPreviewClickable {
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                  }
+                }
+
+                .clubReceiptPreviewImage {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: cover;
+                }
+
+                .clubReceiptPreviewPdf {
+                  width: 100%;
+                  height: 100%;
+                  border: none;
+                }
+              }
+
+              #clubReceiptFileDetails {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+
+                .clubReceiptFileName {
+                  color: theme.$black_01;
+                  font-size: theme.$f4;
+                  font-weight: 700;
+                  margin: 0;
+                }
+
+                .clubReceiptFileDate {
+                  color: theme.$black_01;
+                  font-size: theme.$f5;
+                  font-weight: 500;
+                  margin: 0;
+                  opacity: 0.7;
+                }
+
+                .clubReceiptClickHint {
+                  color: theme.$blue_01;
+                  font-size: theme.$f6;
+                  font-weight: 500;
+                  margin: 0;
+                  font-style: italic;
+                }
+
+                #clubReceiptStatus {
+                  padding: 8px 16px;
+                  font-size: theme.$f6;
+                  font-weight: 700;
+                  border: 2px solid theme.$black_01;
+                  width: fit-content;
+
+                  &.status-1 {
+                    background-color: #FFA726;
+                    color: theme.$white_01;
+                    border-color: #FFA726;
+                  }
+
+                  &.status-2 {
+                    background-color: #66BB6A;
+                    color: theme.$white_01;
+                    border-color: #66BB6A;
+                  }
+
+                  &.status-3 {
+                    background-color: theme.$red_01;
+                    color: theme.$white_01;
+                    border-color: theme.$red_01;
+                  }
+                }
+              }
+            }
+          }
+
+          #clubReceiptUploadInfo {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+
+            #clubReceiptUploadText {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+
+              .clubReceiptTitle {
+                color: theme.$black_01;
+                font-size: theme.$f3;
+                font-weight: 700;
+                margin: 0;
+              }
+
+              .clubReceiptSubtitle {
+                color: theme.$black_01;
+                font-size: theme.$f5;
+                font-weight: 500;
+                margin: 0;
+                opacity: 0.8;
+
+                strong {
+                  font-weight: 700;
+                  color: theme.$blue_01;
+                }
+              }
+            }
+          }
+
+          #clubReceiptUploadActions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            .clubReceiptReuploadText {
+              color: theme.$black_01;
+              font-size: theme.$f5;
+              font-weight: 500;
+              margin: 0;
+              opacity: 0.8;
+            }
+
+            .clubReceiptSelectButton {
+              padding: 12px 18px;
+              background-color: theme.$blue_01;
+              color: theme.$white_01;
+              font-size: theme.$f5;
+              font-weight: 700;
+              text-align: center;
+              cursor: pointer;
+              border: 2px solid theme.$blue_01;
+              transition: all 0.2s ease;
+
+              &:hover {
+                background-color: rgba(theme.$blue_01, 0.9);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+              }
+
+              &:active {
+                transform: translateY(0);
+              }
+            }
+
+            .clubReceiptUploadButton {
+              padding: 12px 18px;
+              background-color: theme.$black_01;
+              color: theme.$white_01;
+              font-size: theme.$f5;
+              font-weight: 700;
+              cursor: pointer;
+              border: 2px solid theme.$black_01;
+              transition: all 0.2s ease;
+
+              &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+              }
+
+              &:active:not(:disabled) {
+                transform: translateY(0);
+              }
+
+              &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+              }
+            }
+          }
+        }
+      }
+
+      #clubActions {
+        flex-direction: column;
+        display: flex;
+        gap: 12px;
+
+        .actionCard {
+          border: 2px solid theme.$black_01;
+          background-color: theme.$white_01;
+          padding: 18px;
+          display: flex;
+          gap: 16px;
+          align-items: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+
+          .actionIcon {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+          }
+
+          .actionContent {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            h3 {
+              color: theme.$black_01;
+              font-size: theme.$f3;
+              font-weight: 900;
+              margin: 0;
+            }
+
+            p {
+              color: theme.$black_01;
+              font-size: theme.$f6;
+              font-weight: 400;
+              opacity: 0.7;
+              margin: 0;
+            }
+          }
+
+          .actionArrow {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 926px) {
+    main {
+      flex-direction: column;
+      padding: calc(84px + 18px) 18px 32px;
+      
+      section {
+        flex: 1 1 100%;
+        width: 100%;
+        max-height: min-content;
+      }
+    }
+  }
+
+  // Modal para ver recibo completo
+  #clubReceiptModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    #clubReceiptModalContent {
+      background-color: theme.$white_01;
+      border-radius: 12px;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+      #clubReceiptModalHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px;
+        border-bottom: 2px solid theme.$black_01;
+        gap: 16px;
+
+        h3 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+          margin: 0;
+          flex: 1;
+        }
+
+        button {
+          background: none;
+          border: none;
+          font-size: 28px;
+          cursor: pointer;
+          color: theme.$black_01;
+          padding: 4px 8px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            opacity: 0.7;
+            transform: scale(1.1);
+          }
+        }
+      }
+
+      #clubReceiptModalBody {
+        padding: 24px;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-height: calc(90vh - 80px);
+
+        img {
+          max-width: 100%;
+          max-height: calc(90vh - 120px);
+          object-fit: contain;
+        }
+
+        iframe {
+          width: 100%;
+          min-height: 600px;
+          border: none;
+        }
+      }
+    }
+  }
+}
+

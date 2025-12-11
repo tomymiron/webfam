@@ -1,9 +1,13 @@
+import { dateOnlyFormatter, timeLeft, timeSince } from "../constants/timeGetter";
+import RankingTable from "../components/RankingTable";
+import { useQuery } from "@tanstack/react-query";
+import { makeRequest } from "../config/axios";
 import { COLORS } from "../constants/theme";
+import NavBar from "../components/NavBar";
 import Transition from "../Transition";
 import Icon from "../constants/Icon";
-import { useEffect, useState } from "react";
-import Sidebar from "../components/sidebar/Sidebar";
-import { dateOnlyFormatter, shortDate, timeLeft, timeSince } from "../constants/timeGetter";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const news = [
   {id: 1, title: "Joaquín Gómez se proclamó Campeón Sudamericano de Martillo, con récord nacional", date: "2025-07-21 21:00:00", image: "17496133222239434.jpg"},
@@ -12,53 +16,55 @@ const news = [
   {id: 4, title: "Joaquín Gómez se proclamó Campeón Sudamericano de Martillo, con récord nacional", date: "2025-07-10 18:30:00", image: "17502759768546122.jpg"},
 ]
 
-const competitions = [
+const results = [
   {id: 1, date: "2025-08-03 12:00:00", title: "Campeonato Metropolitano U20 Sabado", location: "Cenard, Avenida Libertador 4323"},
   {id: 2, date: "2025-08-04 12:00:00", title: "Campeonato Metropolitano U20 Domingo", location: "Cenard, Avenida Libertador 4323"},
   {id: 2, date: "2025-10-12 14:00:00", title: "Cross Country - Opening Season", location: "Parque Olimpico, Avenida Roca 1100"},
 ]
 
+const ranking = [
+  {id: 1, ranking: 1, result: 44.50, name: "Elian Gaspar Larregina", born: "2000-04-20", club: "QUIRO", date: "2025-07-13", location: "España, Madrid"},
+  {id: 3, ranking: 2, result: 46.85, name: "Bruno de Genaro", born: "2003-11-01", club: "SAGAB", date: "2025-05-02", location: "Cenard"},
+  {id: 12, ranking: 3, result: 47.55, name: "Manuel Federico Robles", born: "2004-06-24", club: "BATF", date: "2025-06-18", location: "Cenard"},
+  {id: 2, ranking: 4, result: 47.65, name: "Agustin Coronel", born: "2006-02-01", club: "SAGAB", date: "2025-06-18", location: "Cenard"},
+  {id: 10, ranking: 5, result: 47.71, name: "Tomas Miron", born: "2005-07-26", club: "CHAMA", date: "2025-05-24", location: "Parque Olimpico"},
+  {id: 1, ranking: 1, result: 44.50, name: "Elian Gaspar Larregina", born: "2000-04-20", club: "QUIRO", date: "2025-07-13", location: "España, Madrid"},
+  {id: 3, ranking: 2, result: 46.85, name: "Bruno de Genaro", born: "2003-11-01", club: "SAGAB", date: "2025-05-02", location: "Cenard"},
+  {id: 12, ranking: 3, result: 47.55, name: "Manuel Federico Robles", born: "2004-06-24", club: "BATF", date: "2025-06-18", location: "Cenard"},
+  {id: 2, ranking: 4, result: 47.65, name: "Agustin Coronel", born: "2006-02-01", club: "SAGAB", date: "2025-06-18", location: "Cenard"},
+  {id: 10, ranking: 5, result: 47.71, name: "Tomas Miron", born: "2005-07-26", club: "CHAMA", date: "2025-05-24", location: "Parque Olimpico"},
+  {id: 1, ranking: 1, result: 44.50, name: "Elian Gaspar Larregina", born: "2000-04-20", club: "QUIRO", date: "2025-07-13", location: "España, Madrid"},
+  {id: 3, ranking: 2, result: 46.85, name: "Bruno de Genaro", born: "2003-11-01", club: "SAGAB", date: "2025-05-02", location: "Cenard"},
+  {id: 12, ranking: 3, result: 47.55, name: "Manuel Federico Robles", born: "2004-06-24", club: "BATF", date: "2025-06-18", location: "Cenard"},
+  {id: 2, ranking: 4, result: 47.65, name: "Agustin Coronel", born: "2006-02-01", club: "SAGAB", date: "2025-06-18", location: "Cenard"},
+  {id: 10, ranking: 5, result: 47.71, name: "Tomas Miron", born: "2005-07-26", club: "CHAMA", date: "2025-05-24", location: "Parque Olimpico"},
+]
+
+const tableShowColumns = [
+  { key: "ranking", label: "Ranking", fixed: true },
+  { key: "result", label: "Marca", align: "right", fixed: true },
+  { key: "name", label: "Nombre", bold: true },
+  { key: "born", label: "FDN", align: "center", fixed: true},
+  { key: "club", label: "Club"},
+  { key: "location", label: "Lugar", align: "right"}
+];
+
 export function Home() {
   useEffect(() => {import("./styles/home.scss")}, []);
+  const navigate = useNavigate();
 
-  const [isHorizontal, setIsHorizontal] = useState(window.innerWidth > window.innerHeight);
-  const [pageLoad, setPageLoad] = useState(false);
 
-  useEffect(() => {
-    setPageLoad(true)
-  }, []);
+  const { data: meets, isLoading: isLoadingMeets, isError: isErrorMeets } = useQuery({
+    queryFn: () => makeRequest.get("/meets").then((res) => res.data),
+    queryKey: ["meets"],
+  });
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsHorizontal(window.innerWidth > window.innerHeight);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  console.log("Meets", meets);
 
   return (
     <div id="Home">
 
-      <nav className={isHorizontal ? "horizontal" : ""}>
-        <a className="optionContainer" href="/">
-          <Icon name="fam" size={24} color={COLORS.black_01} />
-          <h3>WEBFAM</h3>
-        </a>
-        {isHorizontal ? <div id="menuOptions">
-            <a href="athletes">Atletas</a>
-            <a href="results">Resultados</a>
-            <a href="competitions">Competencias</a>
-            <a href="ranking">Ranking</a>
-            <a className="optionContainer" href="login">
-              <Icon name="user" size={24} color={COLORS.black_01} />
-              <h3>Iniciar Sesion</h3>
-            </a>
-          </div>
-        : <div id="menuContainer">
-          <Sidebar pageLoad={pageLoad}/>
-        </div>}
-      </nav>
+      <NavBar />
 
       <main>
         <section className="firstSection">
@@ -91,7 +97,7 @@ export function Home() {
           <div id="news">
             <div className="spacer"></div>
 
-            {news.map((item, index) => {
+            {news?.map((item, index) => {
               return <div className="newItem" key={index}>
                 <p className="newTitle">{item.title}</p>
                 <img src={"https://api.previateesta.com/image/event/" + item.image} alt={item.title} />
@@ -104,29 +110,99 @@ export function Home() {
         </div>
 
         <section>
-          <h2>PROXIMAS<br/>COMPETENCIAS</h2>
-          <div className="line" style={{width: 209}}/>
-          <p className="subTitle">Inscribite de manera simple</p>
+          <div className="content">
+            <h2>PROXIMAS<br/>COMPETENCIAS</h2>
+            <div className="line" style={{width: 209}}/>
+            <p className="subTitle">Inscribite de manera simple</p>
 
-          <div id="comptitions">
+            <div id="comptitions">
 
-            {competitions.map((item, index) => {
-              return <div className="competitionItem">
-                <p className="competitionItemDate">{dateOnlyFormatter(item.date)}</p>
-                <p className="competitionItemTitle">{item.title}</p>
-                <div>
-                  <p className="competitionItemLocation">{item.location}</p>
-                  <p className="competitionItemTimeLeft">en {timeLeft(item.date)}</p>
-                </div>
-              </div>
-            })}
+              {meets?.map((item, index) => {
+                return <button className="competitionItem" key={index} role="button" tabIndex={0} onClick={() => navigate(`/meet/${item.id}`)}>
+                  <p className="competitionItemDate">{dateOnlyFormatter(item.date)}</p>
+                  <p className="competitionItemTitle">{item.name}</p>
+                  <div>
+                    <p className="competitionItemLocation">{item.place_name}, {item.place_address}</p>
+                    <p className="competitionItemTimeLeft">en {timeLeft(item.date)}</p>
+                  </div>
+                </button>
+              })}
 
-            <div id="moreCompetitions">
-              <p>VER TODAS LAS<br/>COMPETENCIAS</p>
+              <button id="moreCompetitions" role="button" tabIndex={0} onClick={() => navigate("/meets")}>
+                <p>VER TODAS LAS<br/>COMPETENCIAS</p>
+              </button>
+
             </div>
+          </div>
 
+          <div className="endLines">
+            <div className="bottomLine primary"/>
+            <div className="bottomLine secondary"/>
+            <div className="bottomLine thirdy"/>
           </div>
         </section>
+
+        <section className="black">
+          <div className="content">
+            <h2>RESULTADOS</h2>
+            <div className="line" style={{width: 209}}/>
+            <p className="subTitle">Tiempos - Marcas</p>
+
+            <div id="results">
+
+              {results?.map((item, index) => {
+                return <div className="resultItem" key={index}>
+                  <p className="resultItemTitle">{item.title}</p>
+                  <p className="resultItemDate">{dateOnlyFormatter(item.date)}</p>
+                  <p className="resultItemLocation">{item.location}</p>
+
+                  <button>
+                    <div className="resultIconContainer">
+                      <Icon name="right-arrow" size={24} color={COLORS.black_01} />
+                    </div>
+                  </button>
+                </div>
+              })}
+
+              <div id="moreResultsGuide">
+                <div id="moreResults">
+                  <p>VER TODOS LOS<br/>RESULTADOS</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </section>
+
+        <section className="orange">
+
+          <div className="content">
+            <div id="rankingHeader">
+              <h2>RANKING</h2>
+              <div className="line" style={{width: 128}}/>
+              <p className="subTitle">Mejores Marcas FAM {new Date().getFullYear()}</p>
+
+              <div>
+
+              </div>
+            </div>
+
+            <div id="ranking">
+              <RankingTable data={ranking} toShowColumns={tableShowColumns}/>
+
+              <div id="moreRanking">
+                <p>ACCEDER A RANKING<br/>COMPLETO</p>
+              </div>
+
+            </div>
+          </div>
+
+        </section>
+
+        <footer>
+          <p>WEBFAM - 2025</p>
+        </footer>
       </main>
     </div>
   )

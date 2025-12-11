@@ -1,0 +1,79 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#Meets {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    flex-direction: column;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 48px;
+    flex: 1;
+
+    section {
+      width: 100%;
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+
+      #meetsHeader {
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-direction: column;
+        width: max-content;
+        display: flex;
+        gap: 8px;
+
+        h2 {
+          font-size: calc(theme.$f1 + 12px);
+          color: theme.$black_01;
+          font-weight: 900;
+        }
+
+        .lineSeparator {
+          background-color: theme.$black_01;
+          border-radius: 2px;
+          height: 2px;
+          width: 75%;
+        }
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+        }
+      }
+
+      #meetsContainer {
+        flex-direction: row;
+        flex-wrap: wrap;
+        display: flex;
+        gap: 24px;
+      }
+
+    }
+  }
+}
