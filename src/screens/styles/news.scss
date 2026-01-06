@@ -1,0 +1,177 @@
+@use "../../theme.scss" as theme;
+
+#News {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    flex-direction: column;
+    overflow-x: hidden;
+    max-width: 1256px;
+    overflow-y: auto;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 48px;
+    flex: 1;
+
+    section {
+      width: 100%;
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+
+      #newsHeader {
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-direction: column;
+        width: max-content;
+        display: flex;
+        gap: 8px;
+
+        h2 {
+          font-size: calc(theme.$f1 + 12px);
+          color: theme.$black_01;
+          font-weight: 900;
+        }
+
+        .lineSeparator {
+          background-color: theme.$black_01;
+          border-radius: 2px;
+          height: 2px;
+          width: 75%;
+        }
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+        }
+      }
+
+      #newsContainer {
+        flex-direction: column;
+        display: flex;
+        gap: 24px;
+
+        .loadingMessage,
+        .emptyMessage {
+          text-align: center;
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+          padding: 40px 20px;
+          opacity: 0.7;
+        }
+
+        .newsItem {
+          background-color: theme.$white_01;
+          border: 2px solid theme.$black_01;
+          border-radius: 8px;
+          overflow: hidden;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          flex-direction: row;
+          gap: 24px;
+          padding: 24px;
+
+          &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          }
+
+          @media (max-width: 768px) {
+            flex-direction: column;
+          }
+
+          .newsImage {
+            width: 300px;
+            height: 240px;
+            flex-shrink: 0;
+            overflow: hidden;
+            background-color: rgba(theme.$black_01, 0.05);
+            border-radius: 4px;
+
+            @media (max-width: 768px) {
+              width: 100%;
+              height: 200px;
+            }
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .newsContent {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: space-between;
+
+            .newsTitle {
+              font-size: theme.$f2;
+              color: theme.$black_01;
+              font-weight: 700;
+              margin: 0;
+              line-height: 1.3;
+            }
+
+            .newsSubtitle {
+              font-size: theme.$f4;
+              color: theme.$black_01;
+              font-weight: 500;
+              opacity: 0.7;
+              margin: 0;
+              font-style: italic;
+            }
+
+            .newsDescription {
+              font-size: theme.$f5;
+              color: theme.$black_01;
+              font-weight: 400;
+              line-height: 1.6;
+              margin: 0;
+              opacity: 0.8;
+              flex: 1;
+            }
+
+            .newsFooter {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-top: 12px;
+              border-top: 1px solid rgba(theme.$black_01, 0.1);
+
+              .newsDate {
+                font-size: theme.$f6;
+                color: theme.$black_01;
+                font-weight: 500;
+                opacity: 0.6;
+                margin: 0;
+              }
+
+              .newsArrow {
+                display: flex;
+                align-items: center;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

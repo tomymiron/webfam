@@ -60,6 +60,40 @@ body, html {
         margin: 0;
       }
 
+      #createClubButton {
+        background-color: theme.$blue_01;
+        color: theme.$white_01;
+        border: none;
+        border-radius: 8px;
+        padding: 0 24px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: theme.$f4;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 12px 0 16px;
+        align-self: flex-start;
+
+        &:hover {
+          background-color: rgba(116, 154, 237, 0.9);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(theme.$blue_01, 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 6px rgba(theme.$blue_01, 0.2);
+        }
+
+        span {
+          font-weight: 700;
+        }
+      }
+
       #searchInput {
         background-color: theme.$white_01;
         border: 1px solid theme.$black_01;

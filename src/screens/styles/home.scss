@@ -84,6 +84,7 @@
 
       &.firstSection {
         min-height: theme.$heightWithNav;
+        position: relative;
       }
 
       h2 {
@@ -143,20 +144,103 @@
           font-weight: 900;
           margin: 8px 0;
         }
-        #newCardIndicator {
-          background-color: theme.$blue_01;
-          justify-content: center;
-          align-items: center;
-          padding: 12px 32px;
+        #titleButtonsContainer {
+          justify-content: flex-start;
+          align-items: flex-start;
+          flex-direction: row;
+          flex-wrap: wrap;
           display: flex;
+          width: 100%;
+          gap: 4px;
 
-          p {
-            color: theme.$black_01;
-            font-size: theme.$f4;
-            font-weight: 700;
+          #newCardIndicator {
+            background-color: theme.$blue_01;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 32px;
+            display: flex;
+
+            p {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 700;
+            }
+          }
+
+          button {
+            background-color: theme.$blue_01;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 32px;
+            display: flex;
+            
+            p {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 700;
+            }
           }
         }
       }
+      #sponsorsContainer {
+        position: absolute;
+        bottom: 128px;
+        padding-right: clamp(18px, 8vw, 64px);
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        gap: 4px;
+        z-index: 10;
+        width: 100%;
+        padding-left: 50%;
+        flex-wrap: wrap-reverse;
+
+        @media (max-width: 768px) {
+          padding-left: 0;
+        }
+
+        .sponsorItem {
+          background-color: theme.$white_01;
+          border: 1px solid theme.$black_01;
+          padding: 12px 12px 6px;
+          display: flex;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          justify-content: flex-start;
+          transition: all 0.2s ease;
+          box-sizing: border-box;
+          text-decoration: none;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+          width: fit-content;
+          min-width: 100px;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+          }
+
+          img {
+            object-fit: contain;
+            max-height: 84px;
+            max-width: 84px;
+            height: auto;
+            width: auto;
+            flex-shrink: 0;
+          }
+
+          p {
+            color: theme.$black_01;
+            font-size: theme.$f6;
+            font-weight: 600;
+            margin: 0;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            flex: 1;
+          }
+        }
+      }
+
       #wavesContainer {
         align-items: flex-end;
         overflow-x: hidden;
@@ -239,6 +323,118 @@
             font-weight: 700;
           }
         }
+
+        #competitionsLoadingContainer {
+          border: 1px solid theme.$black_01;
+          justify-content: center;
+          flex-direction: column;
+          align-items: center;
+          border-radius: 24px;
+          margin-top: 24px;
+          height: 128px;
+          display: flex;
+          gap: 8px;
+          width: 100%;
+
+          @media (min-width: 600px) and (orientation: landscape) {
+            max-width: 400px;
+          }
+
+          p {
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            font-weight: 400;
+          }
+        }
+
+        #competitionsErrorContainer {
+          border: 1px solid theme.$black_01;
+          justify-content: center;
+          flex-direction: column;
+          align-items: center;
+          border-radius: 24px;
+          margin-top: 24px;
+          padding: 24px;
+          display: flex;
+          gap: 12px;
+          width: 100%;
+
+          @media (min-width: 600px) and (orientation: landscape) {
+            max-width: 400px;
+          }
+
+          .errorIcon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .errorContent {
+            flex-direction: column;
+            align-items: center;
+            display: flex;
+            gap: 8px;
+
+            .errorTitle {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 600;
+              text-align: center;
+            }
+
+            .errorMessage {
+              color: theme.$black_01_50;
+              font-size: theme.$f5;
+              font-weight: 500;
+              text-align: center;
+            }
+          }
+        }
+
+        #competitionsEmptyContainer {
+          // background-color: theme.$purple_01;
+          // border: 1px solid theme.$black_01;
+          justify-content: center;
+          flex-direction: column;
+          align-items: center;
+          // border-radius: 24px;
+          margin-top: 24px;
+          padding: 24px 24px;
+          display: flex;
+          gap: 20px;
+          width: 100%;
+
+          @media (min-width: 600px) and (orientation: landscape) {
+            max-width: 400px;
+          }
+
+          .emptyIcon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+          }
+
+          .emptyContent {
+            flex-direction: column;
+            align-items: center;
+            display: flex;
+            gap: 8px;
+            text-align: center;
+
+            .emptyTitle {
+              color: theme.$black_01;
+              font-size: theme.$f3;
+              font-weight: 700;
+            }
+
+            .emptyMessage {
+              color: theme.$black_01_50;
+              font-size: theme.$f5;
+              font-weight: 500;
+            }
+          }
+        }
       }
 
       #results {
@@ -249,6 +445,51 @@
         display: flex;
         width: 100%;
         gap: 12px;
+
+        #resultsUnderConstructionContainer {
+          background-color: theme.$cyan_01;
+          border: 1px solid theme.$cyan_01;
+          justify-content: center;
+          flex-direction: column;
+          align-items: center;
+          border-radius: 24px;
+          margin-top: 24px;
+          padding: 40px 24px;
+          display: flex;
+          gap: 20px;
+          width: 100%;
+
+          @media (min-width: 600px) and (orientation: landscape) {
+            max-width: 400px;
+          }
+
+          .constructionIcon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+          }
+
+          .constructionContent {
+            flex-direction: column;
+            align-items: center;
+            display: flex;
+            gap: 8px;
+            text-align: center;
+
+            .constructionTitle {
+              color: theme.$black_01;
+              font-size: theme.$f3;
+              font-weight: 700;
+            }
+
+            .constructionMessage {
+              color: theme.$black_01_50;
+              font-size: theme.$f5;
+              font-weight: 500;
+            }
+          }
+        }
 
         .resultItem {
           border: 1px solid theme.$cyan_01;
@@ -321,22 +562,126 @@
         }
       }
 
-      #ranking {
+      #statsContainer {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 4px;
         width: 100%;
+        max-width: 900px;
+        margin: 32px auto 0;
+        padding: 0 clamp(18px, 4vw, 32px);
 
-        #moreRanking {
-          margin: 12px clamp(18px, 8vw, 32px);
-          background-color: theme.$black_01;
-          flex-direction: column;
-          padding: 12px;
+        .statCard {
+          background-color: theme.$white_01;
+          border: 2px solid theme.$black_01;
+          // border-radius: 16px;
+          padding: 24px;
           display: flex;
-          width: 200px;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-          p {
-            color: theme.$orange_01;
-            font-size: theme.$f5;
-            font-weight: 700;
+          &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
           }
+
+          &.highlight {
+            background-color: theme.$black_01;
+            border-color: theme.$orange_01;
+
+            .statContent {
+              .statLabel {
+                color: theme.$orange_01;
+              }
+            }
+
+            &:hover {
+              background-color: theme.$orange_01;
+              border-color: theme.$black_01;
+
+              .statIcon {
+                transform: scale(1.1);
+              }
+
+              .statContent {
+                .statLabel {
+                  color: theme.$black_01;
+                }
+              }
+            }
+          }
+
+          .statIcon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background-color: theme.$orange_01;
+            // border-radius: 12px;
+            transition: transform 0.3s ease;
+          }
+
+          .statContent {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+
+            .statNumber {
+              color: theme.$black_01;
+              font-size: theme.$f1;
+              font-weight: 900;
+              margin: 0;
+              line-height: 1.2;
+            }
+
+            .statLabel {
+              color: theme.$black_01;
+              font-size: theme.$f5;
+              font-weight: 600;
+              margin: 0;
+              line-height: 1.3;
+            }
+          }
+        }
+      }
+
+      @media (max-width: 768px) {
+        #statsContainer {
+          grid-template-columns: repeat(2, 1fr);
+          padding: 0 18px;
+          gap: 4px;
+
+          .statCard {
+            padding: 20px 16px;
+            gap: 12px;
+
+            .statIcon {
+              width: 56px;
+              height: 56px;
+            }
+
+            .statContent {
+              .statNumber {
+                font-size: theme.$f2;
+              }
+
+              .statLabel {
+                font-size: theme.$f6;
+              }
+            }
+          }
+        }
+      }
+
+      @media (max-width: 480px) {
+        #statsContainer {
+          grid-template-columns: 1fr;
         }
       }
     }
@@ -403,6 +748,37 @@
             font-size: theme.$f4;
             font-weight: 700;
           }
+        }
+      }
+
+      #moreNewsButton {
+        margin: 24px clamp(32px, 8vw, 128px) 0;
+        background-color: theme.$black_01;
+        flex-direction: column;
+        padding: 12px 16px;
+        display: flex;
+        width: 200px;
+        align-self: flex-start;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background-color: rgba(theme.$black_01, 0.8);
+          transform: translateY(-2px);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+
+        p {
+          color: theme.$white_01;
+          font-size: theme.$f5;
+          font-weight: 700;
+          margin: 0;
+          text-align: left;
+          line-height: 1.3;
         }
       }
     }

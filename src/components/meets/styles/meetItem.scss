@@ -69,6 +69,22 @@
     opacity: .5;
   }
 
+  .inscriptionDeadline {
+    color: theme.$black_01;
+    font-size: theme.$f6;
+    margin-bottom: 4px;
+    text-align: left;
+    font-weight: 600;
+
+    &.open {
+      color: theme.$black_01;
+    }
+
+    &.closed {
+      color: theme.$red_01;
+    }
+  }
+
   .timeLeft {
     color: theme.$black_01;
     font-size: theme.$f4;

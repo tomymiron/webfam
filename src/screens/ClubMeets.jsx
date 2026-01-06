@@ -2,7 +2,7 @@ import "material-react-toastify/dist/ReactToastify.css";
 import MeetItem from "../components/meets/MeetItem";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { makeRequest } from "../config/axios";
-import ClubNavBar from "../components/ClubNavBar";
+import NavBar from "../components/NavBar";
 import Transition from "../Transition";
 import { useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -67,13 +67,9 @@ function ClubMeets() {
     };
   }, [handleObserver]);
 
-  const handleMeetClick = (meetId) => {
-    navigate(`/club/meet/${meetId}`);
-  };
-
   return (
     <div id="ClubMeets">
-      <ClubNavBar />
+      <NavBar />
 
       <main>
         <section>
@@ -87,18 +83,14 @@ function ClubMeets() {
             {isLoadingNext ? (
               <p>Cargando...</p>
             ) : nextMeets?.length > 0 ? (
-              nextMeets.map((meet) => (
-                <div key={meet.id} onClick={() => handleMeetClick(meet.id)}>
-                  <MeetItem meet={meet} />
-                </div>
-              ))
+              nextMeets.map((meet) => <MeetItem key={meet.id} meet={meet} isClub={true} />)
             ) : (
               <p>No hay competencias próximas</p>
             )}
           </div>
         </section>
 
-        <section>
+        <section id="pastMeetsSection">
           <div id="meetsHeader">
             <h2>COMPETENCIAS<br />PASADAS</h2>
             <div className="lineSeparator" />
@@ -111,9 +103,7 @@ function ClubMeets() {
             ) : pastMeets.length > 0 ? (
               <>
                 {pastMeets.map((meet) => (
-                  <div key={meet.id} onClick={() => handleMeetClick(meet.id)}>
-                    <MeetItem meet={meet} />
-                  </div>
+                  <MeetItem key={meet.id} meet={meet} />
                 ))}
                 <div ref={observerTarget} style={{ width: "100%", height: "20px" }}>
                   {isFetchingNextPage && <p>Cargando más...</p>}

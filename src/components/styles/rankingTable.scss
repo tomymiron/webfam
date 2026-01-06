@@ -1,121 +1,252 @@
 @use "../../theme.scss" as theme;
 
 .ranking-table-container {
-  margin-top: 24px;
-  overflow-x: auto;
-  width: 100%;
-  padding: 0; // ensure table spans full container width
-  flex-direction: row;
-  display: flex;
   box-sizing: border-box;
-  
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  
+  margin-bottom: 128px;
+  margin-top: 24px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  // Scrollbar personalizada optimizada
   &::-webkit-scrollbar {
-    display: none;
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: theme.$white_01;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: theme.$orange_01;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: theme.$purple_01;
+    }
   }
 
   .table {
     background-color: theme.$white_01;
-    border-collapse: collapse;
-    width: 100%;
-    min-width: 100%;
     box-sizing: border-box;
+    width: 100%;
+    min-width: fit-content;
+    border-collapse: separate;
+    border-spacing: 0;
 
+    // Header optimizado
     .header {
-      border-bottom: 1px solid theme.$black_01;
       background-color: theme.$white_01;
+      border-bottom: 2px solid theme.$black_01;
       position: sticky;
-      z-index: 10;
       top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
       .tr {
         display: flex;
         width: 100%;
-        min-width: 100%;
+        min-width: fit-content;
       }
 
       .th {
         color: theme.$black_01;
         font-size: theme.$f5;
-        border-bottom: none;
         font-weight: 900;
-        text-align: left;
-        padding: 18px;
-        flex: 1;
+        padding: 10px 8px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        background-color: theme.$white_01;
+        
+        &.fixed {
+          flex-shrink: 0;
+        }
+        
+        &.flexible {
+          min-width: 0;
+        }
+        
+        p {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+          line-height: 1.3;
+          word-wrap: break-word;
+        }
       }
     }
 
+    // Body optimizado
     .body {
       .tr {
-        border-bottom: 1px solid theme.$gray_01;
         display: flex;
         width: 100%;
-        min-width: 100%;
+        min-width: fit-content;
+        border-bottom: 1px solid theme.$gray_01;
+        transition: background-color 0.15s ease;
 
-        &:nth-child(even) {
-          background-color: theme.$white_01;
-        }
-
-        &:nth-child(odd) {
-          background-color: theme.$white_01;
+        &:hover {
+          background-color: rgba(theme.$orange_01, 0.04);
         }
 
         &:last-child {
           border-bottom: none;
         }
 
+
         .td {
           background-color: inherit;
-          // border: 1px solid red;
-          font-size: theme.$f4;
-          padding: 14px 18px;
+          font-size: calc(theme.$f5 + 1px);
           font-weight: 400;
-          flex: 1;
-          border-right: none;
+          padding: 10px 8px;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          transition: background-color 0.15s ease;
 
-          &:last-child {
-            border-right: none;
+          &.fixed {
+            flex-shrink: 0;
           }
+          
+          &.flexible {
+            min-width: 0;
+          }
+
+          // Para nombres de atletas, mantener en una línea
+          &.athlete-name {
+            p {
+              white-space: nowrap;
+              overflow: visible;
+            }
+          }
+
+          // Estilos para celdas clickeables
+          &.clickable {
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+
+            &:hover {
+              background-color: rgba(theme.$blue_01, 0.1) !important;
+              opacity: 0.8;
+            }
+
+            &:focus {
+              outline: 2px solid theme.$blue_01;
+              outline-offset: -2px;
+            }
+
+            p {
+              transition: color 0.2s ease;
+
+              &:hover {
+                color: theme.$blue_01;
+              }
+            }
+          }
+
           p {
-            min-width: 100%;
-            // background-color: red;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            line-height: 1.4;
+            word-wrap: break-word;
           }
         }
       }
     }
   }
 
+  // Mobile optimizations - espacio más compacto
   @media (max-width: 768px) {
+    margin-top: 16px;
+    margin-bottom: 64px;
+
     .table {
-      
+      padding-right: 20px; // Margen en mobile
+
       .header {
-        min-width: 100%;
-        
-        .tr {
-          min-width: 100%;
-        }
-        
         .th {
           font-size: theme.$f6;
-          padding: 8px 12px;
-          width: 100%;
-          min-width: 100%;
+          padding: 8px 6px;
+          font-weight: 800;
+          
+          p {
+            line-height: 1.2;
+          }
         }
       }
-      
-      .body .tr .td {
-        font-size: theme.$f6;
-        padding: 8px 12px;
-        width: 100%;
 
-        p {
-          height: 100%;
-          width: 100%;
+      .body {
+        .tr {
+          .td {
+            font-size: theme.$f6;
+            padding: 8px 6px;
+            
+            p {
+              line-height: 1.3;
+            }
+          }
         }
+      }
+    }
+
+    // Scrollbar más pequeña en mobile
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+  }
+
+  // Tablets - balance entre espacio y legibilidad
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .table {
+      .header .th,
+      .body .tr .td {
+        padding: 9px 7px;
       }
     }
   }
 
-} 
+  // Tablets y pantallas medianas
+  @media (max-width: 926px) {
+    padding-right: 24px;
+
+    .table {
+      margin-left: 24px;
+    }
+  }
+
+  // Pantallas muy pequeñas - máximo espacio
+  @media (max-width: 480px) {
+    padding: 0 16px;
+    
+
+    .table {
+      margin: 0 16px;
+      padding-right: 16px; // Margen en pantallas pequeñas
+
+      .header .th,
+      .body .tr .td {
+        padding: 6px 4px;
+        font-size: 11px;
+      }
+    }
+  }
+
+  // Desktop - usar todo el espacio disponible
+  @media (min-width: 1025px) {
+    .table {
+      .header .th,
+      .body .tr .td {
+        padding: 12px 10px;
+      }
+    }
+  }
+}

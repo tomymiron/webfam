@@ -108,6 +108,7 @@ body, html {
 
         #meetTags {
           flex-direction: row;
+          flex-wrap: wrap;
           margin-top: 8px;
           display: flex;
           gap: 8px;
@@ -149,7 +150,7 @@ body, html {
       }
 
       #headerSpacer {
-        height: 156px;
+        height: 128px;
       }
 
       #meetEvents {
@@ -219,18 +220,17 @@ body, html {
         #athletesList {
           flex-direction: column;
           display: flex;
-          gap: 8px;
+          gap: 4px;
 
           .athleteCard {
             background-color: theme.$white_01;
-            border: 2px solid theme.$black_01;
+            border: 1px solid theme.$black_01;
             justify-content: flex-start;
-            align-items: center;
-            padding: 12px;
-            display: flex;
-            gap: 12px;
             transition: all 0.2s;
+            align-items: center;
             position: relative;
+            padding: 4px;
+            display: flex;
 
             &:hover {
               background-color: theme.$purple_01;
@@ -246,14 +246,15 @@ body, html {
             }
 
             img {
-              width: 48px;
-              height: 48px;
-              border-radius: 50%;
               object-fit: cover;
+              height: 64px;
+              width: 64px;
             }
 
             .athleteInfo {
+              align-items: flex-start;
               flex-direction: column;
+              padding-left: 12px;
               display: flex;
               gap: 4px;
               flex: 1;
@@ -274,22 +275,22 @@ body, html {
                 color: theme.$black_01;
                 font-size: theme.$f5;
                 font-weight: 400;
-                opacity: 0.7;
                 margin-top: 2px;
               }
             }
 
             .inscriptionBadge {
               background-color: theme.$black_01;
-              color: theme.$white_01;
-              border-radius: 50%;
-              min-width: 28px;
-              height: 28px;
-              display: flex;
-              align-items: center;
               justify-content: center;
+              color: theme.$white_01;
               font-size: theme.$f5;
-              font-weight: 700;
+              align-items: center;
+              position: absolute;
+              padding: 8px 18px;
+              font-weight: 500;
+              display: flex;
+              bottom: 0;
+              right: 0;
             }
           }
         }
@@ -328,43 +329,39 @@ body, html {
           }
 
           #existingInscriptions {
-            background-color: theme.$white_01;
             border: 2px solid theme.$black_01;
-            border-radius: 12px;
+            flex-direction: column;
             padding: 12px;
             display: flex;
-            flex-direction: column;
-            gap: 8px;
 
             .inscriptionsTitle {
               color: theme.$black_01;
               font-size: theme.$f5;
-              font-weight: 600;
               margin-bottom: 4px;
+              font-weight: 600;
             }
 
             .inscriptionsList {
-              display: flex;
               flex-wrap: wrap;
+              display: flex;
               gap: 8px;
 
               .inscriptionTag {
                 background-color: theme.$purple_01;
                 color: theme.$white_01;
-                border-radius: 8px;
+                align-items: center;
                 padding: 6px 12px;
                 display: flex;
-                align-items: center;
                 gap: 8px;
 
                 p {
-                  font-size: theme.$f5;
+                  font-size: theme.$f4;
                   font-weight: 500;
                   margin: 0;
                 }
 
                 p:first-child {
-                  font-weight: 700;
+                  font-weight: 600;
                 }
               }
             }
@@ -376,104 +373,241 @@ body, html {
           display: flex;
           gap: 8px;
 
-          .eventCard {
-            background-color: theme.$white_01;
-            border: 2px solid theme.$black_01;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            display: flex;
-            gap: 12px;
-            transition: all 0.2s;
-            cursor: pointer;
+          .eventCardWrapper {
+            margin-bottom: 12px;
 
-            &:hover:not(:disabled) {
-              background-color: theme.$purple_01;
+            &:last-child {
+              margin-bottom: 0;
             }
 
-            &:disabled {
-              opacity: 0.6;
-              cursor: not-allowed;
+            .eventCard {
+              background-color: theme.$white_01;
+              border: 1px solid theme.$black_01;
+              padding: 0;
+              display: flex;
+              width: 100%;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              cursor: pointer;
+              overflow: hidden;
+
+              &:hover:not(:disabled) {
+                border-color: theme.$purple_01;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                transform: translateY(-2px);
+              }
+
+              &:disabled {
+                cursor: not-allowed;
+                opacity: 0.7;
+              }
+
+              .eventMainInfo {
+                padding: 8px;
+                flex: 1;
+
+                .eventHeader {
+                  justify-content: space-between;
+                  align-items: flex-start;
+                  display: flex;
+
+                  .eventHeaderInfo {
+                    flex-direction: row;
+                    display: flex;
+                    gap: 4px;
+                  }
+
+                  .eventTimeBadge {
+                    background-color: theme.$orange_01;
+                    align-items: center;
+                    padding: 12px 24px;
+                    display: flex;
+                    gap: 4px;
+
+                    .eventTime {
+                      color: theme.$black_01;
+                      font-size: theme.$f4;
+                      font-weight: 600;
+                    }
+
+                    .eventName {
+                      color: theme.$black_01;
+                      font-size: theme.$f4;
+                      font-weight: 700;
+                    }
+                  }
+
+                  .statusBadge {
+                    font-size: theme.$f5;
+                    align-items: center;
+                    padding: 16px 24px;
+                    font-weight: 600;
+                    display: flex;
+                    gap: 4px;
+
+                    &.inscribed {
+                      background-color: theme.$green_01;
+                      color: theme.$white_01;
+                    }
+
+                    &.selected {
+                      background-color: theme.$blue_01;
+                      color: theme.$white_01;
+                    }
+                  }
+                }
+
+                .eventContent {
+                  justify-content: space-between;
+                  align-items: flex-end;
+                  display: flex;
+
+                  .eventDetails {
+                    flex: 1; 
+
+                    .eventMeta {
+                      .eventMark {
+                        font-size: theme.$f5;
+                        align-items: center;
+                        font-weight: 400;
+                        display: flex;
+
+                        strong {
+                          font-size: theme.$f4;
+                        }
+
+                        span {
+                          color: theme.$orange_01;
+                        }
+                      }
+                    }
+                  }
+
+                  .eventPricing {
+                    margin-top: 24px;
+
+                    .eventPrice {
+                      display: flex;
+                      flex-direction: column;
+                      align-items: flex-end;
+
+                      .priceAmount {
+                        color: theme.$black_01;
+                        font-size: theme.$f3;
+                        font-weight: 700;
+                        line-height: 1;
+                      }
+
+                      .priceLabel {
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        color: theme.$gray_01;
+                        font-size: theme.$f6;
+                        font-weight: 500;
+                      }
+                    }
+                  }
+                }
+              }
+
+              .eventAction {
+                align-items: center;
+                display: flex;
+
+                .actionButton {
+                  justify-content: center;
+                  transition: all 0.2s;
+                  align-items: center;
+                  height: 100%;
+                  display: flex;
+                  width: 64px;
+
+                  &.default {
+                    background-color: theme.$purple_01;
+
+                    &:hover {
+                      background-color: theme.$orange_01;
+                      transform: scale(1.05);
+                    }
+                  }
+
+                  &.selected {
+                    background-color: theme.$blue_01;
+                    transform: scale(1.1);
+                  }
+                }
+              }
             }
 
-            &.selected {
-              background-color: theme.$blue_01;
+            // Estados especiales
+            &.selected .eventCard {
+              background: linear-gradient(135deg, theme.$blue_01 0%, theme.$blue_01_25 100%);
               border-color: theme.$blue_01;
 
-              .eventInfo p {
-                color: theme.$white_01;
-              }
+              .eventMainInfo {
+                .eventHeader .eventTimeBadge {
+                  background-color: rgba(255, 255, 255, 0.2);
 
-              .eventCheck {
-                background-color: theme.$black_01;
-              }
-            }
-
-            &.inscribed {
-              background-color: theme.$purple_01;
-              border-color: theme.$purple_01;
-              cursor: not-allowed;
-
-              .eventInfo p {
-                color: theme.$white_01;
-              }
-            }
-
-            .eventInfo {
-              flex-direction: column;
-              display: flex;
-              gap: 4px;
-              flex: 1;
-
-              .eventTimeDiscipline {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-
-                .eventTime {
-                  color: theme.$black_01;
-                  font-size: theme.$f5;
-                  font-weight: 700;
-                  min-width: 60px;
-                }
-
-                .eventName {
-                  color: theme.$black_01;
-                  font-size: theme.$f4;
-                  font-weight: 700;
-                }
-              }
-
-              .eventPrice {
-                color: theme.$black_01;
-                font-size: theme.$f4;
-                font-weight: 600;
-                margin-top: 4px;
-              }
-            }
-
-            &.selected, &.inscribed {
-              .eventInfo {
-                .eventTimeDiscipline {
                   .eventTime, .eventName {
                     color: theme.$white_01;
                   }
                 }
 
-                .eventPrice {
-                  color: theme.$white_01;
+                .eventContent {
+                  .eventDetails {
+                    .eventName, .eventMeta .eventMark span {
+                      color: theme.$white_01;
+                    }
+
+                    .eventMeta .eventMark.empty span {
+                      color: rgba(255, 255, 255, 0.7);
+                    }
+                  }
+
+                  .eventPricing .eventPrice {
+                    .priceAmount, .priceLabel {
+                      color: theme.$white_01;
+                    }
+                  }
                 }
               }
             }
 
-            .eventCheck {
-              background-color: theme.$purple_01;
-              border-radius: 4px;
-              min-width: 32px;
-              height: 32px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
+            &.inscribed .eventCard {
+              border-color: theme.$green_01;
+              background-color: theme.$green_01;
+              cursor: not-allowed;
+
+              .eventMainInfo {
+                .eventHeader .eventTimeBadge {
+                  background-color: rgba(255, 255, 255, 0.2);
+
+                  .eventTime, .eventName {
+                    color: theme.$white_01;
+                  }
+                }
+
+                .eventContent {
+                  .eventDetails {
+                    .eventName, .eventMeta .eventMark span {
+                      color: theme.$white_01;
+                    }
+
+                    .eventMeta .eventMark.empty span {
+                      color: rgba(255, 255, 255, 0.7);
+                    }
+                  }
+
+                  .eventPricing .eventPrice {
+                    .priceAmount, .priceLabel {
+                      color: theme.$white_01;
+                    }
+                  }
+                }
+              }
+
+              .eventAction {
+                display: none;
+              }
             }
           }
         }
@@ -510,24 +644,28 @@ body, html {
           background-color: theme.$black_01;
           justify-content: space-between;
           align-items: center;
-          padding: 20px 24px;
-          width: 100%;
+          padding: 18px 24px;
           display: flex;
+          width: 100%;
           gap: 12px;
 
           &:hover {
-            background-color: theme.$blue_01;
+            background-color: theme.$orange_01;
+
+            p {
+              color: theme.$black_01;
+            }
           }
 
           p {
             color: theme.$white_01;
-            font-size: theme.$f3;
+            font-size: theme.$f4;
             font-weight: 700;
           }
 
           .totalAmount {
             color: theme.$purple_01;
-            font-size: theme.$f2;
+            font-size: theme.$f3;
             font-weight: 900;
           }
         }
@@ -582,81 +720,84 @@ body, html {
       #checkoutBody {
         flex-direction: column;
         overflow-y: auto;
-        padding: 24px;
+        padding: 12px;
         display: flex;
-        gap: 24px;
+        gap: 8px;
         flex: 1;
 
         .checkoutAthlete {
-          border: 2px solid theme.$black_01;
+          // border: 1px solid theme.$black_01;
           flex-direction: column;
-          padding: 16px;
+          // padding: 4px;
           display: flex;
-          gap: 12px;
+          gap: 2px;
 
           .athleteHeader {
             align-items: center;
+            margin-bottom: 4px;
             display: flex;
-            gap: 12px;
+            gap: 4px;
 
             img {
-              width: 48px;
-              height: 48px;
-              border-radius: 50%;
               object-fit: cover;
+              height: 48px;
+              width: 48px;
             }
 
             .athleteName {
               color: theme.$black_01;
-              font-size: theme.$f3;
+              font-size: theme.$f4;
               font-weight: 700;
             }
 
             .athleteCategory {
               color: theme.$black_01;
-              font-size: theme.$f4;
-              font-weight: 500;
+              font-size: theme.$f5;
+              font-weight: 300;
             }
           }
 
           .athleteEvents {
             flex-direction: column;
-            padding-left: 60px;
+            padding-left: 2px;
             display: flex;
-            gap: 8px;
+            gap: 2px;
 
             .checkoutEvent {
               justify-content: space-between;
               align-items: flex-start;
-              padding: 8px 0;
+              flex-direction: row;
               display: flex;
-              gap: 12px;
+              gap: 2px;
 
               > div {
-                flex: 1;
+                align-items: flex-end;
+                justify-content: flex-end;
+                flex-direction: row;
+                padding: 4px 8px 0 0;
                 display: flex;
-                flex-direction: column;
                 gap: 4px;
+                flex: 1;
 
-                .eventTime {
+                .eventTime, .eventName {
                   color: theme.$black_01;
                   font-size: theme.$f5;
-                  font-weight: 600;
-                  opacity: 0.7;
+                  font-weight: 400;
                 }
 
-                p:not(.eventTime) {
+                p:not(.eventTime, .eventName) {
                   color: theme.$black_01;
-                  font-size: theme.$f4;
-                  font-weight: 500;
+                  font-size: theme.$f5;
+                  font-weight: 400;
                 }
               }
 
               .eventPrice {
-                color: theme.$black_01;
-                font-size: theme.$f4;
-                font-weight: 700;
-                white-space: nowrap;
+                background-color: theme.$black_01;
+                color: theme.$white_01;
+                font-size: theme.$f5;
+                font-weight: 600;
+                padding: 4px 8px;
               }
             }
           }
@@ -668,31 +809,100 @@ body, html {
         flex-direction: column;
         padding: 24px;
         display: flex;
-        gap: 16px;
+        gap: 8px;
 
-        #checkoutTotal {
-          justify-content: space-between;
-          align-items: center;
-          display: flex;
+          #checkoutTotal {
+            justify-content: space-between;
+            align-items: flex-end;
+            display: flex;
 
-          p {
-            color: theme.$black_01;
-            font-size: theme.$f3;
-            font-weight: 700;
+            p {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 800;
 
-            &.totalAmount {
-              color: theme.$blue_01;
-              font-size: theme.$f1;
-              font-weight: 900;
+              &.totalAmount {
+                background-color: theme.$blue_01;
+                color: theme.$white_01;
+                font-size: theme.$f3;
+                padding: 12px 24px;
+                font-weight: 700;
+              }
             }
           }
-        }
+
+          #paymentOptions {
+            width: 100%;
+
+            .paymentLabel {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 600;
+              margin-bottom: 16px;
+              text-align: center;
+            }
+
+            .paymentButtons {
+              flex-direction: column;
+              display: flex;
+              gap: 4px;
+
+              .paymentOption {
+                background-color: theme.$white_01;
+                border: 2px solid transparent;
+                transition: all 0.3s ease;
+                align-items: center;
+                cursor: pointer;
+                padding: 18px;
+                display: flex;
+
+                &:hover:not(:disabled) {
+                  transform: translateY(-2px);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                }
+
+                &:disabled {
+                  opacity: 0.6;
+                  cursor: not-allowed;
+                }
+
+                &.clubFunds {
+                  border-color: theme.$orange_01;
+                  background: theme.$orange_01;
+                }
+
+                &.mercadoPago {
+                  border-color: theme.$blue_01;
+                  background: theme.$blue_01;
+                }
+
+                .paymentInfo {
+                  flex-direction: column;
+                  display: flex;
+                  gap: 2px;
+                  flex: 1;
+
+                  .paymentTitle {
+                    color: theme.$white_01;
+                    font-size: theme.$f4;
+                    font-weight: 700;
+                  }
+
+                  .paymentSubtitle {
+                    color: rgba(255, 255, 255, 0.8);
+                    font-size: theme.$f5;
+                    font-weight: 400;
+                  }
+                }
+              }
+            }
+          }
 
         #payButton {
           background-color: theme.$blue_01;
           justify-content: center;
           align-items: center;
-          padding: 20px;
+          padding: 18px;
           display: flex;
           width: 100%;
 

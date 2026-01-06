@@ -1,7 +1,7 @@
 import { useAuth } from "../../contexts/AuthContext";
 import { useAuthClub } from "../../contexts/AuthContextClub";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const variants = {
   open: {
@@ -28,24 +28,50 @@ const itemVariants = {
   },
 };
 
-export default function Links({ userType = "athlete" }) {
+export default function Links() {
   const { authState } = useAuth();
   const { authState: clubAuthState } = useAuthClub();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determinar automáticamente el tipo de usuario
+  const userType = (() => {
+    const isClubRoute = location.pathname.startsWith("/club");
+    if (clubAuthState?.authenticated || isClubRoute) {
+      return "club";
+    }
+    if (authState?.authenticated) {
+      return "athlete";
+    }
+    return "guest";
+  })();
 
   const athleteItems = [
     { label: "Atletas", path: "/athletes" },
+    { label: "Clubes", path: "/clubs" },
     { label: "Resultados", path: "/results" },
     { label: "Competencias", path: "/meets" },
-    { label: authState.authenticated ? "Mi Perfil" : "Iniciar Sesion", path: authState.authenticated ? "/athlete" : "/login" },
+    { label: "Noticias", path: "/news" },
     { label: "Ranking", path: "/ranking" },
+    ...(authState?.authenticated ? [
+      { label: "Mi Perfil", path: "/athlete" }
+    ] : [
+      { label: "Iniciar Sesion", path: "/login" }
+    ]),
   ];
 
   const clubItems = [
-    { label: "Inicio", path: "/club" },
+    { label: "Inicio", path: "/" },
     { label: "Atletas", path: "/club/athletes" },
+    { label: "Competencias", path: "/club/meets" },
     { label: "Solicitudes", path: "/club/requests" },
-    { label: clubAuthState.authenticated ? "Mi Club" : "Iniciar Sesion", path: clubAuthState.authenticated ? "/club" : "/login" },
+    { label: "Aranceles", path: "/club/prices" },
+    { label: "Ranking", path: "/ranking" },
+    ...(clubAuthState?.authenticated ? [
+      { label: "Mi Club", path: "/club" }
+    ] : [
+      { label: "Iniciar Sesion", path: "/login" }
+    ]),
   ];
 
   const items = userType === "club" ? clubItems : athleteItems;

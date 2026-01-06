@@ -1,0 +1,501 @@
+@use "../../theme.scss" as theme;
+
+#ClubDetail {
+  background-color: theme.$white_01;
+  overflow-y: scroll !important;
+  letter-spacing: normal;
+  flex-direction: column;
+  position: absolute;
+  overflow-x: hidden;
+  width: 100vw;
+  height: 100%;
+  padding: 0;
+  top: 0;
+
+  main {
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    padding-top: 80px;
+    display: flex;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      padding-top: 60px;
+    }
+  }
+}
+
+// Sección de volver
+#backSection {
+  width: 100%;
+  padding: 16px 24px;
+  position: absolute;
+  top: 84px; // Altura del navbar
+  left: 0;
+  z-index: 10;
+
+  .backButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: rgba(238, 240, 250, 0.9);
+    border: 1px solid theme.$white_02;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+
+    &:hover {
+      background: theme.$white_01;
+      border-color: theme.$blue_01;
+      transform: translateX(-2px);
+    }
+
+    &:active {
+      transform: translateX(0);
+    }
+
+    @media (max-width: 768px) {
+      width: 44px;
+      height: 44px;
+      top: 80px;
+    }
+  }
+}
+
+// Sección de información del club
+#clubInfoSection {
+  width: 100%;
+  padding: 32px 0;
+  background-color: theme.$white_01;
+  border-bottom: 1px solid theme.$white_02;
+
+  #clubProfile {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+
+    @media (max-width: 768px) {
+      padding: 0 16px;
+      flex-direction: column;
+      text-align: center;
+      align-items: center;
+      gap: 24px;
+    }
+
+    #clubImage {
+      flex-shrink: 0;
+
+      img {
+        width: 140px;
+        height: 140px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 4px solid theme.$white_01;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+        @media (max-width: 768px) {
+          width: 120px;
+          height: 120px;
+        }
+      }
+    }
+
+    #clubDetails {
+      flex: 1;
+
+      h1 {
+        font-size: 36px;
+        font-weight: 700;
+        color: theme.$black_01;
+        margin: 0 0 8px 0;
+
+        @media (max-width: 768px) {
+          font-size: 28px;
+          margin-bottom: 6px;
+        }
+      }
+
+      .clubAlias {
+        font-size: 16px;
+        color: theme.$blue_01;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin: 0 0 16px 0;
+
+        @media (max-width: 768px) {
+          font-size: 14px;
+          margin-bottom: 12px;
+        }
+      }
+
+      .clubDescription {
+        font-size: 16px;
+        color: theme.$black_01;
+        line-height: 1.6;
+        margin: 0 0 20px 0;
+
+        @media (max-width: 768px) {
+          font-size: 14px;
+          margin-bottom: 16px;
+        }
+      }
+
+      .clubMeta {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        @media (max-width: 768px) {
+          gap: 8px;
+        }
+
+        .metaItem {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 15px;
+          color: theme.$white_02;
+
+          @media (max-width: 768px) {
+            font-size: 13px;
+            justify-content: center;
+          }
+
+          span {
+            font-weight: 500;
+            color: theme.$black_01;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Sección de atletas
+#athletesSection {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 128px 24px;
+
+  @media (max-width: 768px) {
+    padding: 32px 16px 100px 16px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: theme.$black_01;
+    margin: 0 0 32px 0;
+
+    @media (max-width: 768px) {
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+  }
+
+  .athletesGroup {
+    margin-bottom: 40px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .groupTitle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 20px 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid;
+
+      &.enabled {
+        color: theme.$green_01;
+        border-color: theme.$green_01;
+      }
+
+      &.disabled {
+        color: theme.$red_01;
+        border-color: theme.$red_01;
+      }
+
+      @media (max-width: 768px) {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+    }
+
+    .athletesGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 12px;
+      }
+
+      @media (max-width: 480px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  .athleteCard {
+    background-color: theme.$white_01;
+    border: 1px solid theme.$white_02;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    &.enabled {
+      border-left: 4px solid theme.$green_01;
+    }
+
+    &.disabled {
+      border-left: 4px solid theme.$red_01;
+      opacity: 0.8;
+    }
+
+    &:hover {
+      border-color: theme.$blue_01;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+      opacity: 1;
+    }
+
+    .athleteImage {
+      flex-shrink: 0;
+      position: relative;
+
+      img {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid theme.$white_02;
+      }
+
+      .statusBadge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid theme.$white_01;
+
+        &.enabled {
+          background-color: theme.$green_01;
+        }
+
+        &.disabled {
+          background-color: theme.$red_01;
+        }
+      }
+    }
+
+    .athleteInfo {
+      flex: 1;
+      min-width: 0;
+
+      h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: theme.$black_01;
+        margin: 0 0 4px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      p {
+        font-size: 13px;
+        margin: 0 0 2px 0;
+        color: theme.$white_02;
+
+        &.athleteCategory {
+          color: theme.$blue_01;
+          font-weight: 500;
+        }
+      }
+
+      .athleteGender {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: theme.$white_02;
+
+        span {
+          font-size: 12px;
+        }
+      }
+    }
+
+    .athleteActions {
+      flex-shrink: 0;
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+    }
+
+    &:hover .athleteActions {
+      opacity: 1;
+    }
+
+    @media (max-width: 480px) {
+      padding: 14px;
+      gap: 10px;
+
+      .athleteImage img {
+        width: 48px;
+        height: 48px;
+      }
+
+      .athleteInfo h4 {
+        font-size: 15px;
+      }
+
+      .athleteInfo p {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .noAthletes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 60px 20px;
+    background-color: theme.$white_01;
+    border-radius: 12px;
+    border: 1px dashed theme.$white_02;
+    text-align: center;
+
+    h3 {
+      font-size: 20px;
+      color: theme.$black_01;
+      margin: 0;
+    }
+
+    p {
+      font-size: 16px;
+      color: theme.$white_02;
+      margin: 0;
+
+      @media (max-width: 768px) {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      padding: 40px 20px;
+
+      h3 {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// Contenedores de carga y error
+.loadingContainer,
+.errorContainer {
+  max-width: 1200px;
+  margin: 60px auto 0 auto;
+  padding: 0 24px;
+  text-align: center;
+
+  p {
+    font-size: 18px;
+    color: theme.$white_02;
+    margin: 0 0 24px 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 16px;
+    margin: 40px auto 0 auto;
+
+    p {
+      font-size: 16px;
+    }
+  }
+}
+
+.errorContainer {
+  h3 {
+    font-size: 24px;
+    color: theme.$black_01;
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    font-size: 16px;
+    color: theme.$white_02;
+    margin: 0 0 24px 0;
+  }
+
+  .errorActions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+
+    button {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:first-child {
+        background-color: theme.$blue_01;
+        border: 1px solid theme.$blue_01;
+        color: theme.$white_01;
+
+        &:hover {
+          background-color: theme.$blue_01;
+          opacity: 0.9;
+        }
+      }
+
+      &:last-child {
+        background-color: theme.$white_01;
+        border: 1px solid theme.$gray_01;
+        color: theme.$white_02;
+
+        &:hover {
+          background-color: theme.$white_02;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+      align-items: center;
+
+      button {
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+  }
+}
+

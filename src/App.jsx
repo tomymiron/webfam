@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { Home, Login, Register, Athlete, Meets, Meet, Inscriptions, Ranking, ClubsRequest, ClubHome, ClubRequests, ClubAthletes, ClubMeets, ClubMeet } from "./screens";
+import { Home, Login, Register, Athlete, Athletes, AthleteDetail, Clubs, ClubDetail, Meets, Meet, Inscriptions, Ranking, Results, ClubsRequest, CreateClub, ClubHome, ClubRequests, ClubAthletes, ClubMeets, ClubMeet, ClubTransfers, ClubInscriptions, ClubPrices, News, NewsDetail } from "./screens";
 import { AuthProviderClub, useAuthClub } from "./contexts/AuthContextClub";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -33,6 +33,9 @@ const ClubRoutes = () => {
       <Route path="/athletes" element={<ClubAthletes />} />
       <Route path="/meets" element={<ClubMeets />} />
       <Route path="/meet/:id" element={<ClubMeet />} />
+      <Route path="/meet/:meetId/inscriptions" element={<ClubInscriptions />} />
+      <Route path="/transfers" element={<ClubTransfers />} />
+      <Route path="/prices" element={<ClubPrices />} />
     </Routes>
   );
 };
@@ -50,10 +53,18 @@ function AppRoutes() {
 
           <Route path="/meets" element={<Meets />} />
           <Route path="/meet/:id" element={<Meet />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/ranking" element={<Ranking />} />
+          <Route path="/results" element={<Results />} />
+          <Route path="/athletes" element={<Athletes />} />
+          <Route path="/athlete/:id" element={<AthleteDetail />} />
           <Route path="/athlete" element={<ProtectedAthleteRoute component={<Athlete />} />} />
+          <Route path="/clubs" element={<Clubs />} />
+          <Route path="/club-detail/:id" element={<ClubDetail />} />
           <Route path="/inscriptions/:id" element={<Inscriptions />} />
           <Route path="/clubs/request" element={<ClubsRequest />} />
+          <Route path="/clubs/create" element={<CreateClub />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/failure" element={<PaymentFailure />} />
 

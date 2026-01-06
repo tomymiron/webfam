@@ -1,20 +1,15 @@
 import { dateOnlyFormatter, timeLeft, timeSince } from "../constants/timeGetter";
-import RankingTable from "../components/RankingTable";
 import { useQuery } from "@tanstack/react-query";
 import { makeRequest } from "../config/axios";
-import { COLORS } from "../constants/theme";
+import { COLORS, SIZES } from "../constants/theme";
 import NavBar from "../components/NavBar";
 import Transition from "../Transition";
 import Icon from "../constants/Icon";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import defaultCert from "../assets/default_cert.pdf";
+import BankingDataModal from "../components/BankingDataModal";
 
-const news = [
-  {id: 1, title: "Joaquín Gómez se proclamó Campeón Sudamericano de Martillo, con récord nacional", date: "2025-07-21 21:00:00", image: "17496133222239434.jpg"},
-  {id: 2, title: "Joaquín Gómez se proclamó Campeón Sudamericano de Martillo, con récord nacional", date: "2025-07-20 14:00:00", image: "17502744890816677.jpg"},
-  {id: 3, title: "Joaquín Gómez se proclamó Campeón Sudamericano de Martillo, con récord nacional", date: "2025-07-18 12:00:00", image: "17502745528791287.jpg"},
-  {id: 4, title: "Joaquín Gómez se proclamó Campeón Sudamericano de Martillo, con récord nacional", date: "2025-07-10 18:30:00", image: "17502759768546122.jpg"},
-]
 
 const results = [
   {id: 1, date: "2025-08-03 12:00:00", title: "Campeonato Metropolitano U20 Sabado", location: "Cenard, Avenida Libertador 4323"},
@@ -22,44 +17,60 @@ const results = [
   {id: 2, date: "2025-10-12 14:00:00", title: "Cross Country - Opening Season", location: "Parque Olimpico, Avenida Roca 1100"},
 ]
 
-const ranking = [
-  {id: 1, ranking: 1, result: 44.50, name: "Elian Gaspar Larregina", born: "2000-04-20", club: "QUIRO", date: "2025-07-13", location: "España, Madrid"},
-  {id: 3, ranking: 2, result: 46.85, name: "Bruno de Genaro", born: "2003-11-01", club: "SAGAB", date: "2025-05-02", location: "Cenard"},
-  {id: 12, ranking: 3, result: 47.55, name: "Manuel Federico Robles", born: "2004-06-24", club: "BATF", date: "2025-06-18", location: "Cenard"},
-  {id: 2, ranking: 4, result: 47.65, name: "Agustin Coronel", born: "2006-02-01", club: "SAGAB", date: "2025-06-18", location: "Cenard"},
-  {id: 10, ranking: 5, result: 47.71, name: "Tomas Miron", born: "2005-07-26", club: "CHAMA", date: "2025-05-24", location: "Parque Olimpico"},
-  {id: 1, ranking: 1, result: 44.50, name: "Elian Gaspar Larregina", born: "2000-04-20", club: "QUIRO", date: "2025-07-13", location: "España, Madrid"},
-  {id: 3, ranking: 2, result: 46.85, name: "Bruno de Genaro", born: "2003-11-01", club: "SAGAB", date: "2025-05-02", location: "Cenard"},
-  {id: 12, ranking: 3, result: 47.55, name: "Manuel Federico Robles", born: "2004-06-24", club: "BATF", date: "2025-06-18", location: "Cenard"},
-  {id: 2, ranking: 4, result: 47.65, name: "Agustin Coronel", born: "2006-02-01", club: "SAGAB", date: "2025-06-18", location: "Cenard"},
-  {id: 10, ranking: 5, result: 47.71, name: "Tomas Miron", born: "2005-07-26", club: "CHAMA", date: "2025-05-24", location: "Parque Olimpico"},
-  {id: 1, ranking: 1, result: 44.50, name: "Elian Gaspar Larregina", born: "2000-04-20", club: "QUIRO", date: "2025-07-13", location: "España, Madrid"},
-  {id: 3, ranking: 2, result: 46.85, name: "Bruno de Genaro", born: "2003-11-01", club: "SAGAB", date: "2025-05-02", location: "Cenard"},
-  {id: 12, ranking: 3, result: 47.55, name: "Manuel Federico Robles", born: "2004-06-24", club: "BATF", date: "2025-06-18", location: "Cenard"},
-  {id: 2, ranking: 4, result: 47.65, name: "Agustin Coronel", born: "2006-02-01", club: "SAGAB", date: "2025-06-18", location: "Cenard"},
-  {id: 10, ranking: 5, result: 47.71, name: "Tomas Miron", born: "2005-07-26", club: "CHAMA", date: "2025-05-24", location: "Parque Olimpico"},
-]
-
-const tableShowColumns = [
-  { key: "ranking", label: "Ranking", fixed: true },
-  { key: "result", label: "Marca", align: "right", fixed: true },
-  { key: "name", label: "Nombre", bold: true },
-  { key: "born", label: "FDN", align: "center", fixed: true},
-  { key: "club", label: "Club"},
-  { key: "location", label: "Lugar", align: "right"}
-];
-
 export function Home() {
   useEffect(() => {import("./styles/home.scss")}, []);
   const navigate = useNavigate();
-
+  const [isBankingModalOpen, setIsBankingModalOpen] = useState(false);
 
   const { data: meets, isLoading: isLoadingMeets, isError: isErrorMeets } = useQuery({
     queryFn: () => makeRequest.get("/meets").then((res) => res.data),
     queryKey: ["meets"],
   });
 
-  console.log("Meets", meets);
+  const { data: news, isLoading: isLoadingNews } = useQuery({
+    queryFn: () => makeRequest.get("/news/latest?limit=10").then((res) => res.data),
+    queryKey: ["latestNews"],
+  });
+
+  const { data: sponsors, isLoading: isLoadingSponsors } = useQuery({
+    queryFn: () => makeRequest.get("/sponsors").then((res) => res.data),
+    queryKey: ["sponsors"],
+  });
+
+  // Obtener año actual dinámicamente
+  const currentYear = new Date().getFullYear();
+
+  // Obtener estadísticas desde el endpoint dedicado
+  const { data: stats, isLoading: isLoadingStats } = useQuery({
+    queryFn: () => makeRequest.get("/results/statistics").then((res) => res.data),
+    queryKey: ["statistics"],
+    staleTime: 1000 * 60 * 5, // Cache por 5 minutos
+  });
+
+  // Valores por defecto mientras carga (usando año actual dinámico)
+  const statsData = stats || {
+    totalAthletes: 0,
+    activeAthletes: 0,
+    totalMarks: 0,
+    currentYearMarks: 0,
+    uniqueClubs: 0,
+    currentYear: currentYear
+  };
+
+  // Asegurar que siempre use el año actual (por si el backend no lo devuelve)
+  const displayYear = statsData.currentYear || currentYear;
+
+  const getImageUrl = (image) => {
+    if (!image) return null;
+    const baseUrl = import.meta.env.VITE_API_URL;
+    return `${baseUrl}/image/news/${image}`;
+  };
+
+  const getSponsorImageUrl = (image) => {
+    if (!image) return null;
+    const baseUrl = import.meta.env.VITE_API_URL;
+    return `${baseUrl}/image/sponsors/${image}`;
+  };
 
   return (
     <div id="Home">
@@ -71,10 +82,58 @@ export function Home() {
           <div id="titleContainer">
             <p id="subTitle">Estas en el sitio web de la</p>
             <h1 id="title">FEDERACION ATLETICA<br/>METROPOLITANA</h1>
-            <div id="newCardIndicator">
-              <p>NUEVO!</p>
+            <div id="titleButtonsContainer">
+              <button style={{ backgroundColor: COLORS.purple_01 }} onClick={() => window.open("https://www.instagram.com/webfamok/", "_blank")} >
+                <p>TUTORIALES</p>
+              </button>
+              <button style={{backgroundColor: COLORS.orange_01}} onClick={() => window.open(defaultCert, '_blank')} >
+                <p>APTO FISICO</p>
+              </button>
+              <button style={{backgroundColor: COLORS.black_01}} onClick={() => window.location.href = 'mailto:info@webfam.com.ar'} >
+                <p style={{color: COLORS.white_01}}>MAIL FAM</p>
+              </button>
+              <button style={{backgroundColor: COLORS.cyan_01}} onClick={() => setIsBankingModalOpen(true)} >
+                <p>DATOS BANCARIOS</p>
+              </button>
+
+              <div style={{ flexBasis: "100%", height: 0, padding: 0, margin: 0 }} />
+
+              <button style={{ backgroundColor: COLORS.purple_01, padding: "9px 32px" }} onClick={() => window.open("https://www.instagram.com/webfamok/", "_blank")} >
+                <Icon name="instagram" size={24} color={COLORS.black_01} />
+              </button>
+              <button style={{ backgroundColor: COLORS.cyan_01, padding: "9px 32px" }} onClick={() => window.open("https://www.facebook.com/webfamok", "_blank")} >
+                <Icon name="facebook" size={24} color={COLORS.black_01} />
+              </button>
             </div>
           </div>
+
+          {Array.isArray(sponsors) && sponsors.length > 0 && (
+            <div id="sponsorsContainer">
+              {sponsors.map((sponsor) => (
+                <a
+                  key={sponsor.id}
+                  href={sponsor.link || "#"}
+                  target={sponsor.link ? "_blank" : undefined}
+                  rel={sponsor.link ? "noopener noreferrer" : undefined}
+                  className="sponsorItem"
+                  style={!sponsor.link ? { cursor: "default", pointerEvents: "none" } : {}}
+                >
+                  {getSponsorImageUrl(sponsor.image) && (
+                    <img 
+                      src={getSponsorImageUrl(sponsor.image)} 
+                      alt={sponsor.text}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  )}
+                  {sponsor.text && (
+                    <p>{sponsor.text}</p>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
 
           <div id="wavesContainer">
             <svg viewBox="0 0 1512 428" fill="none" xmlns="http://www.w3.org/2000/svg" id="waves" preserveAspectRatio="none">
@@ -97,16 +156,40 @@ export function Home() {
           <div id="news">
             <div className="spacer"></div>
 
-            {news?.map((item, index) => {
-              return <div className="newItem" key={index}>
-                <p className="newTitle">{item.title}</p>
-                <img src={"https://api.previateesta.com/image/event/" + item.image} alt={item.title} />
-                <p className="newDate">{timeSince(item.date)}</p>
-              </div>;
-            })}
+            {isLoadingNews ? (
+              <div style={{ padding: "40px", textAlign: "center", color: COLORS.black_01 }}>
+                <p>Cargando noticias...</p>
+              </div>
+            ) : Array.isArray(news) && news.length > 0 ? (
+              news.map((item) => {
+                return (
+                  <div 
+                    className="newItem" 
+                    key={item.id}
+                    onClick={() => navigate(`/news/${item.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <p className="newTitle">{item.title}</p>
+                    {getImageUrl(item.image) && (
+                      <img src={getImageUrl(item.image)} alt={item.title} />
+                    )}
+                    <p className="newDate">hace {timeSince(item.created_at)}</p>
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ padding: "40px", textAlign: "center", color: COLORS.black_01 }}>
+                <p>No hay noticias disponibles</p>
+              </div>
+            )}
 
             <div className="spacer"></div>
           </div>
+          {Array.isArray(news) && news.length > 0 &&
+            <button id="moreNewsButton" onClick={() => navigate("/news")}>
+              <p>VER TODAS LAS<br/>NOTICIAS</p>
+            </button>
+          }
         </div>
 
         <section>
@@ -117,16 +200,42 @@ export function Home() {
 
             <div id="comptitions">
 
-              {meets?.map((item, index) => {
-                return <button className="competitionItem" key={index} role="button" tabIndex={0} onClick={() => navigate(`/meet/${item.id}`)}>
-                  <p className="competitionItemDate">{dateOnlyFormatter(item.date)}</p>
-                  <p className="competitionItemTitle">{item.name}</p>
-                  <div>
-                    <p className="competitionItemLocation">{item.place_name}, {item.place_address}</p>
-                    <p className="competitionItemTimeLeft">en {timeLeft(item.date)}</p>
+              {isLoadingMeets ? (
+                <div id="competitionsLoadingContainer">
+                  <p>Cargando competencias...</p>
+                </div>
+              ) : isErrorMeets ? (
+                <div id="competitionsErrorContainer">
+                  <div className="errorIcon">
+                    <Icon name="info" size={48} color={COLORS.black_01} />
                   </div>
-                </button>
-              })}
+                  <div className="errorContent">
+                    <p className="errorTitle">Error al cargar competencias</p>
+                    <p className="errorMessage">Intenta recargar la página</p>
+                  </div>
+                </div>
+              ) : Array.isArray(meets) && meets.length > 0 ? (
+                meets.map((item, index) => {
+                  return <button className="competitionItem" key={index} role="button" tabIndex={0} onClick={() => navigate(`/meet/${item.id}`)}>
+                    <p className="competitionItemDate">{dateOnlyFormatter(item.date)}</p>
+                    <p className="competitionItemTitle">{item.name}</p>
+                    <div>
+                      <p className="competitionItemLocation">{item.place_name}, {item.place_address}</p>
+                      <p className="competitionItemTimeLeft">en {timeLeft(item.date)}</p>
+                    </div>
+                  </button>
+                })
+              ) : (
+                <div id="competitionsEmptyContainer">
+                  <div className="emptyIcon">
+                    <Icon name="clock" size={64} color={COLORS.black_01} />
+                  </div>
+                  <div className="emptyContent">
+                    <p className="emptyTitle">No hay competencias próximas</p>
+                    <p className="emptyMessage">Próximamente se publicarán nuevas competencias</p>
+                  </div>
+                </div>
+              )}
 
               <button id="moreCompetitions" role="button" tabIndex={0} onClick={() => navigate("/meets")}>
                 <p>VER TODAS LAS<br/>COMPETENCIAS</p>
@@ -149,6 +258,18 @@ export function Home() {
             <p className="subTitle">Tiempos - Marcas</p>
 
             <div id="results">
+              <div id="resultsUnderConstructionContainer">
+                <div className="constructionIcon">
+                  <Icon name="info" size={64} color={COLORS.black_01} />
+                </div>
+                <div className="constructionContent">
+                  <p className="constructionTitle">Apartado en construcción</p>
+                  <p className="constructionMessage">Estamos trabajando en esta sección</p>
+                </div>
+              </div>
+            </div>
+
+            {/* <div id="results">
 
               {results?.map((item, index) => {
                 return <div className="resultItem" key={index}>
@@ -170,7 +291,7 @@ export function Home() {
                 </div>
               </div>
 
-            </div>
+            </div> */}
           </div>
 
         </section>
@@ -181,29 +302,97 @@ export function Home() {
             <div id="rankingHeader">
               <h2>RANKING</h2>
               <div className="line" style={{width: 128}}/>
-              <p className="subTitle">Mejores Marcas FAM {new Date().getFullYear()}</p>
-
-              <div>
-
-              </div>
+              <p className="subTitle">Mejores Marcas FAM</p>
             </div>
 
-            <div id="ranking">
-              <RankingTable data={ranking} toShowColumns={tableShowColumns}/>
+            <div id="statsContainer">
+              {isLoadingStats ? (
+                <div style={{ 
+                  gridColumn: "1 / -1", 
+                  textAlign: "center", 
+                  padding: "40px",
+                  color: COLORS.black_01 
+                }}>
+                  <p>Cargando estadísticas...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="statCard">
+                    <div className="statIcon">
+                      <Icon name="users-group" size={32} color={COLORS.black_01} />
+                    </div>
+                    <div className="statContent">
+                      <p className="statNumber">{statsData.totalAthletes.toLocaleString()}</p>
+                      <p className="statLabel">Atletas Registrados</p>
+                    </div>
+                  </div>
 
-              <div id="moreRanking">
-                <p>ACCEDER A RANKING<br/>COMPLETO</p>
-              </div>
+                  <div className="statCard">
+                    <div className="statIcon">
+                      <Icon name="user-check" size={32} color={COLORS.black_01} />
+                    </div>
+                    <div className="statContent">
+                      <p className="statNumber">{statsData.activeAthletes.toLocaleString()}</p>
+                      <p className="statLabel">Atletas Activos</p>
+                    </div>
+                  </div>
 
+                  <div className="statCard">
+                    <div className="statIcon">
+                      <Icon name="tag" size={32} color={COLORS.black_01} />
+                    </div>
+                    <div className="statContent">
+                      <p className="statNumber">{statsData.totalMarks.toLocaleString()}</p>
+                      <p className="statLabel">Marcas Registradas</p>
+                    </div>
+                  </div>
+
+                  <div className="statCard">
+                    <div className="statIcon">
+                      <Icon name="clock" size={32} color={COLORS.black_01} />
+                    </div>
+                    <div className="statContent">
+                      <p className="statNumber">{statsData.currentYearMarks.toLocaleString()}</p>
+                      <p className="statLabel">Marcas {displayYear}</p>
+                    </div>
+                  </div>
+
+                  <div className="statCard">
+                    <div className="statIcon">
+                      <Icon name="map" size={32} color={COLORS.black_01} />
+                    </div>
+                    <div className="statContent">
+                      <p className="statNumber">{statsData.uniqueClubs.toLocaleString()}</p>
+                      <p className="statLabel">Clubs Afiliados</p>
+                    </div>
+                  </div>
+
+                  <div className="statCard highlight" onClick={() => navigate("/ranking")} style={{ cursor: "pointer" }}>
+                    <div className="statIcon">
+                      <Icon name="right-arrow" size={32} color={COLORS.black_01} />
+                    </div>
+                    <div className="statContent">
+                      <p className="statLabel" style={{ fontWeight: 700, fontSize: SIZES.f4 }}>
+                        VER RANKING<br/>COMPLETO
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
         </section>
 
         <footer>
-          <p>WEBFAM - 2025</p>
+          <p>WEBFAM - {new Date().getFullYear()}</p>
         </footer>
       </main>
+
+      <BankingDataModal 
+        isOpen={isBankingModalOpen} 
+        onClose={() => setIsBankingModalOpen(false)} 
+      />
     </div>
   )
 }

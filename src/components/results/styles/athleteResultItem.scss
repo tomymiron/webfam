@@ -38,8 +38,31 @@
 
   &.open {
     .bottom {
-      max-height: 96px;
+      max-height: 120px;
       padding: 18px;
+    }
+  }
+
+  .additionalInfo {
+    display: flex;
+    gap: 16px;
+    // margin-top: 8px;
+    flex-wrap: wrap;
+
+    .wind, .weight {
+      font-size: theme.$f6;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .wind {
+      color: #87CEEB; // Azul cielo para viento
+    }
+
+    .weight {
+      color: #FFD700; // Dorado para peso
     }
   }
 }

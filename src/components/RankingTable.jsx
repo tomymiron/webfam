@@ -1,15 +1,25 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useAuthClub } from "../contexts/AuthContextClub";
+import { useNavigate } from "react-router-dom";
 import { COLORS } from "../constants/theme";
+import { resultGetter, formatWeight } from "../constants/resultGetter";
 import "./styles/rankingTable.scss";
 
-const getTextWidth = (text, font = "500 16px Exo, Arial, sans-serif") => {
-  const canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
-  const context = canvas.getContext("2d");
-  context.font = font;
-  return context.measureText(text).width;
-};
+// Utilidad para medir el ancho del texto
+const measureTextWidth = (() => {
+  let canvas = null;
+  return (text, fontSize = 16, fontFamily = "Exo, Arial, sans-serif") => {
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+    }
+    const context = canvas.getContext("2d");
+    context.font = `${fontSize}px ${fontFamily}`;
+    return context.measureText(text).width;
+  };
+})();
 
+// Formateadores de datos
 const formatRankingNumber = (value) => {
   if (value === undefined || value === null || value === '') return '-';
   if (typeof value === 'number' && value < 10) return `0${value}`;
@@ -17,52 +27,123 @@ const formatRankingNumber = (value) => {
   return value;
 };
 
+const formatMark = (value, unit) => {
+  if (value === undefined || value === null || value === '') return '-';
+  
+  const numericValue = parseFloat(value);
+  if (isNaN(numericValue)) return value;
+  
+  return resultGetter(numericValue, unit);
+};
+
+const formatWind = (value) => {
+  if (value === null || value === undefined || value === '') return '-';
+  const numericValue = parseFloat(value);
+  if (isNaN(numericValue)) return '-';
+  return numericValue.toFixed(2).replace(/\.?0+$/, '');
+};
+
+
+const formatBorn = (value) => {
+  if (value === null || value === undefined || value === '') return '-';
+  if (typeof value === 'string') {
+    const yearMatch = value.match(/^(\d{4})/);
+    return yearMatch ? yearMatch[1] : value;
+  }
+  if (value instanceof Date) {
+    return value.getFullYear().toString();
+  }
+  const yearMatch = String(value).match(/^(\d{4})/);
+  return yearMatch ? yearMatch[1] : String(value);
+};
+
 const getTextAlign = (align) => {
-  if (align === "right") return "right";
-  if (align === "center") return "center";
-  return "left";
+  return align === "right" ? "right" : align === "center" ? "center" : "left";
 };
 
 const getJustifyAlign = (align) => {
-  if (align === "right") return "flex-end";
-  if (align === "center") return "center";
-  return "flex-start";
+  return align === "right" ? "flex-end" : align === "center" ? "center" : "flex-start";
 };
 
 const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.purple_01 }) => {
   const { authState } = useAuth();
-
-  const isBrowser = typeof window !== "undefined";
+  const { authState: clubAuthState } = useAuthClub();
+  const navigate = useNavigate();
+  const containerRef = useRef(null);
   const [windowSize, setWindowSize] = useState({
-    width: isBrowser ? window.innerWidth : 0,
-    height: isBrowser ? window.innerHeight : 0
+    width: typeof window !== "undefined" ? window.innerWidth : 0,
+    height: typeof window !== "undefined" ? window.innerHeight : 0
   });
+  const [containerWidth, setContainerWidth] = useState(0);
 
-  // Listener para cambios en el tamaño de la ventana
+  // Manejo responsive del tamaño de ventana
   useEffect(() => {
-    if (!isBrowser) return;
+    if (typeof window === "undefined") return;
 
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,
         height: window.innerHeight
       });
+      
+      // Obtener ancho del contenedor
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
     };
 
-    // Force initial calculation on mount
     handleResize();
-
     window.addEventListener('resize', handleResize);
     
-    // Cleanup del listener
+    // Observer para cambios en el tamaño del contenedor (con fallback)
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+          setContainerWidth(entry.contentRect.width);
+        }
+      });
+      
+      if (containerRef.current) {
+        resizeObserver.observe(containerRef.current);
+      }
+    } else {
+      // Fallback: usar MutationObserver o polling para navegadores antiguos
+      const checkWidth = () => {
+        if (containerRef.current) {
+          setContainerWidth(containerRef.current.offsetWidth);
+        }
+      };
+      const intervalId = setInterval(checkWidth, 100);
+      
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        clearInterval(intervalId);
+      };
+    }
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     };
-  }, [isBrowser]);
+  }, []);
 
-  if (!data || data.length === 0) {
+  const isMobile = windowSize.width > 0 && windowSize.width <= 768;
+  const isTablet = windowSize.width > 768 && windowSize.width <= 1024;
+
+  // Función para navegar al perfil del atleta
+  const navigateToAthlete = useCallback((athleteId) => {
+    if (athleteId) {
+      navigate(`/athlete/${athleteId}`);
+    }
+  }, [navigate]);
+
+  // Validación de datos
+  if (!data || !Array.isArray(data) || data.length === 0) {
     return (
-      <div className="ranking-table-container" style={{ fontFamily: "'Exo', Arial, sans-serif" }}>
+      <div className="ranking-table-container" ref={containerRef}>
         <div className="table">
           <div className="header">
             <div className="tr">
@@ -74,158 +155,299 @@ const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.pur
     );
   }
 
-  const columns = Array.isArray(toShowColumns) && toShowColumns.length > 0
-    ? toShowColumns
+  // Preparar columnas
+  const columns = useMemo(() => {
+    if (!Array.isArray(toShowColumns) || toShowColumns.length === 0) {
+      return Object.keys(data[0]).map(key => ({
+        key,
+        label: key.charAt(0).toUpperCase() + key.slice(1),
+        align: "left"
+      }));
+    }
+    return toShowColumns
       .filter(colObj => Object.prototype.hasOwnProperty.call(data[0], colObj.key))
-      .map(colObj => ({ ...colObj, align: colObj.align || "left" }))
-    : Object.keys(data[0]).map(key => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1), align: "left" }));
+      .map(colObj => ({ ...colObj, align: colObj.align || "left" }));
+  }, [data, toShowColumns]);
 
+  // Calcular anchos mínimos de columnas (para columnas fijas)
   const minColumnWidths = useMemo(() => {
-    if (!isBrowser) return columns.map(() => 0);
+    if (windowSize.width === 0) return columns.map(() => 0);
 
-    // Use a fallback width if windowSize is not available yet
-    const effectiveWidth = windowSize.width > 0 ? windowSize.width : 1200; // fallback to desktop width
-
-    // Calculate the font size based on clamp(14px, 1vw + 0.5rem, 18px)
-    // 1vw = window width / 100, 0.5rem = 8px (assuming root font-size 16px)
-    const vw = effectiveWidth / 100;
-    const fontSize = Math.max(14, Math.min(vw + 8, 18)); // clamp(14, vw+8, 18)
-    const font = `400 ${fontSize + 4}px Exo, Arial, sans-serif`;
+    const fontSize = isMobile ? 13 : 15;
+    const padding = isMobile ? 16 : 20; // Padding reducido para optimizar espacio
+    const fontFamily = "Exo, Arial, sans-serif";
 
     return columns.map((colObj) => {
-      const header = colObj.label || (colObj.key.charAt(0).toUpperCase() + colObj.key.slice(1));
-      const cellValues = data.map((row) =>
-        row[colObj.key] !== undefined && row[colObj.key] !== null ? String(row[colObj.key]) : ""
-      );
-      const maxContent = [header, ...cellValues].reduce((max, val) => {
-        const width = getTextWidth(val, font);
+      const header = colObj.label || colObj.key.charAt(0).toUpperCase() + colObj.key.slice(1);
+      
+      // Obtener todos los valores de la columna
+      const cellValues = data.map(row => {
+        const value = row[colObj.key];
+        if (value === null || value === undefined) return '';
+        
+        // Formatear según el tipo de columna
+        if (colObj.key === 'best_mark') return formatMark(value, row.unit);
+        if (colObj.key === 'wind') return formatWind(value);
+        if (colObj.key === 'weight') return formatWeight(value) || '-';
+        if (colObj.key === 'athlete_born') return formatBorn(value);
+        if (colObj.key === 'position') return formatRankingNumber(value);
+        return String(value);
+      });
+
+      // Encontrar el contenido más ancho
+      const allTexts = [header, ...cellValues];
+      const maxWidth = allTexts.reduce((max, text) => {
+        const width = measureTextWidth(String(text), fontSize, fontFamily);
         return width > max ? width : max;
       }, 0);
-      // Padding: 24px (12px left + 12px right, as before)
-      const calculatedWidth = Math.ceil(maxContent) + 24;
-      // Use minWidth if specified, otherwise use calculated width
-      return colObj.minWidth ? Math.max(calculatedWidth, colObj.minWidth) : calculatedWidth;
+
+      const calculatedWidth = Math.ceil(maxWidth) + padding;
+
+      // Ajustes específicos optimizados para usar menos espacio
+      if (isMobile) {
+        // Columnas que pueden expandirse sin límite en mobile (athlete_name, date, place)
+        const expandableColumns = ['athlete_name', 'date', 'place', 'club_alias'];
+        if (expandableColumns.includes(colObj.key)) {
+          // No limitar el ancho, usar el calculado completo
+          return Math.max(calculatedWidth, expandableColumns.indexOf(colObj.key) === 0 ? 100 : 70);
+        }
+
+        // Columnas con límites en mobile (compactas)
+        const mobileLimits = {
+          position: { min: 36, max: 44 },
+          best_mark: { min: 50, max: 60 },
+          athlete_born: { min: 40, max: 48 },
+          wind: { min: 45, max: 58 },
+          weight: { min: 40, max: 50 },
+        };
+
+        const limit = mobileLimits[colObj.key];
+        if (limit) {
+          return Math.max(limit.min, Math.min(calculatedWidth, limit.max));
+        }
+      } else {
+        // Desktop: anchos mínimos optimizados
+        const desktopLimits = {
+          position: { min: 50, max: 60 },
+          best_mark: { min: 70, max: 85 },
+          athlete_born: { min: 55, max: 65 },
+          wind: { min: 60, max: 75 },
+          weight: { min: 55, max: 65 },
+        };
+
+        const limit = desktopLimits[colObj.key];
+        if (limit) {
+          return Math.max(limit.min, Math.min(calculatedWidth, limit.max));
+        }
+
+        // Para athlete_name en desktop, usar mínimo pero permitir crecimiento
+        if (colObj.key === 'athlete_name') {
+          return Math.max(calculatedWidth, 200);
+        }
+
+        // Usar minWidth si está especificado
+        if (colObj.minWidth) {
+          return Math.max(calculatedWidth, colObj.minWidth);
+        }
+      }
+
+      return calculatedWidth;
     });
-  }, [data, columns, isBrowser, windowSize]);
+  }, [data, columns, windowSize.width, isMobile]);
 
-  const getAvailableTableWidth = () => {
-    if (!isBrowser) return undefined;
+  // Calcular distribución de anchos: fijas vs flexibles
+  const columnWidths = useMemo(() => {
+    if (windowSize.width === 0) {
+      return columns.map((colObj, idx) => {
+        if (colObj.fixed) return minColumnWidths[idx];
+        return minColumnWidths[idx]; // En mobile, usar ancho calculado completo
+      });
+    }
+
+    // En mobile, usar anchos calculados completos (sin limitar por contenedor)
+    if (isMobile) {
+      return columns.map((colObj, idx) => minColumnWidths[idx]);
+    }
+
+    // Desktop: distribución inteligente con flexbox
+    if (containerWidth === 0) {
+      return columns.map((colObj, idx) => {
+        if (colObj.fixed) return minColumnWidths[idx];
+        return 'auto';
+      });
+    }
+
+    // Identificar columnas fijas y flexibles
+    const fixedColumns = columns.map((col, idx) => ({ col, idx, width: minColumnWidths[idx] }));
+    const flexibleColumns = columns.map((col, idx) => ({ col, idx })).filter((_, idx) => !columns[idx].fixed);
+
+    // Calcular ancho total de columnas fijas
+    const fixedWidth = fixedColumns.reduce((sum, { width }) => sum + width, 0);
     
-    // Use fallback width if windowSize is not available yet
-    const effectiveWidth = windowSize.width > 0 ? windowSize.width : 1200;
+    // Ancho disponible para columnas flexibles (con margen de seguridad)
+    const availableWidth = containerWidth - fixedWidth - 48;
+    const flexibleCount = flexibleColumns.length;
+
+    if (flexibleCount === 0) {
+      return columns.map((colObj, idx) => minColumnWidths[idx]);
+    }
+
+    // Distribuir espacio entre columnas flexibles
+    const baseFlexWidth = Math.floor(availableWidth / flexibleCount);
     
-    const mobileBreakpoint = 768;
-    if (effectiveWidth <= mobileBreakpoint) return effectiveWidth - 24;
-    const container = document.querySelector(".ranking-table-container .table");
-    if (container) return container.clientWidth - 2;
-    return Math.max(effectiveWidth - 32, 0);
-  };
-
-  const availableTableWidth = isBrowser ? getAvailableTableWidth() : undefined;
-
-  // Calculate fixed columns total width
-  const fixedColumnsWidth = minColumnWidths.reduce((sum, width, idx) => {
-    return sum + (columns[idx].fixed ? width : 0);
-  }, 0);
-
-  // Calculate available space for auto columns
-  const autoColumns = columns.filter(col => !col.fixed);
-  const availableSpaceForAuto = availableTableWidth ? availableTableWidth - fixedColumnsWidth : 0;
-  const autoColumnWidth = autoColumns.length > 0 ? Math.floor(availableSpaceForAuto / autoColumns.length) : 0;
-
-  let finalColumnWidths;
-  let tableWidth;
-  
-  if (isBrowser && availableTableWidth) {
-    const effectiveWidth = windowSize.width > 0 ? windowSize.width : 1200;
-    // For all viewports (including mobile), distribute remaining space to auto columns
-    finalColumnWidths = columns.map((colObj, idx) => {
+    // Para athlete_name, dar más espacio si es flexible
+    const athleteNameIdx = columns.findIndex(col => col.key === 'athlete_name');
+    const isAthleteNameFlexible = athleteNameIdx !== -1 && !columns[athleteNameIdx].fixed;
+    
+    return columns.map((colObj, idx) => {
       if (colObj.fixed) {
         return minColumnWidths[idx];
       }
-      return Math.max(minColumnWidths[idx], autoColumnWidth);
+      
+      // Si es athlete_name y es flexible, dar más espacio
+      if (colObj.key === 'athlete_name' && isAthleteNameFlexible) {
+        const extraSpace = Math.floor(availableWidth * 0.15); // 15% extra para nombres
+        return baseFlexWidth + extraSpace;
+      }
+      
+      return baseFlexWidth;
     });
+  }, [columns, minColumnWidths, containerWidth, windowSize.width, isMobile]);
 
-    const totalWidth = finalColumnWidths.reduce((sum, width) => sum + width, 0);
-    // Ensure table fills container width completely
-    tableWidth = `${Math.max(totalWidth, availableTableWidth)}px`;
-  } else {
-    finalColumnWidths = columns.map((colObj, idx) => {
-      return colObj.fixed ? minColumnWidths[idx] : 'auto';
-    });
-    tableWidth = undefined;
-  }
+  // Formatear valor de celda
+  const formatCellValue = useCallback((colObj, row) => {
+    const value = row[colObj.key];
+    
+    if (colObj.key === 'best_mark') {
+      return formatMark(value, row.unit);
+    }
+    if (colObj.key === 'wind') {
+      return formatWind(value);
+    }
+    if (colObj.key === 'weight') {
+      return formatWeight(value) || '-';
+    }
+    if (colObj.key === 'athlete_born') {
+      return formatBorn(value);
+    }
+    if (colObj.key === 'position') {
+      return formatRankingNumber(value);
+    }
+    
+    return value === null || value === undefined ? '-' : String(value);
+  }, []);
+
+  // Ya no truncamos nombres en mobile - la tabla se expande con scroll
 
   return (
-    <div className="ranking-table-container" style={{ fontFamily: "'Exo', Arial, sans-serif" }}>
+    <div className="ranking-table-container" ref={containerRef}>
       <div className="table">
-        <div
-          className="header"
-          style={isBrowser ? {
-              width: tableWidth,
-              minWidth: tableWidth,
-              maxWidth: tableWidth,
-            } : undefined}
-        >
-          <div className="tr" style={isBrowser ? { width: tableWidth } : undefined}>
-            {columns.map((colObj, idx) => (
-              <div
-                className="th"
-                key={colObj.key}
-                style={{
-                  flex: typeof finalColumnWidths[idx] === 'number' ? `0 0 ${finalColumnWidths[idx]}px` : '1 1 auto',
-                  minWidth: typeof finalColumnWidths[idx] === 'number' ? `${finalColumnWidths[idx]}px` : 'auto',
-                  maxWidth: typeof finalColumnWidths[idx] === 'number' ? `${finalColumnWidths[idx]}px` : 'auto',
-                  width: typeof finalColumnWidths[idx] === 'number' ? `${finalColumnWidths[idx]}px` : 'auto',
-                  textAlign: getTextAlign(colObj.align),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: getJustifyAlign(colObj.align),
-                }}
-              >
-                <p>{colObj.bold ? <b>{colObj.label || (colObj.key.charAt(0).toUpperCase() + colObj.key.slice(1))}</b> : (colObj.label || (colObj.key.charAt(0).toUpperCase() + colObj.key.slice(1)))}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="body">
-          {data.map((row, index) => {
-            const isCurrentUser = authState.authenticated && main && row[main] === authState.user.id;
-            return (
-              <div 
-                key={index} 
-                className={`tr ${index < 3 ? `rank-${index + 1}` : ""}`} 
-                style={isBrowser ? { 
-                  width: tableWidth,
-                  backgroundColor: isCurrentUser ? highlightedColor : undefined
-                } : {
-                  backgroundColor: isCurrentUser ? highlightedColor : undefined
-                }}
-              >
-              {columns.map((colObj, idx) => (
+        {/* Header */}
+        <div className="header">
+          <div className="tr">
+            {columns.map((colObj, idx) => {
+              const width = typeof columnWidths[idx] === 'number' 
+                ? `${columnWidths[idx]}px` 
+                : columnWidths[idx];
+              
+              return (
                 <div
-                  className="td"
                   key={colObj.key}
+                  className={`th ${colObj.fixed ? 'fixed' : 'flexible'}`}
                   style={{
-                    minWidth: typeof finalColumnWidths[idx] === 'number' ? `${finalColumnWidths[idx]}px` : 'auto',
-                    maxWidth: typeof finalColumnWidths[idx] === 'number' ? `${finalColumnWidths[idx]}px` : 'auto',
-                    width: typeof finalColumnWidths[idx] === 'number' ? `${finalColumnWidths[idx]}px` : 'auto',
-                    flex: typeof finalColumnWidths[idx] === 'number' ? `0 0 ${finalColumnWidths[idx]}px` : '1 1 auto',
+                    width: typeof width === 'number' ? `${width}px` : width,
+                    minWidth: typeof width === 'number' ? `${width}px` : (colObj.fixed ? `${minColumnWidths[idx]}px` : '0'),
+                    maxWidth: typeof width === 'number' ? `${width}px` : (colObj.fixed ? `${minColumnWidths[idx]}px` : 'none'),
+                    flex: colObj.fixed ? '0 0 auto' : (isMobile ? '0 0 auto' : '1 1 0'),
                     textAlign: getTextAlign(colObj.align),
-                    display: 'flex',
-                    alignItems: 'center',
                     justifyContent: getJustifyAlign(colObj.align),
                   }}
                 >
-                  <p>{colObj.bold ? <b>{formatRankingNumber(row[colObj.key])}</b> : formatRankingNumber(row[colObj.key])}</p>
+                  <p>
+                    {colObj.bold ? (
+                      <b>{colObj.label || colObj.key.charAt(0).toUpperCase() + colObj.key.slice(1)}</b>
+                    ) : (
+                      colObj.label || colObj.key.charAt(0).toUpperCase() + colObj.key.slice(1)
+                    )}
+                  </p>
                 </div>
-              ))}
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="body">
+          {data.map((row, index) => {
+            const isCurrentUser = authState.authenticated && main && row[main] === authState.user.id;
+            const isClubAthlete = clubAuthState.authenticated && row.club_alias === clubAuthState.club?.alias;
+
+            return (
+              <div
+                key={index}
+                className="tr"
+                style={{
+                  backgroundColor: isCurrentUser ? highlightedColor : (isClubAthlete ? COLORS.purple_01 : undefined)
+                }}
+              >
+                {columns.map((colObj, idx) => {
+                  const displayValue = formatCellValue(colObj, row);
+
+                  const width = typeof columnWidths[idx] === 'number' 
+                    ? `${columnWidths[idx]}px` 
+                    : columnWidths[idx];
+
+                  // Verificar si la celda es clickeable (athlete_name o best_mark)
+                  const isClickable = colObj.key === 'athlete_name' || colObj.key === 'best_mark';
+
+                  return (
+                    <div
+                      key={colObj.key}
+                      className={`td ${colObj.fixed ? 'fixed' : 'flexible'} ${colObj.key === 'athlete_name' ? 'athlete-name' : ''} ${isClickable ? 'clickable' : ''}`}
+                      style={{
+                        width: typeof width === 'number' ? `${width}px` : width,
+                        minWidth: typeof width === 'number' ? `${width}px` : (colObj.fixed ? `${minColumnWidths[idx]}px` : '0'),
+                        maxWidth: typeof width === 'number' ? `${width}px` : (colObj.fixed ? `${minColumnWidths[idx]}px` : 'none'),
+                        flex: colObj.fixed ? '0 0 auto' : (isMobile ? '0 0 auto' : '1 1 0'),
+                        textAlign: getTextAlign(colObj.align),
+                        justifyContent: getJustifyAlign(colObj.align),
+                        cursor: isClickable ? 'pointer' : 'default',
+                      }}
+                      onClick={isClickable ? () => navigateToAthlete(row[main]) : undefined}
+                      role={isClickable ? 'button' : undefined}
+                      tabIndex={isClickable ? 0 : undefined}
+                      onKeyDown={isClickable ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigateToAthlete(row[main]);
+                        }
+                      } : undefined}
+                    >
+                      <p>
+                        {colObj.bold ? (
+                          <b>
+                            {displayValue}
+                            {colObj.key === 'athlete_name' && index < 3 && (
+                              index === 0 ? ' 🥇' : index === 1 ? ' 🥈' : ' 🥉'
+                            )}
+                          </b>
+                        ) : (
+                          <>
+                            {displayValue}
+                            {colObj.key === 'athlete_name' && index < 3 && (
+                              index === 0 ? ' 🥇' : index === 1 ? ' 🥈' : ' 🥉'
+                            )}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
         </div>
       </div>
-  
     </div>
   );
 };

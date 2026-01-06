@@ -1,4 +1,12 @@
-import { dateFullFormatter, timeLeft } from "../constants/timeGetter";
+import { dateFullFormatter, timeLeft, shortDate } from "../constants/timeGetter";
+
+// Función helper para determinar si las inscripciones están abiertas
+const isInscriptionOpen = (available) => {
+  if (!available) return false; // Si es null, está cerrado
+  const availableDate = new Date(available);
+  const now = new Date();
+  return availableDate > now; // Si la fecha límite es futura, está abierto
+};
 import InscriptionItem from "../components/meets/InscriptionItem";
 import { useNavigate, useParams } from "react-router-dom";
 import "material-react-toastify/dist/ReactToastify.css";
@@ -27,10 +35,15 @@ function Meet() {
     queryKey: ["events", id],
   });
 
-  const { data: eventsAvailable, isLoading: isLoadingEventsAvailable, isError: isErrorEventsAvailable } = useQuery({
+  const { data: eventsAvailable, isLoading: isLoadingEventsAvailable, isError: isErrorEventsAvailable, error: eventsAvailableError } = useQuery({
     queryFn: () => makeRequest.get(`/meets/${id}/events/available`, { headers: { Authorization: authState?.token, }}).then((res) => res.data),
     enabled: !!authState?.authenticated,
     queryKey: ["eventsAvailable", id],
+    retry: (failureCount, error) => {
+      // No retry on 403 errors (not enabled)
+      if (error?.response?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   if(!meet || !events) return <div>Cargando...</div>
@@ -39,6 +52,13 @@ function Meet() {
     const address = encodeURIComponent(meet.place_address || meet.place_name);
     const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
     window.open(url, "_blank");
+  }
+
+  const handleProgramClick = () => {
+    if (meet.program) {
+      const programUrl = `${import.meta.env.VITE_API_URL}/image/program/${meet.program}`;
+      window.open(programUrl, "_blank");
+    }
   }
 
   return (
@@ -71,9 +91,25 @@ function Meet() {
                 <Icon name="map" size={18} color={COLORS.white_01} />
                 <p>{meet.place_name}</p>
               </button>
-              <button onClick={() => navigate(`/inscriptions/${id}`)}>
-                <p>Ver {meet.athletes} Inscriptos</p>
-              </button>
+              {meet.program && (
+                <button className="tag" onClick={handleProgramClick} type="button">
+                  <Icon name="pdf" size={18} color={COLORS.white_01} />
+                  <p>Programa & Horarios</p>
+                </button>
+              )}
+              {authState.authenticated && meet.athletes > 1 && (
+                <button onClick={() => navigate(`/inscriptions/${id}`)}>
+                  <p>Ver {meet.athletes} Inscriptos</p>
+                </button>
+              )}
+
+              {/* Tag de NO habilitado si hay error 403 */}
+              {authState.authenticated && eventsAvailableError?.response?.status === 403 && (
+                <p className="tag disabled">NO estás habilitado</p>
+              )}
+
+
+              <p className={isInscriptionOpen(meet.available) ? 'tag open' : 'tag closed'}>{isInscriptionOpen(meet.available) ? `Inscripciones hasta ${shortDate(meet.available)}` : 'Inscripciones cerradas' }</p>
             </div>
           </div>
 
@@ -109,17 +145,28 @@ function Meet() {
           </div>
 
         </section>
-        <section>
-          <div id="headerSpacer"/>
+        {authState.authenticated && (() => {
+          // Verificar si las inscripciones están abiertas y el atleta está habilitado
+          if (!meet.available) return null; // Si es null, está cerrado
+          const availableDate = new Date(meet.available);
+          const now = new Date();
+          const isOpen = availableDate > now;
+          const isEnabled = eventsAvailableError?.response?.status !== 403; // No mostrar si error 403 (no habilitado)
 
-          <div id="meetInscription">
-            <h4>Inscribite</h4>
-            {eventsAvailable?.map((inscription) => (
-              <InscriptionItem key={inscription.id} inscription={inscription} />
-            ))}
-          </div>
+          return isOpen && isEnabled ? (
+            <section>
+              <div id="headerSpacer"/>
 
-        </section>
+              <div id="meetInscription">
+                <h4>Inscribite</h4>
+                {eventsAvailable?.map((inscription) => (
+                  <InscriptionItem key={inscription.id} inscription={inscription} />
+                ))}
+              </div>
+
+            </section>
+          ) : null;
+        })()}
       </main>
 
     </div>

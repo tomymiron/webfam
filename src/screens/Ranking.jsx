@@ -1,5 +1,3 @@
-import disciplinesTypes from "../json/disciplinesTypes.json";
-import disciplineOptions from "../json/disciplines.json";
 import "material-react-toastify/dist/ReactToastify.css";
 import categoryOptions from "../json/categories.json";
 import RankingTable from "../components/RankingTable";
@@ -9,46 +7,34 @@ import { useQuery } from "@tanstack/react-query";
 import genderOptions from "../json/genders.json";
 import { useNavigate } from "react-router-dom";
 import { makeRequest } from "../config/axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import NavBar from "../components/NavBar";
 import Transition from "../Transition";
 import { motion } from "framer-motion";
 import Select from "react-select";
 
-const customStyles = {
+const customSelectStyles = {
   container: (base) => ({
     ...base,
     minWidth: "100%",
     width: "100%",
   }),
-  control: (base, state) => ({
+  control: (base) => ({
     ...base,
     backgroundColor: COLORS.black_01,
     borderColor: COLORS.black_01,
-    padding: "8px 12px",
+    borderWidth: "2px",
+    padding: "4px 8px",
     minHeight: "54px",
     boxShadow: "none",
-    minWidth: "100%",
     borderRadius: 0,
-    outline: "none",
-    borderWidth: 1,
-    width: "100%",
     "&:hover": {
       borderColor: COLORS.black_01,
     },
   }),
-  valueContainer: (base) => ({
+  input: (base) => ({
     ...base,
-    justifyContent: "flex-start",
-    alignContent: "center",
-    alignItems: "center",
-    flexWrap: "nowrap",
-    lineHeight: 1.2,
-    columnGap: 0,
-    padding: 0,
-    margin: 0,
-    rowGap: 0,
-    gap: 0,
+    color: COLORS.white_01,
   }),
   singleValue: (base) => ({
     ...base,
@@ -56,42 +42,40 @@ const customStyles = {
     fontWeight: 600,
     fontSize: SIZES.f5,
   }),
+  placeholder: (base) => ({
+    ...base,
+    color: COLORS.white_02,
+    opacity: 0.5,
+    fontSize: SIZES.f5,
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: COLORS.white_01,
+    borderRadius: 0,
+    border: `2px solid ${COLORS.black_01}`,
+    zIndex: 1000,
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused ? COLORS.orange_01 : COLORS.white_01,
+    color: COLORS.black_01,
+    fontWeight: 600,
+    fontSize: SIZES.f5,
+    padding: "12px 16px",
+    cursor: "pointer",
+    "&:active": {
+      backgroundColor: COLORS.orange_01,
+    },
+  }),
   indicatorSeparator: () => ({
     display: "none",
   }),
   dropdownIndicator: (base) => ({
     ...base,
     color: COLORS.orange_01,
-    padding: "4px",
-  }),
-  placeholder: (base) => ({
-    ...base,
-    color: COLORS.white_02,
-    fontSize: SIZES.f5,
-    fontWeight: 400,
-    margin: 0,
-  }),
-  menu: (base) => ({
-    ...base,
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-    border: `1px solid ${COLORS.black_01}`,
-    backgroundColor: COLORS.white_01,
-    borderRadius: "12px",
-    overflow: "hidden",
-    zIndex: 1000,
-  }),
-  option: (base, state) => ({
-    ...base,
-    backgroundColor: state.isFocused ? COLORS.orange_01 : COLORS.white_01,
-    color: state.isFocused ? COLORS.white_01 : COLORS.black_01,
-    fontWeight: 600,
-    fontSize: SIZES.f5,
-    padding: "8px 12px",
-    cursor: "pointer",
-    ":active": {
-      backgroundColor: COLORS.orange_01,
-      color: COLORS.white_01,
-    }
+    "&:hover": {
+      color: COLORS.orange_01,
+    },
   }),
 };
 
@@ -131,7 +115,33 @@ function Ranking() {
   const { authState } = useAuth();
   const navigate = useNavigate();
 
-  const [disciplineType, setDisciplineType] = useState(disciplinesTypes[0]);
+  // Obtener disciplinas desde la API
+  const { data: disciplinesData, isLoading: isLoadingDisciplines } = useQuery({
+    queryFn: () => makeRequest.get("/results/disciplines").then((res) => res.data),
+    queryKey: ["disciplines"],
+    staleTime: 1000 * 60 * 60, // Cache por 1 hora
+  });
+
+  // Transformar datos de disciplinas para tipos y opciones
+  const disciplinesTypes = useMemo(() => {
+    if (!disciplinesData || disciplinesData.length === 0) return [];
+    const uniqueTypes = [...new Set(disciplinesData.map(d => d.type).filter(Boolean))];
+    return uniqueTypes.map((type, index) => ({
+      value: type,
+      label: type
+    }));
+  }, [disciplinesData]);
+
+  const disciplineOptions = useMemo(() => {
+    if (!disciplinesData || disciplinesData.length === 0) return [];
+    return disciplinesData.map(d => ({
+      value: d.id,
+      label: d.alias || d.name,
+      type: d.type
+    }));
+  }, [disciplinesData]);
+
+  const [disciplineType, setDisciplineType] = useState(null);
   const [year, setYear] = useState(new Date().getFullYear());
   const [searchParams, setSearchParams] = useState(null);
   const [showLoader, setShowLoader] = useState(false);
@@ -139,22 +149,55 @@ function Ranking() {
   const [categories, setCategories] = useState([]);
   const [gender, setGender] = useState(1);
 
-  const yearOptions = Array.from({ length: 5 }, (_, i) => {
-    const yearValue = new Date().getFullYear() - i;
-    return { value: yearValue, label: yearValue.toString() };
-  });
+  const yearOptions = (() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2016;
+    const years = [];
+    for (let year = currentYear; year >= startYear; year--) {
+      years.push({ value: year, label: year.toString() });
+    }
+    return years;
+  })();
+
+  // Establecer defaults: tipo "Velocidad" y disciplina "100m"
+  useEffect(() => {
+    if (disciplinesTypes.length > 0 && !disciplineType) {
+      // Buscar "Velocidad" como tipo por defecto
+      const velocidadType = disciplinesTypes.find(type => type.value === "Velocidad");
+      setDisciplineType(velocidadType || disciplinesTypes[0]);
+    }
+  }, [disciplinesTypes, disciplineType]);
 
   const filteredDisciplines = disciplineType ? disciplineOptions.filter(discipline => discipline.type === disciplineType.value) : [];
+
+  // Establecer "100m" como disciplina por defecto cuando se carga el tipo "Velocidad"
+  useEffect(() => {
+    if (disciplineType && disciplineType.value === "Velocidad" && filteredDisciplines.length > 0 && !discipline) {
+      // Buscar "100m" en las disciplinas filtradas
+      const cienMetros = filteredDisciplines.find(d => d.label === "100m" || d.value === 1);
+      setDiscipline(cienMetros || filteredDisciplines[0]);
+    } else if (disciplineType && disciplineType.value !== "Velocidad" && filteredDisciplines.length > 0 && !discipline) {
+      // Para otros tipos, seleccionar la primera disciplina
+      setDiscipline(filteredDisciplines[0]);
+    }
+  }, [disciplineType, filteredDisciplines, discipline]);
 
   const { data: ranking, isLoading: isLoadingRanking, isError: isErrorRanking, isRefetching: isRefetchingRanking, error } = useQuery({
     queryFn: () => makeRequest.get("/results/ranking", { params: searchParams }).then((res) => res.data),
     queryKey: ["ranking", searchParams],
     enabled: !!searchParams,
+    refetchOnWindowFocus: false,
   });
 
+  // Este efecto ya no es necesario, se maneja en el efecto anterior
+
+  // Ejecutar búsqueda automática cuando se establece la disciplina inicial
   useEffect(() => {
-    if (disciplineType && filteredDisciplines.length > 0 && !discipline) setDiscipline(filteredDisciplines[0]);
-  }, [disciplineType, filteredDisciplines, discipline]);
+    if (discipline && !searchParams) {
+      // Ejecutar búsqueda automática con valores por defecto la primera vez que se carga
+      setSearchParams({ year, gender, discipline: discipline.value, categories: JSON.stringify(categories) });
+    }
+  }, [discipline]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!isLoadingRanking && !isRefetchingRanking && showLoader) {
@@ -173,8 +216,17 @@ function Ranking() {
   const handleDisciplineTypeChange = (selectedType) => {
     setDisciplineType(selectedType);
     const newFilteredDisciplines = disciplineOptions.filter(discipline => discipline.type === selectedType.value);
-    if (newFilteredDisciplines.length > 0) setDiscipline(newFilteredDisciplines[0]);
-    else setDiscipline(null);
+    if (newFilteredDisciplines.length > 0) {
+      // Si es "Velocidad", buscar "100m", sino seleccionar la primera
+      if (selectedType.value === "Velocidad") {
+        const cienMetros = newFilteredDisciplines.find(d => d.label === "100m" || d.value === 1);
+        setDiscipline(cienMetros || newFilteredDisciplines[0]);
+      } else {
+        setDiscipline(newFilteredDisciplines[0]);
+      }
+    } else {
+      setDiscipline(null);
+    }
   };
 
   const handleSearch = () => {
@@ -205,26 +257,36 @@ function Ranking() {
                 onChange={(option) => setYear(option.value)}
                 placeholder="Selecciona año"
                 options={yearOptions}
-                styles={customStyles}
+                styles={customSelectStyles}
                 isSearchable={false}
+                className="react-select-container"
+                classNamePrefix="react-select"
               />
 
               <Select
-                placeholder="Tipo de Disciplina"
+                placeholder={isLoadingDisciplines ? "Cargando tipos..." : "Tipo de Disciplina"}
                 options={disciplinesTypes}
                 onChange={handleDisciplineTypeChange}
-                styles={customStyles}
-                isSearchable={false}
+                styles={customSelectStyles}
+                isSearchable={true}
                 value={disciplineType}
+                isLoading={isLoadingDisciplines}
+                isDisabled={isLoadingDisciplines}
+                className="react-select-container"
+                classNamePrefix="react-select"
               />
 
               <Select
-                placeholder="Selecciona disciplina"
+                placeholder={isLoadingDisciplines ? "Cargando disciplinas..." : "Selecciona disciplina"}
                 options={filteredDisciplines}
                 onChange={setDiscipline}
-                styles={customStyles}
-                isSearchable={false}
+                styles={customSelectStyles}
+                isSearchable={true}
                 value={discipline}
+                isLoading={isLoadingDisciplines}
+                isDisabled={isLoadingDisciplines || !disciplineType}
+                className="react-select-container"
+                classNamePrefix="react-select"
               />
             </div>
 
@@ -267,31 +329,59 @@ function Ranking() {
             {showLoader || isLoadingRanking || isRefetchingRanking ? <SearchLoader />: "BUSCAR" }
           </motion.button>
 
+          <div id="rankingTableContainer">
           {isLoadingRanking || isRefetchingRanking || showLoader ?
             <div className="noTableContainer">
               <SearchLoader text="Cargando ranking..." />
             </div>
-          : ranking && ranking?.length > 0 ?
-            <RankingTable
-              toShowColumns={[
-                { key: "position", label: "#", align: "center", fixed: true, bold: true, minWidth: 64 },
+          : (ranking && Array.isArray(ranking) && ranking.length > 0) ?
+            (() => {
+              // Construir columnas dinámicamente basándose en los datos de la disciplina
+              const baseColumns = [
+                { key: "position", label: "#", align: "center", fixed: true, bold: true, minWidth: 50 },
                 { key: "best_mark", label: "Marca", align: "right", fixed: true, },
                 { key: "athlete_name", label: "Atleta", align: "left", bold: true },
                 { key: "athlete_born", label: "FDN", align: "right" },
                 { key: "club_alias", label: "Club", align: "left" },
+              ];
+              
+              // Verificar si la disciplina requiere wind o weight usando isWind e isWeight
+              const firstRow = ranking[0];
+              const showWind = firstRow?.isWind === 1;
+              const showWeight = firstRow?.isWeight === 1;
+              
+              // Agregar columnas si la disciplina las requiere
+              if (showWind) {
+                baseColumns.push({ key: "wind", label: "Viento", align: "right" });
+              }
+              
+              if (showWeight) {
+                baseColumns.push({ key: "weight", label: "Peso", align: "right" });
+              }
+              
+              // Agregar el resto de columnas
+              baseColumns.push(
                 { key: "date", label: "Fecha", align: "left" },
-                { key: "place", label: "Lugar", align: "right" },
-              ]}
-              highlightedColor={COLORS.orange_01}
-              authState={authState}
-              main="athlete_id"
-              data={ranking}
-            />
-          : 
+                { key: "place", label: "Lugar", align: "right" }
+              );
+              
+              return (
+                <RankingTable
+                  toShowColumns={baseColumns}
+                  highlightedColor={COLORS.orange_01}
+                  authState={authState}
+                  main="athlete_id"
+                  data={ranking}
+                />
+              );
+            })()
+          : (searchParams && !isLoadingRanking && !isRefetchingRanking) ?
             <div className="noTableContainer">
               <p>Aún <strong>no hay ranking</strong>!</p>
             </div>
+          : null
           }
+          </div>
         </section>
       </main>
 

@@ -178,6 +178,12 @@ body, html {
         width: 100%;
       }
 
+      #rankingTableContainer {
+        flex-direction: column;
+        display: flex;
+        width: 100%;
+      }
+
       .noTableContainer {
         border: 1px solid theme.$black_01;
         justify-content: center;
@@ -231,11 +237,22 @@ body, html {
   
   @media (max-width: 926px) {
     main {
+      padding: calc(84px + clamp(32px, 5vw, 64px)) 0 0;
+
       section {
         width: 100%;
 
         #rankingFilters {
           flex-direction: column;
+          width: calc(100% - 32px);
+        }
+
+        #searchButton {
+          width: calc(100% - 32px);
+        }
+
+        .noTableContainer {
+          width: calc(100% - 32px);
         }
       }
     }

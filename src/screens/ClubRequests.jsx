@@ -5,7 +5,7 @@ import { categoryGetter } from "../constants/categoryGetter";
 import { toast } from "material-react-toastify";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../config/axios";
-import ClubNavBar from "../components/ClubNavBar";
+import NavBar from "../components/NavBar";
 import { useEffect, useState } from "react";
 import Transition from "../Transition";
 
@@ -66,7 +66,7 @@ function ClubRequests() {
 
   return (
     <div id="ClubRequests">
-      <ClubNavBar />
+      <NavBar />
 
       <main>
         <section>

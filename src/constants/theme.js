@@ -19,6 +19,8 @@ export const COLORS = {
   orange_01: "#FF873C",
   
   red_01: "#F54A4A",
+  
+  green_01: "#4CAF50",
 };
 
 export const SIZES = {

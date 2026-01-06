@@ -1,10 +1,53 @@
 export function shortDate(date) {
   try {
-      const d = new Date(date);
+      // Parsear fecha manualmente para evitar problemas de zona horaria
+      let d;
+    let hasTime = false;
+    let timePart = '';
+
+    if (typeof date === 'string') {
+      // Si incluye espacio, es formato datetime "YYYY-MM-DD HH:MM:SS"
+      if (date.includes(' ')) {
+        const parts = date.split(' ');
+        const datePart = parts[0];
+        timePart = parts[1] || '';
+        const [year, month, day] = datePart.split('-').map(Number);
+        d = new Date(year, month - 1, day);
+
+        // Si hay hora, parsearla también
+        if (timePart && timePart.includes(':')) {
+          const [hour, minute] = timePart.split(':').map(Number);
+          d.setHours(hour, minute, 0, 0);
+          hasTime = true;
+        }
+      } else if (date.includes('-')) {
+        // Formato solo fecha "YYYY-MM-DD"
+        const [year, month, day] = date.split('-').map(Number);
+        d = new Date(year, month - 1, day);
+      } else {
+        d = new Date(date);
+      }
+    } else {
+      d = new Date(date);
+    }
+
+    if (isNaN(d.getTime())) throw new Error('Invalid date');
+
       const day = d.getDate().toString().padStart(2, '0');
       const month = (d.getMonth() + 1).toString().padStart(2, '0');
       const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
+
+    let result = `${day}/${month}/${year}`;
+
+    // Si hay hora, incluirla
+    if (hasTime && timePart) {
+      const [hour, minute] = timePart.split(':').slice(0, 2).map(Number);
+      const formattedHour = hour.toString().padStart(2, '0');
+      const formattedMinute = minute.toString().padStart(2, '0');
+      result += ` ${formattedHour}:${formattedMinute}`;
+    }
+
+    return result;
   } catch (err) {
       return "???";
   }
@@ -61,19 +104,33 @@ export function dateFullFormatter(date) {
 export function timeSince(date) {
   if (!date) return "???";
 
-  let utcDate;
+  let parsedDate;
   if (typeof date === "string" && date.length >= 19) {
+    // MySQL devuelve TIMESTAMP como string "YYYY-MM-DD HH:MM:SS" en hora local del servidor
+    // Parsear manualmente los componentes para crear fecha como hora local
     const [datePart, timePart] = date.split(" ");
     if (!datePart || !timePart) return "???";
     const [year, month, day] = datePart.split("-").map(Number);
     const [hour, minute, second] = timePart.split(":").map(Number);
-    utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-  } else utcDate = new Date(date);
+    // Crear fecha en hora local (sin Date.UTC para que use la zona horaria del navegador)
+    parsedDate = new Date(year, month - 1, day, hour, minute, second);
+  } else {
+    // Parsear fecha manualmente si es formato YYYY-MM-DD
+    if (typeof date === 'string' && date.length === 10 && date.includes('-')) {
+      const [year, month, day] = date.split('-').map(Number);
+      parsedDate = new Date(year, month - 1, day);
+    } else {
+      parsedDate = new Date(date);
+    }
+  }
 
-  if (isNaN(utcDate.getTime())) return "???";
+  if (isNaN(parsedDate.getTime())) return "???";
 
   const now = new Date();
-  const elapsedSeconds = Math.floor((now.getTime() - utcDate.getTime()) / 1000);
+  const elapsedSeconds = Math.floor((now.getTime() - parsedDate.getTime()) / 1000);
+  
+  // Si elapsedSeconds es negativo (fecha futura), retornar 0s
+  if (elapsedSeconds < 0) return '0s';
 
   const INTERVALS = [
     { seconds: 31536000, label: 'años' },
@@ -88,8 +145,9 @@ export function timeSince(date) {
     if (interval >= 1) return Math.floor(interval) + label;
   }
 
-  return Math.abs(Math.floor(elapsedSeconds)) + 's';
+  return elapsedSeconds >= 0 ? Math.floor(elapsedSeconds) + 's' : '0s';
 }
+
 
 export function timeLeft(date) {
   if (!date) return "???";

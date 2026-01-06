@@ -108,9 +108,10 @@ body, html {
 
         #meetTags {
           flex-direction: row;
+          flex-wrap: wrap;
           margin-top: 8px;
           display: flex;
-          gap: 8px;
+          gap: 4px;
 
           .tag {
             background-color: theme.$black_01;
@@ -126,6 +127,21 @@ body, html {
               color: theme.$white_01;
               font-size: theme.$f4;
               font-weight: 500;
+            }
+
+            &.open {
+              color: theme.$green_01;
+              font-weight: 600;
+            }
+
+            &.closed {
+              background-color: theme.$red_01;
+              font-weight: 600;
+            }
+
+            &.disabled {
+              background-color: theme.$orange_01;
+              font-weight: 600;
             }
           } 
 

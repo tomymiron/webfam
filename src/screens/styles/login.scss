@@ -146,12 +146,25 @@
         }
       }
 
-      a {
+      #forgotPasswordButton {
+        background-color: transparent;
         text-decoration: underline;
         color: theme.$black_01;
+        transition: all .2s ease;
         font-size: theme.$f5;
         font-weight: 700;
         margin-top: 12px;
+        cursor: pointer;
+        border: none;
+        
+        &:hover {
+          color: theme.$blue_01;
+          transform: translateY(-1px);
+        }
+        
+        &:active {
+          transform: translateY(0);
+        }
       }
     }
   }

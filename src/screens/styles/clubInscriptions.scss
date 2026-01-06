@@ -1,0 +1,626 @@
+@use "../../theme.scss" as theme;
+
+body, html {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#ClubInscriptions {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+
+  nav {
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    padding-top: 32px;
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    width: 100%;
+    top: 0;
+
+    #backButton {
+      background-color: theme.$purple_01;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px;
+      width: 102px;
+      display: flex;
+      height: 64px;
+    }
+
+    .navInfo {
+      align-items: center;
+      padding: 0 24px;
+      flex: 1;
+
+      h1 {
+        color: theme.$black_01;
+        font-size: theme.$f3;
+        font-weight: 700;
+      }
+
+      p {
+        color: theme.$black_01;
+        font-size: theme.$f5;
+        font-weight: 400;
+      }
+    }
+  }
+
+  main {
+    padding: 128px 24px 24px;
+    flex-direction: column;
+    max-width: 1200px;
+    display: flex;
+    width: 100%;
+
+    .loading, .error {
+      text-align: center;
+      padding: 60px 20px;
+
+      p {
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        margin: 0;
+      }
+    }
+
+    .inscriptionsGrid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+
+      .eventCard {
+        background-color: theme.$white_01;
+        // border-bottom: 1px solid theme.$gray_01;
+        // border-radius: 16px;
+        padding: 20px;
+        // box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+        .eventHeader {
+          align-items: flex-end;
+          margin-bottom: 8px;
+          display: flex;
+          gap: 12px;
+
+          .eventTimeBadge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: theme.$purple_01;
+            color: theme.$white_01;
+            padding: 14px 18px;
+            font-size: theme.$f4;
+            font-weight: 600;
+            min-width: fit-content;
+          }
+
+          .eventInfo {
+            flex: 1;
+
+            .eventDiscipline {
+              color: theme.$black_01;
+              font-size: theme.$f3;
+              font-weight: 700;
+            }
+
+            .athletesCount {
+              color: theme.$gray_01;
+              font-size: theme.$f5;
+              font-weight: 500;
+            }
+          }
+        }
+
+        .athletesList {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+
+          .athleteCard {
+            background-color: theme.$white_01;
+            border: 1px solid theme.$black_01;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            padding: 4px 18px 4px 4px;
+            align-items: center;
+            display: flex;
+
+            &:hover {
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+              border-color: theme.$purple_01;
+            }
+
+            .athleteInfo {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+
+              .athleteImage {
+                width: 64px;
+                height: 64px;
+                object-fit: cover;
+                border: 2px solid theme.$white_01;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              }
+
+              .athleteDetails {
+                .athleteName {
+                  color: theme.$black_01;
+                  font-size: theme.$f4;
+                  font-weight: 600;
+                  margin: 0 0 2px 0;
+                }
+
+                .athleteCategory {
+                  color: theme.$gray_01;
+                  font-size: theme.$f5;
+                  font-weight: 400;
+                  margin: 0;
+                }
+
+                .paymentBadge {
+                  display: inline-block;
+                  background-color: theme.$green_01;
+                  color: theme.$white_01;
+                  font-size: theme.$f6;
+                  font-weight: 600;
+                  padding: 2px 8px;
+                  margin-top: 4px;
+                }
+              }
+            }
+
+            .inscriptionActions {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+
+              .price {
+                color: theme.$purple_01;
+                font-size: theme.$f4;
+                font-weight: 700;
+              }
+
+              .cancelButton {
+                background-color: transparent;
+                border: 1px solid theme.$red_01;
+                padding: 8px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                &:hover {
+                  background-color: theme.$red_01;
+                  
+                  svg {
+                    path {
+                      fill: theme.$white_01;
+                    }
+                  }
+                }
+
+                &:active {
+                  transform: scale(0.95);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .expensesSummary {
+      margin-top: 32px;
+      padding: 24px;
+      border: 1px solid theme.$black_01;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        pointer-events: none;
+      }
+
+      .summaryHeader {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 1;
+
+        .summaryTitle {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+          margin: 0;
+        }
+      }
+
+      .summaryContent {
+        position: relative;
+        z-index: 1;
+
+        .summaryItem {
+          justify-content: flex-start;
+          align-items: center;
+          padding: 12px 0;
+          display: flex;
+          gap: 8px;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .itemLabel {
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            font-weight: 500;
+          }
+
+          .itemValue {
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            font-weight: 600;
+
+            &.amount {
+              color: theme.$black_01;
+              font-size: theme.$f5;
+              font-weight: 800;
+            }
+          }
+
+          &.total {
+            border: 1px solid theme.$black_01;
+            border-radius: 0;
+            padding: 16px;
+
+            .itemLabel {
+              font-size: theme.$f4;
+              font-weight: 600;
+            }
+
+            .itemValue.amount {
+              color: theme.$black_01;
+              font-size: theme.$f3;
+              font-weight: 800;
+            }
+          }
+        }
+      }
+    }
+
+    .emptyState {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 20px;
+      gap: 16px;
+
+      h3 {
+        color: theme.$black_01;
+        font-size: theme.$f3;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      p {
+        color: theme.$gray_01;
+        font-size: theme.$f5;
+        margin: 0;
+        max-width: 400px;
+        line-height: 1.5;
+      }
+
+      .backToMeetButton {
+        background-color: theme.$purple_01;
+        color: theme.$white_01;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: theme.$f4;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 16px;
+
+        &:hover {
+          background-color: theme.$purple_01;
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  // Modal de cancelación
+  .cancelModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+
+    .cancelModalContent {
+      background-color: theme.$white_01;
+      border: 2px solid theme.$black_01;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+      .cancelModalHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid theme.$gray_01;
+
+        h3 {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+          margin: 0;
+        }
+
+        button {
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          color: theme.$black_01;
+          padding: 0;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+
+          &:hover {
+            color: theme.$red_01;
+          }
+        }
+      }
+
+      .cancelModalBody {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+
+        .warningIcon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .inscriptionDetails {
+          text-align: center;
+          width: 100%;
+
+          .athleteName {
+            color: theme.$black_01;
+            font-size: theme.$f3;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+          }
+
+          .eventInfo {
+            color: theme.$gray_01;
+            font-size: theme.$f5;
+            font-weight: 500;
+            margin: 0 0 16px 0;
+          }
+
+          .refundAmount {
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            font-weight: 500;
+            margin: 0;
+            padding: 12px;
+            background-color: rgba(theme.$green_01, 0.1);
+            border: 1px solid theme.$green_01;
+
+            strong {
+              color: theme.$green_01;
+              font-weight: 700;
+            }
+          }
+        }
+
+        .warningText {
+          color: theme.$red_01;
+          font-size: theme.$f5;
+          font-weight: 500;
+          text-align: center;
+          margin: 0;
+          padding: 12px;
+          background-color: rgba(theme.$red_01, 0.1);
+          border: 1px solid theme.$red_01;
+        }
+      }
+
+      .cancelModalFooter {
+        padding: 20px 24px;
+        border-top: 1px solid theme.$gray_01;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .confirmButton {
+          background-color: theme.$red_01;
+          color: theme.$white_01;
+          border: none;
+          padding: 14px 24px;
+          font-size: theme.$f4;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            background-color: darken(theme.$red_01, 10%);
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+
+        .cancelActionButton {
+          background-color: theme.$white_01;
+          color: theme.$black_01;
+          border: 1px solid theme.$black_01;
+          padding: 14px 24px;
+          font-size: theme.$f4;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            background-color: theme.$black_01;
+            color: theme.$white_01;
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  #ClubInscriptions {
+    nav {
+      .navInfo {
+        padding: 0 16px;
+
+        h1 {
+          font-size: theme.$f4;
+        }
+
+        p {
+          font-size: theme.$f6;
+        }
+      }
+    }
+
+    main {
+      padding: 88px 16px 16px;
+
+      .inscriptionsGrid {
+        .eventCard {
+          padding: 16px;
+
+          .eventHeader {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+
+            .eventTimeBadge {
+              align-self: flex-start;
+            }
+          }
+
+          .athletesList {
+            .athleteCard {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 8px;
+
+              .athleteInfo {
+                width: 100%;
+              }
+
+              .inscriptionActions {
+                width: 100%;
+                justify-content: space-between;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .cancelModal {
+      padding: 16px;
+
+      .cancelModalContent {
+        .cancelModalHeader {
+          padding: 16px 20px;
+
+          h3 {
+            font-size: theme.$f4;
+          }
+        }
+
+        .cancelModalBody {
+          padding: 20px;
+
+          .inscriptionDetails {
+            .athleteName {
+              font-size: theme.$f4;
+            }
+
+            .eventInfo {
+              font-size: theme.$f6;
+            }
+
+            .refundAmount {
+              font-size: theme.$f5;
+            }
+          }
+
+          .warningText {
+            font-size: theme.$f6;
+          }
+        }
+
+        .cancelModalFooter {
+          padding: 16px 20px;
+
+          .confirmButton,
+          .cancelActionButton {
+            padding: 12px 20px;
+            font-size: theme.$f5;
+          }
+        }
+      }
+    }
+  }
+}

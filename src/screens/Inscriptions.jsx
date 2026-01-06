@@ -1,5 +1,6 @@
 import { timeGetter, timeLeft } from "../constants/timeGetter";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuthClub } from "../contexts/AuthContextClub";
 import "material-react-toastify/dist/ReactToastify.css";
 import RankingTable from "../components/RankingTable";
 import { COLORS, SIZES } from "../constants/theme";
@@ -93,6 +94,7 @@ const customStyles = {
 
 function Inscriptions() {
   useEffect(() => {import("./styles/inscriptions.scss")}, []);
+  const { authState: clubAuthState } = useAuthClub();
   const { authState } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();

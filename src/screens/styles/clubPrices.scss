@@ -1,0 +1,190 @@
+@use "../../theme.scss" as theme;
+
+#ClubPrices {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) clamp(18px, 5vw, 64px) 32px;
+    flex-direction: column;
+    max-width: 1400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 24px;
+    flex: 1;
+    scrollbar-gutter: stable;
+
+    section {
+      flex-direction: column;
+      display: flex;
+      gap: 24px;
+      width: 100%;
+      box-sizing: border-box;
+      min-width: 0;
+      
+      #header {
+        flex-direction: column;
+        display: flex;
+        gap: 12px;
+
+        h2 {
+          font-size: calc(theme.$f1 + 12px);
+          color: theme.$black_01;
+          font-weight: 900;
+          margin: 0;
+        }
+
+        .lineSeparator {
+          background-color: theme.$black_01;
+          border-radius: 2px;
+          height: 3px;
+          width: 80px;
+          margin: 0;
+        }
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 500;
+          opacity: 0.8;
+          margin: 0;
+        }
+      }
+
+      #pricesContainer {
+        flex-direction: column;
+        display: flex;
+        gap: 16px;
+        width: 100%;
+        box-sizing: border-box;
+        min-width: 0;
+
+        .loadingMessage,
+        .emptyMessage {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          text-align: center;
+          padding: 24px 0;
+          opacity: 0.7;
+        }
+
+        #pricesTable {
+          border: 2px solid theme.$black_01;
+          background-color: theme.$white_01;
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          overflow: hidden;
+
+          .tableHeader {
+            display: grid;
+            grid-template-columns: 60px 1fr 200px;
+            background-color: theme.$black_01;
+            border-bottom: 2px solid theme.$black_01;
+            gap: 0;
+
+            .headerCell {
+              color: theme.$white_01;
+              font-size: theme.$f5;
+              font-weight: 900;
+              padding: 16px;
+              text-align: left;
+              border-right: 2px solid theme.$white_01;
+
+              &:last-child {
+                border-right: none;
+              }
+            }
+          }
+
+          .tableRow {
+            display: grid;
+            grid-template-columns: 60px 1fr 200px;
+            border-bottom: 2px solid theme.$black_01;
+            gap: 0;
+            transition: background-color 0.2s ease;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &:hover {
+              background-color: rgba(theme.$black_01, 0.03);
+            }
+
+            .tableCell {
+              padding: 16px;
+              border-right: 2px solid theme.$black_01;
+              display: flex;
+              align-items: center;
+              color: theme.$black_01;
+              font-size: theme.$f5;
+              font-weight: 500;
+
+              &:last-child {
+                border-right: none;
+              }
+
+              .priceValue {
+                font-weight: 700;
+                color: theme.$black_01;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    main {
+      padding: calc(84px + 18px) 18px 16px;
+      gap: 16px;
+
+      section {
+        gap: 16px;
+
+        #header {
+          gap: 8px;
+
+          h2 {
+            font-size: calc(theme.$f1 + 8px);
+          }
+        }
+
+        #pricesContainer {
+          gap: 12px;
+
+          #pricesTable {
+            .tableHeader,
+            .tableRow {
+              grid-template-columns: 50px 1fr 120px;
+              font-size: theme.$f6;
+
+              .headerCell,
+              .tableCell {
+                padding: 12px 8px;
+                font-size: theme.$f6;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

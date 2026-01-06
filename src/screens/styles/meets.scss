@@ -39,6 +39,10 @@ body, html {
       display: flex;
       gap: 24px;
 
+      &#pastMeetsSection {
+        margin-top: 72px;
+      }
+
       #meetsHeader {
         justify-content: flex-start;
         align-items: flex-start;

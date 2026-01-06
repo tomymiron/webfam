@@ -5,9 +5,12 @@ import { makeRequest } from "../config/axios";
 import NavBar from "../components/NavBar";
 import Transition from "../Transition";
 import { useEffect, useRef, useCallback } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 function Meets() {
   useEffect(() => {import("./styles/meets.scss")}, []);
+
+  const { authState } = useAuth();
 
   const { data: nextMeets, isLoading: isLoadingNext } = useQuery({
     queryFn: () => makeRequest.get("/meets").then((res) => res.data),
@@ -74,7 +77,7 @@ function Meets() {
           <div id="meetsHeader">
             <h2>PROXIMAS<br />COMPETENCIAS</h2>
             <div className="lineSeparator" />
-            <p>Inscribite de manera simple.</p>
+            {authState.authenticated && <p>Inscribite de manera simple.</p>}
           </div>
 
           <div id="meetsContainer">
@@ -88,7 +91,7 @@ function Meets() {
           </div>
         </section>
 
-        <section>
+        <section id="pastMeetsSection">
           <div id="meetsHeader">
             <h2>COMPETENCIAS<br />PASADAS</h2>
             <div className="lineSeparator" />

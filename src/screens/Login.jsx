@@ -7,6 +7,7 @@ import { makeRequest } from "../config/axios";
 import { useEffect, useState } from "react";
 import { COLORS } from "../constants/theme";
 import NavBar from "../components/NavBar";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import Transition from "../Transition";
 import Icon from "../constants/Icon";
 
@@ -14,6 +15,7 @@ export function Login() {
   useEffect(() => {import("./styles/login.scss")}, []);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const { setLogin: setAthleteLogin } = useAuth();
@@ -85,10 +87,19 @@ export function Login() {
             <p>Crear Cuenta</p>
           </button>
           
-          <a href="mailto:info@webfam.com.ar">Problemas al ingresar?</a>
+          <button 
+            id="forgotPasswordButton" 
+            onClick={() => setShowForgotPasswordModal(true)}
+          >
+            Olvidé mi contraseña
+          </button>
         </div>
       </main>
 
+      <ForgotPasswordModal 
+        isOpen={showForgotPasswordModal}
+        onClose={() => setShowForgotPasswordModal(false)}
+      />
     </div>
   );
 }

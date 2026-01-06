@@ -1,0 +1,1115 @@
+@use "../../theme.scss" as theme;
+
+#ClubTransfers {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+  
+  main {
+    padding: calc(84px + clamp(18px, 5vw, 64px)) clamp(18px, 5vw, 64px) 32px;
+    flex-direction: column;
+    max-width: 1400px;
+    overflow-y: auto;
+    display: flex;
+    width: 100%;
+    flex: 1;
+    gap: 32px;
+
+    section {
+      flex-direction: column;
+      display: flex;
+      gap: 32px;
+
+      // ============================================
+      // HEADER
+      // ============================================
+      .pageHeader {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        h1 {
+          color: theme.$black_01;
+          font-size: calc(theme.$f1 + 16px);
+          font-weight: 900;
+          margin: 0;
+          line-height: 1.2;
+        }
+
+        .headerSeparator {
+          background-color: theme.$black_01;
+          height: 4px;
+          width: 100px;
+          margin: 0;
+        }
+
+        p {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+          opacity: 0.8;
+          margin: 0;
+        }
+      }
+
+      // ============================================
+      // TABS
+      // ============================================
+      .tabsContainer {
+        display: flex;
+        gap: 8px;
+        border-bottom: 3px solid theme.$black_01;
+        padding-bottom: 0;
+
+        .tabButton {
+          padding: 14px 28px;
+          font-size: theme.$f5;
+          font-weight: 700;
+          cursor: pointer;
+          border: none;
+          background-color: transparent;
+          color: rgba(theme.$black_01, 0.6);
+          border-bottom: 3px solid transparent;
+          transition: all 0.3s ease;
+          margin-bottom: -3px;
+          position: relative;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+
+          &:hover {
+            color: theme.$black_01;
+            background-color: rgba(theme.$black_01, 0.03);
+          }
+
+          &.active {
+            border-bottom-color: theme.$blue_01;
+            color: theme.$blue_01;
+            font-weight: 800;
+          }
+        }
+      }
+
+      // ============================================
+      // TAB CONTENT
+      // ============================================
+      .tabContent {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      // ============================================
+      // SEARCH BOX
+      // ============================================
+      .searchBox {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border: 2px solid theme.$black_01;
+        padding: 16px 20px;
+        background-color: theme.$white_01;
+        transition: all 0.2s ease;
+
+        &:focus-within {
+          border-color: theme.$blue_01;
+          box-shadow: 0 0 0 4px rgba(theme.$blue_01, 0.1);
+        }
+
+        .searchInput {
+          flex: 1;
+          border: none;
+          outline: none;
+          font-size: theme.$f4;
+          font-family: inherit;
+          color: theme.$black_01;
+          font-weight: 500;
+          background-color: theme.$white_01;
+
+          &::placeholder {
+            color: rgba(theme.$black_01, 0.5);
+          }
+        }
+      }
+
+      // ============================================
+      // EMPTY STATE
+      // ============================================
+      .emptyState {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 64px 32px;
+        text-align: center;
+
+        .loadingSpinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(theme.$black_01, 0.1);
+          border-top-color: theme.$blue_01;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        p {
+          color: rgba(theme.$black_01, 0.7);
+          font-size: theme.$f4;
+          font-weight: 500;
+          margin: 0;
+        }
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      // ============================================
+      // ATHLETES GRID
+      // ============================================
+      .athletesGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+
+        .athleteCard {
+          background-color: theme.$white_01;
+          border: 2px solid theme.$black_01;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, theme.$blue_01, rgba(theme.$blue_01, 0.5));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+          }
+
+          &:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(-4px);
+
+            &::before {
+              opacity: 1;
+            }
+          }
+
+          .athleteCardHeader {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+
+            .athleteAvatar {
+              width: 80px;
+              height: 80px;
+              min-width: 80px;
+              border-radius: 12px;
+              overflow: hidden;
+              border: 3px solid theme.$black_01;
+              background-color: rgba(theme.$black_01, 0.05);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+              img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+              }
+            }
+
+            .athleteBasicInfo {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+
+              h3 {
+                font-size: theme.$f3;
+                font-weight: 900;
+                color: theme.$black_01;
+                margin: 0;
+                line-height: 1.2;
+              }
+
+              .athleteDNI {
+                font-size: theme.$f6;
+                color: rgba(theme.$black_01, 0.7);
+                margin: 0;
+                font-weight: 500;
+              }
+            }
+          }
+
+          .athleteDetails {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            background-color: rgba(theme.$black_01, 0.02);
+            border-radius: 8px;
+
+            .detailRow {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 12px;
+
+              .detailLabel {
+                font-size: theme.$f6;
+                font-weight: 600;
+                color: rgba(theme.$black_01, 0.6);
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+              }
+
+              .detailValue {
+                font-size: theme.$f5;
+                font-weight: 600;
+                color: theme.$black_01;
+                text-align: right;
+              }
+            }
+          }
+
+          .requestButton {
+            padding: 14px 24px;
+            font-size: theme.$f5;
+            font-weight: 800;
+            cursor: pointer;
+            border: 2px solid theme.$blue_01;
+            background-color: theme.$blue_01;
+            color: theme.$white_01;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(theme.$blue_01, 0.2);
+
+            &:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 6px 16px rgba(theme.$blue_01, 0.3);
+              background-color: rgba(theme.$blue_01, 0.9);
+            }
+
+            &:active {
+              transform: translateY(0);
+            }
+          }
+        }
+      }
+
+      .loadMoreContainer {
+        display: flex;
+        justify-content: center;
+        padding: 24px 0;
+
+        .loadMoreButton {
+          padding: 14px 32px;
+          font-size: theme.$f5;
+          font-weight: 700;
+          cursor: pointer;
+          border: 2px solid theme.$black_01;
+          background-color: transparent;
+          color: theme.$black_01;
+          transition: all 0.2s ease;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+
+          &:hover {
+            background-color: theme.$black_01;
+            color: theme.$white_01;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+        }
+      }
+
+      // ============================================
+      // TRANSFERS LIST
+      // ============================================
+      .transfersList {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .transferCard {
+        background-color: theme.$white_01;
+        border: 2px solid theme.$black_01;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, theme.$blue_01, rgba(theme.$blue_01, 0.5));
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        &:hover {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+          transform: translateY(-4px);
+
+          &::before {
+            opacity: 1;
+          }
+        }
+
+        .transferCardHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
+          padding-bottom: 20px;
+          border-bottom: 2px solid rgba(theme.$black_01, 0.1);
+
+          .transferCardMainInfo {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex: 1;
+
+            .athleteAvatar {
+              width: 100px;
+              height: 100px;
+              min-width: 100px;
+              border-radius: 12px;
+              overflow: hidden;
+              border: 3px solid theme.$black_01;
+              background-color: rgba(theme.$black_01, 0.05);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+              img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+              }
+            }
+
+            .athleteInfo {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+
+              h3 {
+                font-size: theme.$f2;
+                font-weight: 900;
+                color: theme.$black_01;
+                margin: 0;
+                line-height: 1.2;
+              }
+
+              .transferDate {
+                font-size: theme.$f5;
+                color: rgba(theme.$black_01, 0.7);
+                margin: 0;
+                font-weight: 500;
+              }
+            }
+          }
+
+          .transferStatusBadge {
+            padding: 10px 20px;
+            font-size: theme.$f5;
+            font-weight: 800;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+            &.status-pending {
+              background-color: #FFA726;
+              color: theme.$white_01;
+            }
+
+            &.status-waiting-price {
+              background-color: #42A5F5;
+              color: theme.$white_01;
+            }
+
+            &.status-waiting-payment {
+              background-color: #AB47BC;
+              color: theme.$white_01;
+            }
+
+            &.status-pending-validation {
+              background-color: #FFCA28;
+              color: theme.$black_01;
+            }
+
+            &.status-completed {
+              background-color: #66BB6A;
+              color: theme.$white_01;
+            }
+
+            &.status-rejected {
+              background-color: theme.$red_01;
+              color: theme.$white_01;
+            }
+          }
+        }
+
+        .transferClubsInfo {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+          padding: 16px;
+          background-color: rgba(theme.$black_01, 0.02);
+          border-radius: 8px;
+
+          .clubInfoItem {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            .clubLabel {
+              font-size: theme.$f6;
+              font-weight: 600;
+              color: rgba(theme.$black_01, 0.6);
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+
+            .clubName {
+              font-size: theme.$f4;
+              font-weight: 700;
+              color: theme.$black_01;
+            }
+          }
+        }
+
+        .transferApprovals {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 12px;
+          padding: 16px;
+          background-color: rgba(theme.$black_01, 0.03);
+          border: 1px solid rgba(theme.$black_01, 0.1);
+          border-radius: 8px;
+
+          .approvalItem {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+
+            .approvalLabel {
+              font-size: theme.$f5;
+              font-weight: 600;
+              color: theme.$black_01;
+            }
+
+            .approvalBadge {
+              padding: 6px 14px;
+              font-size: theme.$f6;
+              font-weight: 700;
+              white-space: nowrap;
+              text-transform: uppercase;
+              letter-spacing: 0.3px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+              &.approved {
+                background-color: #66BB6A;
+                color: theme.$white_01;
+              }
+
+              &.rejected {
+                background-color: theme.$red_01;
+                color: theme.$white_01;
+              }
+
+              &.pending {
+                background-color: #FFA726;
+                color: theme.$white_01;
+              }
+            }
+          }
+        }
+
+        .transferPriceDisplay {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 20px;
+          background-color: rgba(theme.$blue_01, 0.1);
+          border-left: 4px solid theme.$blue_01;
+          border-radius: 4px;
+
+          .priceLabel {
+            font-size: theme.$f5;
+            font-weight: 600;
+            color: rgba(theme.$black_01, 0.7);
+          }
+
+          .priceValue {
+            font-size: theme.$f2;
+            font-weight: 900;
+            color: theme.$blue_01;
+          }
+        }
+
+        .receiptDisplay {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding: 16px;
+          background-color: rgba(theme.$black_01, 0.02);
+          border-radius: 8px;
+
+          .receiptInfo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+
+            .receiptLabel {
+              font-size: theme.$f5;
+              font-weight: 600;
+              color: theme.$black_01;
+            }
+
+            .viewReceiptButton {
+              padding: 8px 16px;
+              font-size: theme.$f6;
+              font-weight: 700;
+              background-color: theme.$blue_01;
+              color: theme.$white_01;
+              border: 2px solid theme.$blue_01;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              text-transform: uppercase;
+              letter-spacing: 0.3px;
+
+              &:hover {
+                background-color: rgba(theme.$blue_01, 0.9);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(theme.$blue_01, 0.3);
+              }
+            }
+          }
+
+          .receiptStatus {
+            font-size: theme.$f6;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+
+            &.pending {
+              color: #FFA726;
+            }
+
+            &.approved {
+              color: #66BB6A;
+            }
+
+            &.rejected {
+              color: theme.$red_01;
+            }
+          }
+        }
+
+        // ============================================
+        // ACTION SECTIONS
+        // ============================================
+        .transferActionSection {
+          padding: 20px;
+          background: linear-gradient(135deg, rgba(theme.$blue_01, 0.05) 0%, rgba(theme.$blue_01, 0.02) 100%);
+          border: 2px solid rgba(theme.$blue_01, 0.2);
+          border-radius: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+
+          .actionHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+
+            h4 {
+              font-size: theme.$f3;
+              font-weight: 800;
+              color: theme.$black_01;
+              margin: 0;
+            }
+
+            p {
+              font-size: theme.$f5;
+              color: rgba(theme.$black_01, 0.7);
+              margin: 0;
+            }
+
+            .priceRequired {
+              font-size: theme.$f5;
+              font-weight: 700;
+              color: theme.$blue_01;
+              padding: 6px 12px;
+              background-color: rgba(theme.$blue_01, 0.1);
+              border-radius: 4px;
+            }
+          }
+
+          // Receipt Upload Section
+          &.receiptUploadSection {
+            .receiptUploadContent {
+              display: flex;
+              flex-direction: column;
+              gap: 16px;
+
+              .fileInput {
+                display: none;
+              }
+
+              .fileInputLabel {
+                padding: 14px 20px;
+                font-size: theme.$f5;
+                font-weight: 700;
+                border: 2px dashed theme.$black_01;
+                background-color: theme.$white_01;
+                color: theme.$black_01;
+                cursor: pointer;
+                text-align: center;
+                transition: all 0.2s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+
+                &:hover {
+                  background-color: rgba(theme.$black_01, 0.05);
+                  border-color: theme.$blue_01;
+                  color: theme.$blue_01;
+                }
+              }
+
+              .actionButton {
+                padding: 14px 24px;
+                font-size: theme.$f5;
+                font-weight: 800;
+                cursor: pointer;
+                border: 2px solid transparent;
+                transition: all 0.2s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+
+                &.primary {
+                  background-color: theme.$blue_01;
+                  color: theme.$white_01;
+                  border-color: theme.$blue_01;
+                  box-shadow: 0 2px 8px rgba(theme.$blue_01, 0.2);
+
+                  &:hover:not(:disabled) {
+                    background-color: rgba(theme.$blue_01, 0.9);
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(theme.$blue_01, 0.3);
+                  }
+
+                  &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                    transform: none;
+                  }
+                }
+              }
+            }
+          }
+
+          // Approval Section
+          &.approvalSection {
+            .approvalActions {
+              display: flex;
+              gap: 12px;
+              flex-wrap: wrap;
+
+              .actionButton {
+                flex: 1;
+                min-width: 160px;
+                padding: 14px 24px;
+                font-size: theme.$f5;
+                font-weight: 800;
+                cursor: pointer;
+                border: 2px solid transparent;
+                transition: all 0.2s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+
+                &.success {
+                  background-color: #66BB6A;
+                  color: theme.$white_01;
+                  border-color: #66BB6A;
+                  box-shadow: 0 2px 8px rgba(102, 187, 106, 0.2);
+
+                  &:hover {
+                    background-color: #5CAE60;
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(102, 187, 106, 0.3);
+                  }
+                }
+
+                &.danger {
+                  background-color: theme.$red_01;
+                  color: theme.$white_01;
+                  border-color: theme.$red_01;
+                  box-shadow: 0 2px 8px rgba(theme.$red_01, 0.2);
+
+                  &:hover {
+                    background-color: rgba(theme.$red_01, 0.9);
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(theme.$red_01, 0.3);
+                  }
+                }
+
+                &:active {
+                  transform: translateY(0);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // MODALS
+  // ============================================
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .modalContent {
+    background-color: theme.$white_01;
+    border: 2px solid theme.$black_01;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+    max-height: 90vh;
+    overflow: hidden;
+
+    .modalHeader {
+      padding: 24px;
+      border-bottom: 2px solid theme.$black_01;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h2 {
+        color: theme.$black_01;
+        font-size: theme.$f2;
+        font-weight: 900;
+        margin: 0;
+      }
+
+      .closeButton {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border-radius: 4px;
+
+        &:hover {
+          background-color: rgba(theme.$black_01, 0.1);
+        }
+      }
+    }
+
+    .modalBody {
+      padding: 24px;
+      overflow-y: auto;
+
+      .confirmAthleteInfo {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+
+        .confirmAvatar {
+          width: 100px;
+          height: 100px;
+          min-width: 100px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 3px solid theme.$black_01;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+          }
+        }
+
+        .confirmDetails {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+
+          h3 {
+            font-size: theme.$f2;
+            font-weight: 900;
+            color: theme.$black_01;
+            margin: 0;
+          }
+
+          .confirmDetailRow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+
+            .confirmLabel {
+              font-size: theme.$f5;
+              font-weight: 600;
+              color: rgba(theme.$black_01, 0.6);
+            }
+
+            .confirmValue {
+              font-size: theme.$f5;
+              font-weight: 700;
+              color: theme.$black_01;
+            }
+          }
+        }
+      }
+
+      &.receiptModalBody {
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(theme.$black_01, 0.05);
+
+        img {
+          max-width: 100%;
+          max-height: calc(90vh - 120px);
+          height: auto;
+          object-fit: contain;
+        }
+
+        iframe {
+          width: 100%;
+          min-height: calc(90vh - 120px);
+          border: none;
+        }
+      }
+    }
+
+    .modalActions {
+      padding: 24px;
+      border-top: 2px solid theme.$black_01;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+
+      .modalButton {
+        padding: 12px 28px;
+        font-size: theme.$f5;
+        font-weight: 700;
+        cursor: pointer;
+        border: 2px solid;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+
+        &.secondary {
+          background-color: transparent;
+          color: theme.$black_01;
+          border-color: theme.$black_01;
+
+          &:hover {
+            background-color: rgba(theme.$black_01, 0.1);
+          }
+        }
+
+        &.primary {
+          background-color: theme.$blue_01;
+          color: theme.$white_01;
+          border-color: theme.$blue_01;
+          box-shadow: 0 2px 8px rgba(theme.$blue_01, 0.2);
+
+          &:hover {
+            background-color: rgba(theme.$blue_01, 0.9);
+            border-color: rgba(theme.$blue_01, 0.9);
+          }
+        }
+      }
+    }
+
+    &.receiptModal {
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+  }
+
+  // ============================================
+  // RESPONSIVE
+  // ============================================
+  @media (max-width: 768px) {
+    main {
+      padding: calc(84px + 18px) 18px 16px;
+      gap: 24px;
+
+      section {
+        gap: 24px;
+
+        .pageHeader {
+          h1 {
+            font-size: calc(theme.$f1 + 8px);
+          }
+        }
+
+        .tabsContainer {
+          flex-wrap: wrap;
+          gap: 4px;
+
+          .tabButton {
+            padding: 10px 16px;
+            font-size: theme.$f6;
+          }
+        }
+
+        .searchBox {
+          padding: 12px 16px;
+        }
+
+        .athletesGrid {
+          grid-template-columns: 1fr;
+        }
+
+        .transferCard {
+          padding: 16px;
+
+          .transferCardHeader {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+
+            .transferCardMainInfo {
+              .athleteAvatar {
+                width: 80px;
+                height: 80px;
+                min-width: 80px;
+              }
+            }
+
+            .transferStatusBadge {
+              align-self: flex-start;
+            }
+          }
+
+          .transferClubsInfo {
+            grid-template-columns: 1fr;
+          }
+
+          .transferApprovals {
+            grid-template-columns: 1fr;
+          }
+
+          .transferActionSection {
+            padding: 16px;
+
+            &.receiptUploadSection {
+              .receiptUploadContent {
+                .fileInputLabel,
+                .actionButton {
+                  width: 100%;
+                }
+              }
+            }
+
+            &.approvalSection {
+              .approvalActions {
+                flex-direction: column;
+
+                .actionButton {
+                  width: 100%;
+                  min-width: auto;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .modalContent {
+      max-width: 100%;
+      margin: 0;
+
+      .modalBody {
+        .confirmAthleteInfo {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+      }
+
+      .modalActions {
+        flex-direction: column-reverse;
+
+        .modalButton {
+          width: 100%;
+        }
+      }
+    }
+  }
+}

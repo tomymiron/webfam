@@ -1,18 +1,19 @@
 import { dateFullFormatter, timeLeft, timeGetter } from "../constants/timeGetter";
-import { useNavigate, useParams } from "react-router-dom";
-import "material-react-toastify/dist/ReactToastify.css";
-import EventItem from "../components/meets/EventItem";
-import { useAuthClub } from "../contexts/AuthContextClub";
-import { useQuery } from "@tanstack/react-query";
-import { makeRequest } from "../config/axios";
-import { COLORS } from "../constants/theme";
 import { profileImageGetter } from "../constants/imageGetter";
 import { categoryGetter } from "../constants/categoryGetter";
+import { resultGetter } from "../constants/resultGetter";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuthClub } from "../contexts/AuthContextClub";
 import { formatPrice } from "../constants/priceFormatter";
+import "material-react-toastify/dist/ReactToastify.css";
+import EventItem from "../components/meets/EventItem";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "material-react-toastify";
+import { makeRequest } from "../config/axios";
+import { COLORS } from "../constants/theme";
+import { useEffect, useState } from "react";
 import Transition from "../Transition";
 import Icon from "../constants/Icon";
-import { useEffect, useState } from "react";
 
 function ClubMeet() {
   useEffect(() => {import("./styles/clubMeet.scss")}, []);
@@ -55,6 +56,13 @@ function ClubMeet() {
     enabled: !!authState?.token,
   });
 
+  // Obtener TODAS las inscripciones del torneo (para "Ver X Inscripciones")
+  const { data: allInscriptions } = useQuery({
+    queryFn: () => makeRequest.get(`/meets/${id}/inscriptions`).then((res) => res.data),
+    queryKey: ["allInscriptions", id],
+    enabled: !!authState?.authenticated,
+  });
+
   // Obtener fondos del club
   const { data: fundsData } = useQuery({
     queryFn: () => makeRequest.get("/clubs/own/funds", {
@@ -70,6 +78,9 @@ function ClubMeet() {
     }
   }, [fundsData]);
 
+  // fund_visible es null cuando es visible, o un PIN cuando está oculto
+  const isFundVisible = fundsData?.fund_visible === null;
+
   // Obtener eventos disponibles para el atleta seleccionado
   const { data: availableEvents } = useQuery({
     queryFn: () => makeRequest.get(`/meets/${id}/events/available/athlete/${currentAthleteId}`, {
@@ -79,9 +90,12 @@ function ClubMeet() {
     enabled: !!currentAthleteId && !!authState?.token,
   });
 
-  // Filtrar solo atletas habilitados (cert_status === 2 && receipt_status === 2)
+  // Filtrar solo atletas habilitados
+  // 1. Certificado médico aprobado (cert_status === 2)
+  // 2. Para atletas con federation = 1: tener pago aprobado este año (revalida, afiliación o pase de club)
   const enabledAthletes = clubAthletes?.filter(
-    athlete => athlete.cert_status === 2 && athlete.receipt_status === 2
+    athlete => athlete.cert_status === 2 &&
+               (athlete.federation !== 1 || athlete.has_valid_payment === 1)
   ) || [];
 
   // Filtrar atletas por término de búsqueda
@@ -97,6 +111,13 @@ function ClubMeet() {
     const address = encodeURIComponent(meet.place_address || meet.place_name);
     const url = `https://www.google.com/maps/search/?api=1&query=${address}`;
     window.open(url, "_blank");
+  }
+
+  const handleProgramClick = () => {
+    if (meet.program) {
+      const programUrl = `${import.meta.env.VITE_API_URL}/image/program/${meet.program}`;
+      window.open(programUrl, "_blank");
+    }
   }
 
   const handleAthleteSelect = (athleteId) => {
@@ -301,14 +322,25 @@ function ClubMeet() {
                 <Icon name="map" size={18} color={COLORS.white_01} />
                 <p>{meet.place_name}</p>
               </button>
+              {meet.program && (
+                <button className="tag" onClick={handleProgramClick} type="button">
+                  <Icon name="pdf" size={18} color={COLORS.white_01} />
+                  <p>Programa & Horarios</p>
+                </button>
+              )}
               <button onClick={() => navigate(`/inscriptions/${id}`)}>
                 <p>Ver {meet.athletes} Inscripciones</p>
               </button>
+              {authState.authenticated && (
+                <button onClick={() => navigate(`/club/meet/${id}/inscriptions`)}>
+                  <p>Ver MIS Inscriptos</p>
+                </button>
+              )}
             </div>
           </div>
 
           <div id="athletesSelection">
-            <h4>Selecciona Atletas</h4>
+            <h4>Selecciona Atletas <strong style={{ color: COLORS.purple_01 }}>HABILITADOS</strong></h4>
             
             <div id="searchContainer">
               <Icon name="search" size={20} color={COLORS.black_01} />
@@ -331,24 +363,14 @@ function ClubMeet() {
                   const existingInscriptionsForAthlete = getAthleteInscriptions(athlete.id);
                   
                   return (
-                    <button
-                      key={athlete.id}
-                      className={`athleteCard ${isSelected ? 'selected' : ''}`}
-                      onClick={() => handleAthleteSelect(athlete.id)}
-                    >
+                    <button key={athlete.id} className={`athleteCard ${isSelected ? 'selected' : ''}`} onClick={() => handleAthleteSelect(athlete.id)}>
                       <img src={profileImageGetter(athlete.image)} alt={athlete.name} />
                       <div className="athleteInfo">
                         <p className="athleteName">{athlete.name}</p>
                         <p className="athleteCategory">{categoryGetter(athlete.born)}</p>
-                        {existingInscriptionsForAthlete.length > 0 && (
-                          <p className="athleteInscriptions">
-                            {existingInscriptionsForAthlete.length} prueba{existingInscriptionsForAthlete.length > 1 ? 's' : ''} inscripta{existingInscriptionsForAthlete.length > 1 ? 's' : ''}
-                          </p>
-                        )}
+                        {existingInscriptionsForAthlete.length > 0 && <p className="athleteInscriptions">{existingInscriptionsForAthlete.length} prueba{existingInscriptionsForAthlete.length > 1 ? 's' : ''} inscripta{existingInscriptionsForAthlete.length > 1 ? 's' : ''}</p>}
                       </div>
-                      {athleteInscriptions > 0 && (
-                        <div className="inscriptionBadge">{athleteInscriptions}</div>
-                      )}
+                      {athleteInscriptions > 0 && <div className="inscriptionBadge">Inscripto: {athleteInscriptions}</div>}
                     </button>
                   );
                 })}
@@ -378,7 +400,7 @@ function ClubMeet() {
                       {currentAthleteInscriptions.map(ins => (
                         <div key={ins.event_id} className="inscriptionTag">
                           <p>{timeGetter(ins.time)}</p>
-                          <p>{ins.discipline}</p>
+                          <p>- {ins.discipline}</p>
                         </div>
                       ))}
                     </div>
@@ -393,31 +415,56 @@ function ClubMeet() {
                     const isSelected = isEventSelected(event.id);
                     
                     return (
-                      <button
-                        key={event.id}
-                        className={`eventCard ${isSelected ? 'selected' : ''} ${isInscribed ? 'inscribed' : ''}`}
-                        onClick={() => handleEventToggle(event.id, event.price, event.discipline, event.time)}
-                        disabled={isInscribed}
-                      >
-                        <div className="eventInfo">
-                          <div className="eventTimeDiscipline">
-                            <p className="eventTime">{timeGetter(event.time)}</p>
-                            <p className="eventName">{event.discipline}</p>
+                      <div key={event.id} className={`eventCardWrapper ${isSelected ? 'selected' : ''} ${isInscribed ? 'inscribed' : ''}`} >
+                        <button className="eventCard" onClick={() => handleEventToggle(event.id, event.price, event.discipline, event.time)} disabled={isInscribed} >
+                          <div className="eventMainInfo">
+                            <div className="eventHeader">
+                              <div className="eventHeaderInfo">
+                                <div className="eventTimeBadge">
+                                  <Icon name="clock" size={24} color={isSelected || isInscribed ? COLORS.white_01 : COLORS.black_01} />
+                                  <span className="eventTime">{timeGetter(event.time)}</span>
+                                </div>
+                                <div className="eventTimeBadge">
+                                  <span className="eventName">{event.discipline}</span>
+                                </div>
+                              </div>
+                              {isSelected && !isInscribed && <div className="statusBadge selected">Seleccionado</div>}
+                              {isInscribed && <div className="statusBadge inscribed"><Icon name="check" size={14} color={COLORS.white_01} />Inscripto</div>}
+                            </div>
+
+                            <div className="eventContent">
+                              <div className="eventDetails">
+                                <div className="eventMeta">
+                                  {event.best_mark ?
+                                    <div className="eventMark">
+                                      <span>Mejor marca <strong>{resultGetter(event.best_mark, event.unit)}</strong></span>
+                                    </div>
+                                  :
+                                    <div className="eventMark">
+                                      <span>Sin marca previa</span>
+                                    </div>
+                                  }
+                                </div>
+                              </div>
+
+                              <div className="eventPricing">
+                                <div className="eventPrice">
+                                  <span className="priceAmount">${formatPrice(event.price)}</span>
+                                  <span className="priceLabel">ARS</span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <p className="eventPrice">${formatPrice(event.price)}</p>
+
+                          {!isInscribed &&
+                            <div className="eventAction">
+                              <div className={`actionButton ${isSelected ? 'selected' : 'default'}`}>
+                                <Icon name={isSelected ? "check" : "plus"} size={isSelected ? 18 : 24} color={isSelected ? COLORS.white_01 : COLORS.black_01} />
                         </div>
-                        <div className="eventCheck">
-                          {isInscribed ? (
-                            <Icon name="check" size={20} color={COLORS.white_01} />
-                          ) : (
-                            <Icon 
-                              name={isSelected ? "check" : "plus"} 
-                              size={20} 
-                              color={isSelected ? COLORS.white_01 : COLORS.black_01} 
-                            />
-                          )}
                         </div>
+                          }
                       </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -465,7 +512,7 @@ function ClubMeet() {
           {getTotalInscriptions() > 0 && (
             <div id="checkoutButton">
               <button onClick={handleCheckout}>
-                <p>Ver Resumen ({getTotalInscriptions()} inscripciones)</p>
+                <p>Ver Resumen, {getTotalInscriptions()} Inscripciones</p>
                 <p className="totalAmount">${formatPrice(calculateTotal())}</p>
               </button>
             </div>
@@ -502,7 +549,7 @@ function ClubMeet() {
                           <div key={event.eventId} className="checkoutEvent">
                             <div>
                               {event.time && <p className="eventTime">{timeGetter(event.time)}</p>}
-                              <p>{event.discipline || 'Evento'}</p>
+                              <p>- {event.discipline || 'Evento'}</p>
                             </div>
                             <p className="eventPrice">${formatPrice(event.price)}</p>
                           </div>
@@ -516,16 +563,34 @@ function ClubMeet() {
 
             <div id="checkoutFooter">
             <div id="checkoutTotal">
-              <p>Total a pagar:</p>
+                <p>TOTAL A PAGAR</p>
               <p className="totalAmount">${formatPrice(calculateTotal())}</p>
             </div>
-              <button 
-                id="payButton" 
-                onClick={() => handlePayment(false)}
-                disabled={isProcessing}
-              >
-                {isProcessing ? "Procesando..." : "PAGAR"}
+
+              <div id="paymentOptions">
+                <div className="paymentButtons">
+
+                  <button className="paymentOption mercadoPago" onClick={() => handlePayment(true)} disabled={isProcessing} >
+                    <div className="paymentInfo">
+                      <span className="paymentTitle">{isProcessing ? "Procesando..." : "Mercado Pago"}</span>
+                      <span className="paymentSubtitle">{isProcessing ? "Redirigiendo..." : "Tarjeta de crédito/débito"}</span>
+                    </div>
+                  </button>
+
+                  <button className="paymentOption clubFunds" onClick={() => handlePayment(false)} disabled={isProcessing} >
+                    <div className="paymentInfo">
+                      <span className="paymentTitle">{isProcessing ? "Procesando..." : "Fondos del Club"}</span>
+                      {isFundVisible && (
+                        <span className="paymentSubtitle">{isProcessing ? "Verificando fondos..." : `Disponible: $${formatPrice(clubFunds || 0)}`}</span>
+                      )}
+                      {!isFundVisible && (
+                        <span className="paymentSubtitle">{isProcessing ? "Verificando fondos..." : "Usar fondos del club"}</span>
+                      )}
+                    </div>
               </button>
+
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -542,49 +607,21 @@ function ClubMeet() {
             
             <div id="checkoutBody">
               <div style={{ textAlign: 'center', padding: '20px' }}>
-                <p style={{ fontSize: '18px', marginBottom: '10px' }}>
-                  No hay fondos suficientes para realizar este pago.
-                </p>
-                <p style={{ fontSize: '16px', color: '#666', marginBottom: '20px' }}>
-                  Fondos disponibles: ${formatPrice(clubFunds || 0)}
-                </p>
-                <p style={{ fontSize: '16px', color: '#666', marginBottom: '20px' }}>
-                  Total a pagar: ${formatPrice(calculateTotal())}
-                </p>
-                <p style={{ fontSize: '16px', color: '#666' }}>
-                  Elige una opción para continuar:
-                </p>
+                <p style={{ fontSize: '18px', marginBottom: '10px' }}>No hay fondos suficientes para realizar este pago.</p>
+                <p style={{ fontSize: '16px', color: '#666', marginBottom: '20px' }}>Fondos disponibles: ${formatPrice(clubFunds || 0)}</p>
+                <p style={{ fontSize: '16px', color: '#666', marginBottom: '20px' }}>Total a pagar: ${formatPrice(calculateTotal())}</p>
+                <p style={{ fontSize: '16px', color: '#666' }}>Elige una opción para continuar:</p>
               </div>
             </div>
 
             <div id="checkoutFooter" style={{ flexDirection: 'column', gap: '10px' }}>
-              <button 
-                id="payButton" 
-                onClick={handlePayWithMP}
-                disabled={isProcessing}
-                style={{ width: '100%' }}
-              >
-                {isProcessing ? "Procesando..." : "PAGAR TODO CON MERCADO PAGO"}
-              </button>
-              <button 
-                onClick={() => setShowInsufficientFundsModal(false)}
-                disabled={isProcessing}
-                style={{ 
-                  width: '100%', 
-                  backgroundColor: '#ccc', 
-                  color: '#000',
-                  border: 'none',
-                  padding: '12px',
-                  fontSize: '16px',
-                  cursor: isProcessing ? 'not-allowed' : 'pointer'
-                }}
-              >
-                CANCELAR
-              </button>
+              <button id="payButton" onClick={handlePayWithMP} disabled={isProcessing} style={{ width: '100%' }}>{isProcessing ? "Procesando..." : "PAGAR TODO CON MERCADO PAGO"}</button>
+              <button onClick={() => setShowInsufficientFundsModal(false)} disabled={isProcessing} style={{ width: '100%', backgroundColor: '#ccc', color: '#000', border: 'none', padding: '12px', fontSize: '16px', cursor: isProcessing ? 'not-allowed' : 'pointer' }}>CANCELAR</button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   )
 }
