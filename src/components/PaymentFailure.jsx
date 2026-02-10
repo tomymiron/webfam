@@ -22,19 +22,18 @@ export default function PaymentFailure() {
       draggable: true
     });
     
-    // Extraer el ID del meet del external_reference (formato: user_X_meet_Y)
+    // Extraer el ID del meet del external_reference (user_X_meet_Y o club_X_meet_Y_...)
     if (externalReference) {
-      console.log('external_reference (failure):', externalReference);
       const meetIdMatch = externalReference.match(/meet_(\d+)/);
       if (meetIdMatch) {
         const meetId = meetIdMatch[1];
-        // Redirigir al meet específico
-        navigate(`/meet/${meetId}`, { replace: true });
+        const isClub = externalReference.startsWith('club_');
+        navigate(isClub ? `/club/meet/${meetId}` : `/meet/${meetId}`, { replace: true });
         return;
       }
     }
-    // Si no se puede determinar el meet específico, redirigir a la lista de meets
-    navigate('/meets', { replace: true });
+    const isClub = externalReference?.startsWith('club_');
+    navigate(isClub ? '/club/meets' : '/meets', { replace: true });
   }, [navigate, searchParams]);
 
   // Mostrar loading mientras se procesa la redirección

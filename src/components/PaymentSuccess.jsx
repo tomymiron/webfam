@@ -26,13 +26,13 @@ export default function PaymentSuccess() {
         draggable: true
       });
       
-      // Extraer el ID del meet del external_reference (formato: user_X_meet_Y)
+      // Extraer el ID del meet del external_reference (user_X_meet_Y o club_X_meet_Y_...)
       if (externalReference) {
         const meetIdMatch = externalReference.match(/meet_(\d+)/);
         if (meetIdMatch) {
           const meetId = meetIdMatch[1];
-          console.log("MEET", meetId)
-          navigate(`/meet/${meetId}`, { replace: true });
+          const isClub = externalReference.startsWith('club_');
+          navigate(isClub ? `/club/meet/${meetId}` : `/meet/${meetId}`, { replace: true });
           return;
         }
       }
@@ -49,8 +49,9 @@ export default function PaymentSuccess() {
       });
     }
     
-    // Si no se puede determinar el meet específico, redirigir a la lista de meets
-    navigate('/meets', { replace: true });
+    // Si no se puede determinar el meet, redirigir según origen (club o atleta)
+    const isClub = externalReference?.startsWith('club_');
+    navigate(isClub ? '/club/meets' : '/meets', { replace: true });
   }, [navigate, searchParams]);
 
   // Mostrar loading mientras se procesa la redirección

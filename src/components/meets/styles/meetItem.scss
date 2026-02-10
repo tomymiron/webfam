@@ -6,12 +6,13 @@
   align-items: flex-start;
   flex-direction: column;
   position: relative;
-  max-width: 380px;
+  width: 100%;
+  min-width: 0;
   cursor: pointer;
   min-height: 194px;
   padding: 12px;
   display: flex;
-  flex: 1;
+  box-sizing: border-box;
 
   .date {
     color: theme.$black_01;

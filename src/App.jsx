@@ -7,6 +7,7 @@ import { ToastContainer } from "material-react-toastify";
 import { AnimatePresence } from "framer-motion";
 import PaymentSuccess from "./components/PaymentSuccess";
 import PaymentFailure from "./components/PaymentFailure";
+import PaymentPending from "./components/PaymentPending";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ function AppRoutes() {
           <Route path="/clubs/create" element={<CreateClub />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/failure" element={<PaymentFailure />} />
+          <Route path="/payment/pending" element={<PaymentPending />} />
 
           <Route path="/club/*" element={<ProtectedClubRoute component={<ClubRoutes />} />} />
 

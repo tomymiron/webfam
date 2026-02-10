@@ -68,7 +68,7 @@ export function Login() {
           </div>
 
           <h2>Inicia sesion en webfam</h2>
-          <p id="subTitle">Panel de atleta, ingresa para poder acceder a tus datos, marcas, inscripciones y mucho mas.</p>
+          <p id="subTitle">Panel de Atletas y Clubes, ingresa para poder acceder a tus datos, marcas, inscripciones y mucho mas.</p>
 
           <input value={user} onChange={e => setUser(e.target.value)} autoCapitalize="none" spellCheck={false} autoCorrect="none" placeholder="Email o DNI"/>
           <input value={pass} onChange={e => setPass(e.target.value)} autoCapitalize="none" spellCheck={false} autoCorrect="none" placeholder="Contraseña"/>

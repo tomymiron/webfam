@@ -22,6 +22,7 @@ body, html {
   
   main {
     padding: calc(84px + clamp(18px, 5vw, 64px)) 18px 0;
+    padding-bottom: clamp(48px, 6vw, 64px);
     flex-direction: column;
     overflow-x: hidden;
     max-width: 1256px;
@@ -72,10 +73,11 @@ body, html {
       }
 
       #meetsContainer {
-        flex-direction: row;
-        flex-wrap: wrap;
-        display: flex;
+        display: grid;
+        /* Móvil: 1 columna (100%). Al crecer: 2 columnas. Con más espacio, más columnas. */
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
         gap: 24px;
+        width: 100%;
       }
 
     }

@@ -5,11 +5,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../config/axios";
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { COLORS } from "../constants/theme";
 import NavBar from "../components/NavBar";
 import Transition from "../Transition";
 import { profileImageGetter } from "../constants/imageGetter";
-import Icon from "../constants/Icon";
 
 function ClubsRequest() {
   useEffect(() => {import("./styles/clubsRequest.scss")}, []);
@@ -202,15 +200,6 @@ function ClubsRequest() {
         <div id="clubsRequestContent">
           <h1>ASOCIACION A CLUB</h1>
           <p id="description">Busca y solicita asociarte a un club al cual pertenecer.</p>
-
-          <button 
-            id="createClubButton"
-            onClick={() => navigate("/clubs/create")}
-            title="Crear nuevo club"
-          >
-            <Icon name="plus" size={20} color={COLORS.white_01} />
-            <span>CREAR CLUB</span>
-          </button>
 
           <input
             id="searchInput"
