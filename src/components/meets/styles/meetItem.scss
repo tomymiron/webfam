@@ -48,6 +48,15 @@
       min-width: 64px;
       padding: 6px;
     }
+
+    .moreEvents {
+      background-color: theme.$white_01;
+      color: theme.$black_01;
+      border: 2px solid theme.$black_01;
+      font-size: theme.$f6;
+      min-width: auto;
+      padding: 6px 8px;
+    }
   }
 
   .spacer {
@@ -82,7 +91,7 @@
     }
 
     &.closed {
-      color: theme.$red_01;
+      color: theme.$white_01;
     }
   }
 

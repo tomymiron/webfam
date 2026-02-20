@@ -134,6 +134,33 @@
           width: 100%;
           box-sizing: border-box;
 
+          .newsLinkButton {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 24px;
+            padding: 12px 24px;
+            background-color: theme.$black_01;
+            color: theme.$white_01;
+            font-size: theme.$f5;
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid theme.$black_01;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: max-content;
+
+            &:hover {
+              background-color: theme.$white_01;
+              color: theme.$black_01;
+            }
+
+            &:active {
+              transform: scale(0.98);
+            }
+          }
+
           .newsDescription {
             font-size: theme.$f4;
             color: theme.$black_01;

@@ -123,10 +123,17 @@ body, html {
             display: flex;
             gap: 4px;
 
+            
+
             p {
               color: theme.$white_01;
               font-size: theme.$f4;
               font-weight: 500;
+            }
+
+            &.closed {
+              background-color: theme.$red_01;
+              color: theme.$white_01;
             }
           } 
 

@@ -11,6 +11,7 @@ import Clubs from "./Clubs";
 import ClubDetail from "./ClubDetail";
 import Meets from "./Meets";
 import Meet from "./Meet";
+import MeetResults from "./MeetResults";
 import ClubsRequest from "./ClubsRequest";
 import CreateClub from "./CreateClub";
 import ClubHome from "./ClubHome";
@@ -21,6 +22,7 @@ import ClubMeet from "./ClubMeet";
 import ClubInscriptions from "./ClubInscriptions";
 import ClubTransfers from "./ClubTransfers";
 import ClubPrices from "./ClubPrices";
+import Aranceles from "./Aranceles";
 import News from "./News";
 import NewsDetail from "./NewsDetail";
 import Results from "./Results";
@@ -31,6 +33,7 @@ export {
   Register,
 
   Meet,
+  MeetResults,
   Meets,
   Athlete,
   Athletes,
@@ -50,6 +53,7 @@ export {
   ClubInscriptions,
   ClubTransfers,
   ClubPrices,
+  Aranceles,
   News,
   NewsDetail,
 };

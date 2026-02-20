@@ -4,26 +4,37 @@ import { makeRequest } from "../config/axios";
 import NavBar from "../components/NavBar";
 import Transition from "../Transition";
 import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { timeSince, dateOnlyFormatter } from "../constants/timeGetter";
 import { COLORS } from "../constants/theme";
 import Icon from "../constants/Icon";
 
 function NewsDetail() {
-  useEffect(() => {import("./styles/newsDetail.scss")}, []);
+  useEffect(() => { import("./styles/newsDetail.scss") }, []);
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const { data: news, isLoading, isError } = useQuery({
-    queryFn: () => makeRequest.get(`/news/${id}`).then((res) => res.data),
-    queryKey: ["news", id],
+  // Usar la noticia pasada por el estado de navegación (al hacer clic desde la lista)
+  const newsFromState = location.state?.news;
+
+  // Fetch al backend (si no hay state, es la única fuente; si hay state, refresca datos completos)
+  const { data: newsFromApi, isLoading, isError } = useQuery({
+    queryKey: ["newsDetail", id],
+    queryFn: async () => {
+      const response = await makeRequest.get("/news/single", { params: { id } });
+      return response.data;
+    },
     enabled: !!id,
+    retry: false,
   });
+
+  // Priorizar API (datos completos) sobre state (puede venir de lista con campos reducidos)
+  const news = newsFromApi ?? newsFromState;
 
   const getImageUrl = (image) => {
     if (!image) return null;
-    const baseUrl = import.meta.env.VITE_API_URL;
-    return `${baseUrl}/image/news/${image}`;
+    return `${import.meta.env.VITE_API_URL}/image/news/${image}`;
   };
 
   const formatDate = (date) => {
@@ -36,7 +47,9 @@ function NewsDetail() {
       <div id="NewsDetail">
         <NavBar />
         <main>
-          <p className="loadingMessage">Cargando noticia...</p>
+          <section>
+            <p className="loadingMessage">Cargando noticia...</p>
+          </section>
         </main>
       </div>
     );
@@ -47,7 +60,13 @@ function NewsDetail() {
       <div id="NewsDetail">
         <NavBar />
         <main>
-          <p className="errorMessage">Noticia no encontrada</p>
+          <section>
+            <p className="errorMessage">Noticia no encontrada</p>
+            <button className="backButton" onClick={() => navigate("/news")}>
+              <Icon name="left-arrow" size={20} color={COLORS.black_01} />
+              Volver a Noticias
+            </button>
+          </section>
         </main>
       </div>
     );
@@ -56,7 +75,6 @@ function NewsDetail() {
   return (
     <div id="NewsDetail">
       <NavBar />
-
       <main>
         <section>
           <button className="backButton" onClick={() => navigate("/news")}>
@@ -84,10 +102,22 @@ function NewsDetail() {
 
             <div className="newsBody">
               <div className="newsDescription">
-                {news.description.split('\n').map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
-                ))}
+                {(news.description ?? "")
+                  .split("\n")
+                  .map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ))}
               </div>
+              {news.link && (
+                <a
+                  href={news.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="newsLinkButton"
+                >
+                  {news.link_name?.trim() || "Ver más"}
+                </a>
+              )}
             </div>
           </article>
         </section>
@@ -97,4 +127,3 @@ function NewsDetail() {
 }
 
 export default Transition(NewsDetail);
-

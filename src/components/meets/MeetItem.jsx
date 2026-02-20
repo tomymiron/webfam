@@ -10,12 +10,15 @@ const isInscriptionOpen = (available) => {
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
-export default function MeetItem({ meet, isClub = false }) {
+export default function MeetItem({ meet, isClub = false, linkToResults = false }) {
   useEffect(() => {import("./styles/meetItem.scss")}, []);
   const navigate = useNavigate();
 
-  const events = meet?.events?.split("#");
-  
+  const eventsList = meet?.events?.split("#") ?? [];
+  const maxVisible = 5;
+  const visibleEvents = eventsList.slice(0, maxVisible);
+  const remainingCount = Math.max(0, eventsList.length - maxVisible);
+
   // Determinar si la competencia ya pasó
   const isPast = () => {
     if (!meet?.date) return false;
@@ -30,18 +33,21 @@ export default function MeetItem({ meet, isClub = false }) {
   const inscriptionOpen = isInscriptionOpen(meet?.available);
 
   const handleClick = () => {
-    if(isClub) return navigate(`/club/meet/${meet.id}`);
+    if (linkToResults) return navigate(`/meet/${meet.id}/results`);
+    if (isClub) return navigate(`/club/meet/${meet.id}`);
     navigate(`/meet/${meet.id}`);
-  }
+  };
+
+  const isClickable = linkToResults || !past;
 
   return (
     <button
       className="meetItem"
-      style={{ opacity: (meet.visible && !past) ? 1 : 0.65 }}
+      style={{ opacity: (meet.visible && !past) || linkToResults ? 1 : 0.65 }}
       role="button"
-      tabIndex={past ? -1 : 0}
-      onClick={past ? undefined : handleClick}
-      disabled={past}
+      tabIndex={isClickable ? 0 : -1}
+      onClick={isClickable ? handleClick : undefined}
+      disabled={!isClickable}
     >
       <p className="date">{dateOnlyFormatter(meet.date)}</p>
 
@@ -49,7 +55,18 @@ export default function MeetItem({ meet, isClub = false }) {
         <>
           <p className="eventsTitle">Pruebas</p>
           <div className="events">
-            {events?.length > 0 ? events?.map((event, index) => <p key={index}>{event}</p>): <p>No hay pruebas</p>}
+            {eventsList.length > 0 ? (
+              <>
+                {visibleEvents.map((event, index) => (
+                  <p key={index}>{event}</p>
+                ))}
+                {remainingCount > 0 && (
+                  <p className="moreEvents">+{remainingCount} pruebas</p>
+                )}
+              </>
+            ) : (
+              <p>No hay pruebas</p>
+            )}
           </div>
         </>
       )}

@@ -1,4 +1,26 @@
-import { dateFullFormatter, timeLeft, timeGetter } from "../constants/timeGetter";
+import { dateFullFormatter, timeLeft, timeGetter, shortDate, dateOnlyFormatter } from "../constants/timeGetter";
+
+// Misma lógica que Meet.jsx: inscripciones abiertas solo si meet.available es futura
+const isInscriptionOpen = (available) => {
+  if (!available) return false;
+  const availableDate = new Date(available);
+  const now = new Date();
+  return availableDate > now;
+};
+
+// Convierte time (HH:MM, HH:MM:SS o ISO) a minutos desde medianoche para ordenar
+const parseTimeToMinutes = (time) => {
+  if (time == null || time === "") return 0;
+  const s = String(time).trim();
+  const part = s.includes("T") ? s.split("T")[1] : s;
+  const [h, m] = (part || "").split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+
+const sortEventsByTime = (events) => {
+  if (!events || !Array.isArray(events)) return [];
+  return [...events].sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
+};
 import { profileImageGetter } from "../constants/imageGetter";
 import { categoryGetter } from "../constants/categoryGetter";
 import { resultGetter } from "../constants/resultGetter";
@@ -187,6 +209,10 @@ function ClubMeet() {
   };
 
   const handleCheckout = () => {
+    if (!isInscriptionOpen(meet.available)) {
+      toast.error("Inscripciones cerradas para esta competencia", { theme: "colored" });
+      return;
+    }
     const totalInscriptions = getTotalInscriptions();
     if (totalInscriptions === 0) {
       toast.error("Debes seleccionar al menos una inscripción", { theme: "colored" });
@@ -196,6 +222,10 @@ function ClubMeet() {
   };
 
   const handlePayment = async (forceMP = false) => {
+    if (!isInscriptionOpen(meet.available)) {
+      toast.error("Inscripciones cerradas para esta competencia", { theme: "colored" });
+      return;
+    }
     setIsProcessing(true);
     try {
       // Crear estructura de datos para el pago múltiple
@@ -287,11 +317,12 @@ function ClubMeet() {
     ins => ins.athlete_id === currentAthleteId
   ) || [];
   
-  // Filtrar eventos que ya están inscriptos
+  // Filtrar eventos que ya están inscriptos y ordenar por horario
   const availableEventsFiltered = availableEvents?.filter(event => {
     return !currentAthleteInscriptions.some(ins => ins.event_id === event.id);
   }) || [];
-  
+  const availableEventsByTime = sortEventsByTime(availableEventsFiltered);
+
   // Función para obtener inscripciones de un atleta
   const getAthleteInscriptions = (athleteId) => {
     return existingInscriptions?.filter(ins => ins.athlete_id === athleteId) || [];
@@ -313,7 +344,7 @@ function ClubMeet() {
       <main>
         <section>
           <div id="meetHeader">
-            <p id="meetTimeLeft">en {timeLeft(meet.date)}</p>
+            <p id="meetTimeLeft">{dateOnlyFormatter(meet.date)}</p>
             <p id="meetDate">{dateFullFormatter(meet.date)}</p>
             <p id="meetName">{meet.name}</p>
 
@@ -325,20 +356,27 @@ function ClubMeet() {
               {meet.program && (
                 <button className="tag" onClick={handleProgramClick} type="button">
                   <Icon name="pdf" size={18} color={COLORS.white_01} />
-                  <p>Programa & Horarios</p>
+                  <p>Descargar Programa & Horarios</p>
                 </button>
               )}
               <button onClick={() => navigate(`/inscriptions/${id}`)}>
                 <p>Ver {meet.athletes} Inscripciones</p>
+              </button>
+              <button onClick={() => navigate(`/meet/${id}/results`)}>
+                <p>Ver Resultados</p>
               </button>
               {authState.authenticated && (
                 <button onClick={() => navigate(`/club/meet/${id}/inscriptions`)}>
                   <p>Ver MIS Inscriptos</p>
                 </button>
               )}
+              <p className={isInscriptionOpen(meet.available) ? "tag open" : "tag closed"}>
+                {isInscriptionOpen(meet.available) ? `Inscripciones hasta ${shortDate(meet.available)}` : "Inscripciones cerradas"}
+              </p>
             </div>
           </div>
 
+          {authState.authenticated && isInscriptionOpen(meet.available) && (
           <div id="athletesSelection">
             <h4>Selecciona Atletas <strong style={{ color: COLORS.purple_01 }}>HABILITADOS</strong></h4>
             
@@ -381,12 +419,13 @@ function ClubMeet() {
               <p className="emptyMessage">No tienes atletas habilitados. Los atletas deben tener el certificado médico y recibo aprobados.</p>
             )}
           </div>
+          )}
         </section>
 
         <section>
           <div id="headerSpacer"/>
 
-          {currentAthlete && (
+          {currentAthlete && isInscriptionOpen(meet.available) && (
             <div id="eventsSelection">
               <div id="athleteHeaderInfo">
                 <div>
@@ -408,9 +447,9 @@ function ClubMeet() {
                 )}
               </div>
               
-              {availableEventsFiltered && availableEventsFiltered.length > 0 ? (
+              {availableEventsByTime && availableEventsByTime.length > 0 ? (
                 <div id="eventsList">
-                  {availableEventsFiltered.map(event => {
+                  {availableEventsByTime.map(event => {
                     const isInscribed = currentAthleteInscriptions.some(ins => ins.event_id === event.id);
                     const isSelected = isEventSelected(event.id);
                     
@@ -476,14 +515,14 @@ function ClubMeet() {
             </div>
           )}
 
-          {!currentAthlete && (
+          {(!currentAthlete || !isInscriptionOpen(meet.available)) && (
             <div id="meetEvents">
               <h4>Horarios de Pruebas</h4>
 
               {events?.male.length > 0 && (
                 <div className="meetEventsContainer">
                   <p className="meetEventsTitle">Hombres</p>
-                  {events?.male.map((event) => (
+                  {sortEventsByTime(events.male).map((event) => (
                     <EventItem key={event.id} event={event} />
                   ))}
                 </div>
@@ -492,7 +531,7 @@ function ClubMeet() {
               {events?.female.length > 0 && (
                 <div className="meetEventsContainer">
                   <p className="meetEventsTitle">Mujeres</p>
-                  {events?.female.map((event) => (
+                  {sortEventsByTime(events.female).map((event) => (
                     <EventItem key={event.id} event={event} />
                   ))}
                 </div>
@@ -501,7 +540,7 @@ function ClubMeet() {
               {events?.mixed.length > 0 && (
                 <div className="meetEventsContainer">
                   <p className="meetEventsTitle">Mixto</p>
-                  {events?.mixed.map((event) => (
+                  {sortEventsByTime(events.mixed).map((event) => (
                     <EventItem key={event.id} event={event} />
                   ))}
                 </div>
@@ -509,7 +548,7 @@ function ClubMeet() {
             </div>
           )}
 
-          {getTotalInscriptions() > 0 && (
+          {isInscriptionOpen(meet.available) && getTotalInscriptions() > 0 && (
             <div id="checkoutButton">
               <button onClick={handleCheckout}>
                 <p>Ver Resumen, {getTotalInscriptions()} Inscripciones</p>

@@ -61,6 +61,24 @@ function Meet() {
     }
   }
 
+  console.log(meet)
+
+  // Función para ordenar eventos por horario (de más temprano a más tarde)
+  const sortEventsByTime = (events) => {
+    if (!events || !Array.isArray(events)) return events;
+    return [...events].sort((a, b) => {
+      // Comparar los horarios (formato HH:MM o HH:MM:SS)
+      const timeA = a.time || '23:59:59';
+      const timeB = b.time || '23:59:59';
+      return timeA.localeCompare(timeB);
+    });
+  };
+
+  // Ordenar eventos por horario
+  const sortedMaleEvents = sortEventsByTime(events?.male);
+  const sortedFemaleEvents = sortEventsByTime(events?.female);
+  const sortedMixedEvents = sortEventsByTime(events?.mixed);
+
   return (
     <div id="Meet">
       <nav>
@@ -94,14 +112,17 @@ function Meet() {
               {meet.program && (
                 <button className="tag" onClick={handleProgramClick} type="button">
                   <Icon name="pdf" size={18} color={COLORS.white_01} />
-                  <p>Programa & Horarios</p>
+                  <p>Descargar Programa & Horarios</p>
                 </button>
               )}
-              {authState.authenticated && meet.athletes > 1 && (
+              {meet.athletes > 1 && (
                 <button onClick={() => navigate(`/inscriptions/${id}`)}>
                   <p>Ver {meet.athletes} Inscriptos</p>
                 </button>
               )}
+              <button onClick={() => navigate(`/meet/${id}/results`)}>
+                <p>Ver Resultados</p>
+              </button>
 
               {/* Tag de NO habilitado si hay error 403 */}
               {authState.authenticated && eventsAvailableError?.response?.status === 403 && (
@@ -116,28 +137,28 @@ function Meet() {
           <div id="meetEvents">
             <h4>Horarios de Pruebas</h4>
 
-            {events?.male.length > 0 && (
+            {sortedMaleEvents?.length > 0 && (
               <div className="meetEventsContainer">
                 <p className="meetEventsTitle">Hombres</p>
-                {events?.male.map((event) => (
+                {sortedMaleEvents.map((event) => (
                   <EventItem key={event.id} event={event} />
                 ))}
               </div>
             )}
 
-            {events?.female.length > 0 && (
+            {sortedFemaleEvents?.length > 0 && (
               <div className="meetEventsContainer">
                 <p className="meetEventsTitle">Mujeres</p>
-                {events?.female.map((event) => (
+                {sortedFemaleEvents.map((event) => (
                   <EventItem key={event.id} event={event} />
                 ))}
               </div>
             )}
 
-            {events?.mixed.length > 0 && (
+            {sortedMixedEvents?.length > 0 && (
               <div className="meetEventsContainer">
                 <p className="meetEventsTitle">Mixto</p>
-                {events?.mixed.map((event) => (
+                {sortedMixedEvents.map((event) => (
                   <EventItem key={event.id} event={event} />
                 ))}
               </div>

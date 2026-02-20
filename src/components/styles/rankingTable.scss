@@ -217,19 +217,14 @@
   // Tablets y pantallas medianas
   @media (max-width: 926px) {
     padding-right: 24px;
-
-    .table {
-      margin-left: 24px;
-    }
   }
 
-  // Pantallas muy pequeñas - máximo espacio
+  // Pantallas muy pequeñas - máximo espacio (solo margen derecho)
   @media (max-width: 480px) {
-    padding: 0 16px;
-    
+    padding-right: 16px;
 
     .table {
-      margin: 0 16px;
+      margin-right: 16px;
       padding-right: 16px; // Margen en pantallas pequeñas
 
       .header .th,

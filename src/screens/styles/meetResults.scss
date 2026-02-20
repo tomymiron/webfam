@@ -1,0 +1,237 @@
+@use "../../theme.scss" as theme;
+
+#MeetResults {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+
+  @media (min-width: 926px) {
+    padding-right: 32px;
+  }
+
+  .loadingMessage {
+    padding: 48px;
+    font-size: theme.$f4;
+    color: theme.$black_01;
+  }
+
+  nav {
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    padding-top: 32px;
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    width: 100%;
+    top: 0;
+
+    #backButton {
+      background-color: theme.$purple_01;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px;
+      width: 102px;
+      display: flex;
+      height: 64px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #profileButton {
+      background-color: theme.$white_01;
+      border: 1px solid theme.$black_01;
+      justify-content: flex-end;
+      border-radius: 24px;
+      align-items: center;
+      margin-right: 24px;
+      padding: 12px;
+      display: flex;
+      height: 48px;
+      gap: 4px;
+      cursor: pointer;
+
+      p {
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        margin-right: 6px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  main {
+    padding: calc(84px + clamp(18px, 10vw, 64px)) 0 0 clamp(9px, 2.5vw, 32px);
+    flex-direction: column;
+    overflow-x: auto;
+    overflow-y: auto;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+    box-sizing: border-box;
+
+    section {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+
+      #meetHeader {
+        flex-direction: column;
+        display: flex;
+
+        #meetTimeLeft {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+        }
+
+        #meetTitleRow {
+          justify-content: space-between;
+          align-items: center;
+          margin: 2px 0;
+          display: flex;
+          gap: 16px;
+
+          #meetDate {
+            font-size: calc(theme.$f1 + 6px);
+            color: theme.$black_01;
+            font-weight: 900;
+            margin: 0;
+          }
+        }
+
+        #meetName {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+        }
+
+        .eventChipsScroll {
+          overflow-x: auto;
+          overflow-y: hidden;
+          margin-top: 4px;
+          -webkit-overflow-scrolling: touch;
+          width: 100%;
+        }
+
+        .eventChips {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          gap: 4px;
+          width: max-content;
+        }
+
+        .eventChip {
+          background-color: theme.$black_01;
+          color: theme.$purple_01;
+          font-size: theme.$f5;
+          font-weight: 700;
+          padding: 12px 18px;
+          min-width: 64px;
+          border: none;
+          border-radius: 0;
+          cursor: pointer;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+      }
+
+      #eventResults {
+        flex-direction: column;
+        display: flex;
+        scroll-margin-top: calc(84px + clamp(18px, 10vw, 64px));
+
+        .eventResultsHeader {
+          flex-direction: column;
+          display: flex;
+          gap: 8px;
+
+          h2 {
+            color: theme.$black_01;
+            font-size: theme.$f2;
+            font-weight: 900;
+          }
+
+          p {
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            font-weight: 500;
+          }
+
+          .eventTimeWithRefresh {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+
+            span {
+              color: theme.$black_01;
+              font-size: theme.$f4;
+              font-weight: 500;
+            }
+
+            .separator {
+              color: theme.$black_01;
+              opacity: 0.5;
+            }
+
+            .refreshButton {
+              background: transparent;
+              border: none;
+              color: theme.$purple_01;
+              font-size: theme.$f4;
+              font-weight: 600;
+              cursor: pointer;
+              padding: 0;
+              transition: opacity 0.2s ease;
+
+              &:hover:not(:disabled) {
+                opacity: 0.7;
+                text-decoration: underline;
+              }
+
+              &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+              }
+            }
+          }
+        }
+
+        .statusSectionTitle {
+          margin-top: 16px;
+          margin-bottom: 4px;
+          font-size: theme.$f4;
+          font-weight: 700;
+          color: theme.$black_01;
+        }
+      }
+
+      .separator {
+        height: 0;
+      }
+
+      .emptyMessage {
+        text-align: center;
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        font-weight: 500;
+        opacity: 0.7;
+        padding: 48px 0;
+      }
+    }
+  }
+}

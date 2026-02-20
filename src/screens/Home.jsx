@@ -11,12 +11,6 @@ import defaultCert from "../assets/default_cert.pdf";
 import BankingDataModal from "../components/BankingDataModal";
 
 
-const results = [
-  {id: 1, date: "2025-08-03 12:00:00", title: "Campeonato Metropolitano U20 Sabado", location: "Cenard, Avenida Libertador 4323"},
-  {id: 2, date: "2025-08-04 12:00:00", title: "Campeonato Metropolitano U20 Domingo", location: "Cenard, Avenida Libertador 4323"},
-  {id: 2, date: "2025-10-12 14:00:00", title: "Cross Country - Opening Season", location: "Parque Olimpico, Avenida Roca 1100"},
-]
-
 export function Home() {
   useEffect(() => {import("./styles/home.scss")}, []);
   const navigate = useNavigate();
@@ -41,6 +35,11 @@ export function Home() {
   const currentYear = new Date().getFullYear();
 
   // Obtener estadísticas desde el endpoint dedicado
+  const { data: meetsWithResults, isLoading: isLoadingMeetsWithResults } = useQuery({
+    queryFn: () => makeRequest.get("/meets/with-results", { params: { limit: 3 } }).then((res) => res.data),
+    queryKey: ["meetsWithResults"],
+  });
+
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryFn: () => makeRequest.get("/results/statistics").then((res) => res.data),
     queryKey: ["statistics"],
@@ -95,7 +94,6 @@ export function Home() {
               <button style={{backgroundColor: COLORS.cyan_01}} onClick={() => setIsBankingModalOpen(true)} >
                 <p>DATOS BANCARIOS</p>
               </button>
-
               <div style={{ flexBasis: "100%", height: 0, padding: 0, margin: 0 }} />
 
               <button style={{ backgroundColor: COLORS.purple_01, padding: "9px 32px" }} onClick={() => window.open("https://www.instagram.com/webfamok/", "_blank")} >
@@ -103,6 +101,9 @@ export function Home() {
               </button>
               <button style={{ backgroundColor: COLORS.cyan_01, padding: "9px 32px" }} onClick={() => window.open("https://www.facebook.com/webfamok", "_blank")} >
                 <Icon name="facebook" size={24} color={COLORS.black_01} />
+              </button>
+              <button style={{backgroundColor: COLORS.purple_01}} onClick={() => navigate("/aranceles")} >
+                <p>ARANCELES</p>
               </button>
             </div>
           </div>
@@ -166,7 +167,7 @@ export function Home() {
                   <div 
                     className="newItem" 
                     key={item.id}
-                    onClick={() => navigate(`/news/${item.id}`)}
+                    onClick={() => navigate(`/news/${item.id}`, { state: { news: item } })}
                     style={{ cursor: "pointer" }}
                   >
                     <p className="newTitle">{item.title}</p>
@@ -258,40 +259,44 @@ export function Home() {
             <p className="subTitle">Tiempos - Marcas</p>
 
             <div id="results">
-              <div id="resultsUnderConstructionContainer">
-                <div className="constructionIcon">
-                  <Icon name="info" size={64} color={COLORS.black_01} />
+              {isLoadingMeetsWithResults ? (
+                <div className="resultsLoading">
+                  <p>Cargando resultados...</p>
                 </div>
-                <div className="constructionContent">
-                  <p className="constructionTitle">Apartado en construcción</p>
-                  <p className="constructionMessage">Estamos trabajando en esta sección</p>
+              ) : Array.isArray(meetsWithResults) && meetsWithResults.length > 0 ? (
+                <>
+                  {meetsWithResults.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className="resultItem"
+                      onClick={() => navigate(`/meet/${item.id}/results`)}
+                    >
+                      <p className="resultItemTitle">{item.name}</p>
+                      <p className="resultItemDate">{dateOnlyFormatter(item.date)}</p>
+                      <p className="resultItemLocation">{item.place_name}, {item.place_address}</p>
+                      <div className="resultIconContainer">
+                        <Icon name="right-arrow" size={24} color={COLORS.black_01} />
+                      </div>
+                    </button>
+                  ))}
+                  <div id="moreResultsGuide">
+                    <button type="button" id="moreResults" onClick={() => navigate("/results")}>
+                      <p>VER TODOS LOS<br/>RESULTADOS</p>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div id="resultsUnderConstructionContainer">
+                  <p className="constructionMessage">Aún no hay resultados publicados</p>
+                  <div id="moreResultsGuide">
+                    <button type="button" id="moreResults" onClick={() => navigate("/results")}>
+                      <p>VER RESULTADOS</p>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-
-            {/* <div id="results">
-
-              {results?.map((item, index) => {
-                return <div className="resultItem" key={index}>
-                  <p className="resultItemTitle">{item.title}</p>
-                  <p className="resultItemDate">{dateOnlyFormatter(item.date)}</p>
-                  <p className="resultItemLocation">{item.location}</p>
-
-                  <button>
-                    <div className="resultIconContainer">
-                      <Icon name="right-arrow" size={24} color={COLORS.black_01} />
-                    </div>
-                  </button>
-                </div>
-              })}
-
-              <div id="moreResultsGuide">
-                <div id="moreResults">
-                  <p>VER TODOS LOS<br/>RESULTADOS</p>
-                </div>
-              </div>
-
-            </div> */}
           </div>
 
         </section>

@@ -19,12 +19,12 @@ const measureTextWidth = (() => {
   };
 })();
 
-// Formateadores de datos
+// Formateadores de datos (posición siempre 3 dígitos con cero a la izquierda)
 const formatRankingNumber = (value) => {
   if (value === undefined || value === null || value === '') return '-';
-  if (typeof value === 'number' && value < 10) return `0${value}`;
-  if (typeof value === 'string' && !isNaN(value) && parseInt(value) < 10) return `0${value}`;
-  return value;
+  const num = typeof value === 'number' ? value : parseInt(value, 10);
+  if (Number.isNaN(num)) return String(value);
+  return String(num).padStart(3, '0');
 };
 
 const formatMark = (value, unit) => {
@@ -65,7 +65,7 @@ const getJustifyAlign = (align) => {
   return align === "right" ? "flex-end" : align === "center" ? "center" : "flex-start";
 };
 
-const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.purple_01 }) => {
+const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.purple_01, showMedals = true }) => {
   const { authState } = useAuth();
   const { authState: clubAuthState } = useAuthClub();
   const navigate = useNavigate();
@@ -427,14 +427,14 @@ const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.pur
                         {colObj.bold ? (
                           <b>
                             {displayValue}
-                            {colObj.key === 'athlete_name' && index < 3 && (
+                            {showMedals && colObj.key === 'athlete_name' && index < 3 && (
                               index === 0 ? ' 🥇' : index === 1 ? ' 🥈' : ' 🥉'
                             )}
                           </b>
                         ) : (
                           <>
                             {displayValue}
-                            {colObj.key === 'athlete_name' && index < 3 && (
+                            {showMedals && colObj.key === 'athlete_name' && index < 3 && (
                               index === 0 ? ' 🥇' : index === 1 ? ' 🥈' : ' 🥉'
                             )}
                           </>

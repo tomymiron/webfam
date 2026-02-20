@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { Home, Login, Register, Athlete, Athletes, AthleteDetail, Clubs, ClubDetail, Meets, Meet, Inscriptions, Ranking, Results, ClubsRequest, CreateClub, ClubHome, ClubRequests, ClubAthletes, ClubMeets, ClubMeet, ClubTransfers, ClubInscriptions, ClubPrices, News, NewsDetail } from "./screens";
+import { Home, Login, Register, Athlete, Athletes, AthleteDetail, Clubs, ClubDetail, Meets, Meet, MeetResults, Inscriptions, Ranking, Results, ClubsRequest, CreateClub, ClubHome, ClubRequests, ClubAthletes, ClubMeets, ClubMeet, ClubTransfers, ClubInscriptions, ClubPrices, Aranceles, News, NewsDetail } from "./screens";
 import { AuthProviderClub, useAuthClub } from "./contexts/AuthContextClub";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -49,10 +49,12 @@ function AppRoutes() {
         <Routes location={location} key={location.pathname}>
 
           <Route path="/" element={<Home />} />
+          <Route path="/aranceles" element={<Aranceles />} />
           <Route path="/login" element={<HandlerLogin component={<Login />} />} />
           <Route path="/register" element={<HandlerLogin component={<Register />} />} />
 
           <Route path="/meets" element={<Meets />} />
+          <Route path="/meet/:id/results" element={<MeetResults />} />
           <Route path="/meet/:id" element={<Meet />} />
           <Route path="/news" element={<News />} />
           <Route path="/news/:id" element={<NewsDetail />} />

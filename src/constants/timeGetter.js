@@ -106,20 +106,20 @@ export function timeSince(date) {
 
   let parsedDate;
   if (typeof date === "string" && date.length >= 19) {
-    // MySQL devuelve TIMESTAMP como string "YYYY-MM-DD HH:MM:SS" en hora local del servidor
-    // Parsear manualmente los componentes para crear fecha como hora local
+    // MySQL devuelve TIMESTAMP como string "YYYY-MM-DD HH:MM:SS" (lo asumimos como UTC 0)
     const [datePart, timePart] = date.split(" ");
     if (!datePart || !timePart) return "???";
     const [year, month, day] = datePart.split("-").map(Number);
     const [hour, minute, second] = timePart.split(":").map(Number);
-    // Crear fecha en hora local (sin Date.UTC para que use la zona horaria del navegador)
-    parsedDate = new Date(year, month - 1, day, hour, minute, second);
+    // Construir fecha como UTC 0
+    parsedDate = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
   } else {
-    // Parsear fecha manualmente si es formato YYYY-MM-DD
+    // Parsear fecha manualmente si es formato YYYY-MM-DD (también como UTC 0)
     if (typeof date === 'string' && date.length === 10 && date.includes('-')) {
       const [year, month, day] = date.split('-').map(Number);
-      parsedDate = new Date(year, month - 1, day);
+      parsedDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
     } else {
+      // O cualquier otro formato, intentar parsear normal
       parsedDate = new Date(date);
     }
   }
@@ -127,8 +127,16 @@ export function timeSince(date) {
   if (isNaN(parsedDate.getTime())) return "???";
 
   const now = new Date();
-  const elapsedSeconds = Math.floor((now.getTime() - parsedDate.getTime()) / 1000);
-  
+  const nowUtc = new Date(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    now.getUTCHours(),
+    now.getUTCMinutes(),
+    now.getUTCSeconds()
+  );
+  const elapsedSeconds = Math.floor((nowUtc.getTime() - parsedDate.getTime()) / 1000);
+
   // Si elapsedSeconds es negativo (fecha futura), retornar 0s
   if (elapsedSeconds < 0) return '0s';
 

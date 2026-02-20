@@ -1,153 +1,164 @@
-import { timeGetter, timeLeft } from "../constants/timeGetter";
-import { useNavigate, useParams } from "react-router-dom";
-import { useAuthClub } from "../contexts/AuthContextClub";
 import "material-react-toastify/dist/ReactToastify.css";
-import RankingTable from "../components/RankingTable";
-import { COLORS, SIZES } from "../constants/theme";
-import { useAuth } from "../contexts/AuthContext";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../contexts/AuthContext";
 import { makeRequest } from "../config/axios";
-import { useEffect, useState } from "react";
+import { COLORS } from "../constants/theme";
 import Transition from "../Transition";
 import Icon from "../constants/Icon";
-import Select from "react-select";
-
-const customStyles = {
-  container: (base) => ({
-    ...base,
-    minWidth: "100%",
-    width: "100%",
-  }),
-  control: (base, state) => ({
-    ...base,
-    backgroundColor: COLORS.black_01,
-    borderColor: COLORS.black_01,
-    padding: "8px 12px",
-    minHeight: "54px",
-    boxShadow: "none",
-    minWidth: "100%",
-    borderRadius: 0,
-    outline: "none",
-    borderWidth: 1,
-    width: "100%",
-    "&:hover": {
-      borderColor: COLORS.black_01,
-    },
-  }),
-  valueContainer: (base) => ({
-    ...base,
-    justifyContent: "flex-start",
-    alignContent: "center",
-    alignItems: "center",
-    flexWrap: "nowrap",
-    lineHeight: 1.2,
-    columnGap: 0,
-    padding: 0,
-    margin: 0,
-    rowGap: 0,
-    gap: 0,
-  }),
-  singleValue: (base) => ({
-    ...base,
-    color: COLORS.white_01,
-    fontWeight: 600,
-    fontSize: SIZES.f5,
-  }),
-  indicatorSeparator: () => ({
-    display: "none",
-  }),
-  dropdownIndicator: (base) => ({
-    ...base,
-    color: COLORS.white_01,
-    padding: "4px",
-  }),
-  placeholder: (base) => ({
-    ...base,
-    color: COLORS.white_02,
-    fontSize: SIZES.f5,
-    fontWeight: 400,
-    margin: 0,
-  }),
-  menu: (base) => ({
-    ...base,
-    backgroundColor: COLORS.white_01,
-    overflow: "hidden",
-    borderRadius: 6,
-    border: `1px solid ${COLORS.black_01}`,
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-    zIndex: 1000,
-  }),
-  option: (base, state) => ({
-    ...base,
-    backgroundColor: state.isFocused ? COLORS.purple_01 : COLORS.white_01,
-    color: state.isFocused ? COLORS.white_01 : COLORS.black_01,
-    fontWeight: 600,
-    fontSize: SIZES.f5,
-    padding: "8px 12px",
-    cursor: "pointer",
-    ":active": {
-      backgroundColor: COLORS.purple_01,
-      color: COLORS.white_01,
-    }
-  }),
-};
+import { useEffect, useMemo, useRef } from "react";
+import { dateFullFormatter, timeLeft } from "../constants/timeGetter";
+import RankingTable from "../components/RankingTable";
 
 function Inscriptions() {
   useEffect(() => {import("./styles/inscriptions.scss")}, []);
-  const { authState: clubAuthState } = useAuthClub();
   const { authState } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [event, setEvent] = useState(null);
-  const [gender, setGender] = useState(1);
-
-  const { data: meet, isLoading: isLoadingMeet, isError: isErrorMeet } = useQuery({
+  const { data: meet, isLoading: isLoadingMeet } = useQuery({
     queryFn: () => makeRequest.get(`/meets/${id}`).then((res) => res.data),
     queryKey: ["meet", id],
   });
 
-  const { data: inscriptions, isLoading: isLoadingInscriptions, isError: isErrorInscriptions, isRefetching: isRefetchingInscriptions } = useQuery({
-    queryFn: () => makeRequest.get(`/meets/${event?.id}/inscriptions`).then((res) => res.data),
-    queryKey: ["inscriptions", event],
-    enabled: !!event,
+  const { data: inscriptions, isLoading: isLoadingInscriptions } = useQuery({
+    queryFn: () => makeRequest.get(`/meets/${id}/inscriptions/all`).then((res) => res.data),
+    queryKey: ["meetInscriptions", id],
   });
 
-  const { data: events, isLoading: isLoadingEvents, isError: isErrorEvents } = useQuery({
-    queryFn: () => makeRequest.get(`/meets/${id}/events`).then((res) => res.data),
-    queryKey: ["events", id],
-  });
+  const getGenderLabel = (gender) => {
+    switch(gender) {
+      case 1: return "Hombres";
+      case 2: return "Mujeres";
+      case 3: return "Mixto";
+      default: return "N/A";
+    }
+  };
 
-  const formatEventsForSelect = (eventsArray) => {
-    if (!eventsArray) return [];
-    return eventsArray.map(event => {
-      const hasCategories = Array.isArray(event?.categories) && event.categories.length > 0;
-      const categoriesText = hasCategories ? `, ${event.categories.join(" - ")}` : "";
+  // Agrupar inscripciones por evento y ordenar por marca
+  const groupedInscriptions = useMemo(() => {
+    if (!inscriptions || !Array.isArray(inscriptions) || inscriptions.length === 0) return {};
+
+    const grouped = {};
+    
+    inscriptions.forEach((inscription) => {
+      const eventKey = `${inscription.event_id}_${inscription.event_gender}_${inscription.discipline_alias}`;
+      
+      if (!grouped[eventKey]) {
+        grouped[eventKey] = {
+          eventKey,
+          event_id: inscription.event_id,
+          discipline_alias: inscription.discipline_alias,
+          discipline_name: inscription.discipline_name,
+          discipline_unit: inscription.discipline_unit,
+          event_gender: inscription.event_gender,
+          event_time: inscription.event_time,
+          inscriptions: []
+        };
+      }
+      
+      grouped[eventKey].inscriptions.push(inscription);
+    });
+
+    // Ordenar inscripciones dentro de cada evento por marca: pista (unit 's') menor es mejor; campo (unit 'm' u otro) mayor es mejor
+    Object.keys(grouped).forEach((key) => {
+      const unit = grouped[key].discipline_unit;
+      const lowerIsBetter = unit === "s";
+      grouped[key].inscriptions.sort((a, b) => {
+        if (a.mark === null && b.mark === null) return 0;
+        if (a.mark === null) return 1;
+        if (b.mark === null) return -1;
+        return lowerIsBetter ? a.mark - b.mark : b.mark - a.mark;
+      });
+    });
+
+    // Ordenar eventos: primero por género (Hombres, Mujeres, Mixto) y dentro de cada uno por horario
+    const sortedKeys = Object.keys(grouped).sort((a, b) => {
+      const eventA = grouped[a];
+      const eventB = grouped[b];
+
+      // Primero género (1 = Hombres, 2 = Mujeres, 3 = Mixto)
+      if (eventA.event_gender !== eventB.event_gender) {
+        return eventA.event_gender - eventB.event_gender;
+      }
+
+      // Dentro de cada género, ordenar por horario ascendente
+      if (eventA.event_time !== eventB.event_time) {
+        return (eventA.event_time || '').localeCompare(eventB.event_time || '');
+      }
+
+      return (eventA.discipline_alias || '').localeCompare(eventB.discipline_alias || '');
+    });
+
+    const sorted = {};
+    sortedKeys.forEach(key => {
+      sorted[key] = grouped[key];
+    });
+
+    return sorted;
+  }, [inscriptions]);
+
+  const getGenderLetter = (gender) => {
+    switch (gender) {
+      case 1: return "M";
+      case 2: return "F";
+      case 3: return "X";
+      default: return "?";
+    }
+  };
+
+  const eventsForChips = useMemo(() => {
+    if (!groupedInscriptions || Object.keys(groupedInscriptions).length === 0) return [];
+    return Object.entries(groupedInscriptions)
+      .map(([eventKey, group]) => ({
+        eventKey,
+        label: `${getGenderLetter(group.event_gender)} | ${group.discipline_alias || group.discipline_name || ""}`.trim(),
+        count: group.inscriptions.length
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [groupedInscriptions]);
+
+  const eventSectionRefs = useRef({});
+
+  const formatTime = (timeString) => {
+    if (!timeString) return "";
+    return timeString.substring(0, 5).replace(':', '.') + "hs";
+  };
+
+  // Transformar inscripciones para RankingTable
+  const transformInscriptionsForTable = (inscriptions, discipline, unit) => {
+    return inscriptions.map((inscription, index) => {
+      const markValue = inscription.mark !== null && inscription.mark !== undefined ? parseFloat(inscription.mark) : null;
+      // Asegurar que el unit esté disponible: primero de la inscripción individual, luego del grupo, luego null
+      const unitValue = inscription.discipline_unit || unit || null;
+      
+      // Debug: verificar que el unit esté disponible
+      if (markValue && !unitValue) {
+        console.warn('Missing unit for mark:', markValue, 'inscription:', inscription);
+      }
+      
       return {
-        value: event.id,
-        label: `${event.discipline}${categoriesText}`,
-        ...event
+        position: String(index + 1).padStart(3, '0'),
+        best_mark: markValue,
+        unit: unitValue,
+        athlete_name: inscription.user_name,
+        athlete_born: inscription.birth_year || (inscription.born ? new Date(inscription.born).getFullYear() : "N/A"),
+        club_alias: inscription.club_alias || inscription.club_name || "-",
+        discipline: discipline,
+        athlete_id: inscription.user_id,
+        inscription_id: inscription.id
       };
     });
   };
-  const getCurrentEvents = () => {
-    if (!events) return [];
-    const genderKey = gender === 1 ? "male" : gender === 2 ? "female" : "mixed";
-    return formatEventsForSelect(events[genderKey]);
-  };
-  useEffect(() => {
-    const currentEvents = getCurrentEvents();
-    if (currentEvents.length > 0) {
-      setEvent(currentEvents[0]);
-    }
-  }, [events, gender]);
 
-  if(!meet || !events || !event) return <div>Cargando...</div>
+  if (isLoadingMeet || isLoadingInscriptions) {
+    return <div>Cargando...</div>;
+  }
 
   return (
     <div id="Inscriptions">
       <nav>
-        <button id="backButton" onClick={() => navigate(-1)}>
+        <button id="backButton" onClick={() => navigate(`/meet/${id}`)}>
           <Icon name="left-arrow" size={24} color={COLORS.black_01} />
         </button>
 
@@ -165,76 +176,74 @@ function Inscriptions() {
       <main>
         <section>
           <div id="meetHeader">
-            <p id="meetTimeLeft">en {timeLeft(meet.date)}</p>
-            <p id="meetDate">INSCRIPTOS</p>
-            <p id="meetName">{meet.name}</p>
-              <div id="meetTags">
-                <div id="eventSelect">
-                  <Select 
-                    options={getCurrentEvents()} 
-                    onChange={setEvent} 
-                    value={event} 
-                    styles={customStyles} 
-                    placeholder={isLoadingEvents ? "Cargando eventos..." : "Selecciona un evento"} 
-                    isLoading={isLoadingEvents} 
-                    isDisabled={isLoadingEvents}
-                    getOptionValue={(option) => option.value}
-                    getOptionLabel={(option) => option.label}
-                    isSearchable={false}
-                  />
+            <p id="meetTimeLeft">{meet?.date && dateFullFormatter(meet.date)}</p>
+            <div id="meetTitleRow">
+              <p id="meetDate">INSCRIPTOS</p>
+            </div>
+            <p id="meetName">{meet?.name}</p>
+
+            {eventsForChips.length > 0 && (
+              <div className="eventChipsScroll">
+                <div className="eventChips">
+                  {eventsForChips.map((chip) => (
+                    <button
+                      key={chip.eventKey}
+                      type="button"
+                      className="eventChip"
+                      onClick={() => eventSectionRefs.current[chip.eventKey]?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
                 </div>
-                {events.male && events.male.length > 0 && (
-                  <button className={gender === 1 ? "active" : ""} onClick={() => setGender(1)}>
-                    <p>Hombres</p>
-                  </button>
-                )}
-                {events.female && events.female.length > 0 && (
-                  <button className={gender === 2 ? "active" : ""} onClick={() => setGender(2)}>
-                    <p>Mujeres</p>
-                  </button>
-                )}
-                {events.mixed && events.mixed.length > 0 && (
-                  <button className={gender === 3 ? "active" : ""} onClick={() => setGender(3)}>
-                    <p>Mixto</p>
-                  </button>
-                )}
-            </div>
+              </div>
+            )}
           </div>
 
-          <div id="eventInscriptions">
-            <div id="eventInscriptionsHeader">
-              <h2>{event.discipline} {gender === 1 ? "Hombres" : gender === 2 ? "Mujeres" : "Mixto"}</h2>
-              <p>{event.categories.join(" - ")} {event.categories.length > 1 && <strong>|</strong>} {timeGetter(event.time)}</p>
-            </div>
+          {Object.keys(groupedInscriptions).length > 0 ? (
+            Object.values(groupedInscriptions).map((eventGroup) => {
+              const tableData = transformInscriptionsForTable(
+                eventGroup.inscriptions,
+                eventGroup.discipline_alias || eventGroup.discipline_name,
+                eventGroup.discipline_unit
+              );
+              
+              return (
+                <div
+                  key={eventGroup.event_id}
+                  id="eventInscriptions"
+                  ref={(el) => { if (eventGroup.eventKey) eventSectionRefs.current[eventGroup.eventKey] = el; }}
+                >
+                  <div id="eventInscriptionsHeader">
+                    <h2>{getGenderLabel(eventGroup.event_gender)} {eventGroup.discipline_alias || eventGroup.discipline_name}</h2>
+                    <p>{eventGroup.event_time && formatTime(eventGroup.event_time)}</p>
+                  </div>
+                  
+                  <RankingTable
+                    data={tableData}
+                    main="athlete_id"
+                    showMedals={false}
+                    toShowColumns={[
+                      { key: "position", label: "#", align: "center", fixed: true, bold: true, minWidth: 64 },
+                      { key: "best_mark", label: "Marca", align: "right", fixed: true },
+                      { key: "athlete_name", label: "Atleta", align: "left", bold: true },
+                      { key: "athlete_born", label: "FDN", align: "right" },
+                      { key: "club_alias", label: "Club", align: "left" },
+                      { key: "discipline", label: "Prueba", align: "right" },
+                    ]}
+                  />
 
-            {isLoadingInscriptions || isRefetchingInscriptions ?
-              <div id="inscriptionsLoadingContainer">
-                <div className="loadingSpinner" />
-              </div>
-            : (inscriptions && inscriptions?.length > 0) ?
-              <RankingTable
-                toShowColumns={[
-                  { key: "position", label: "#", align: "center", fixed: true, bold: true, minWidth: 64 },
-                  { key: "best_mark", label: "Marca", align: "right", fixed: true, },
-                  { key: "athlete_name", label: "Atleta", align: "left", bold: true },
-                  { key: "athlete_born", label: "FDN", align: "right" },
-                  { key: "club_alias", label: "Club", align: "left" },
-                  { key: "discipline", label: "Prueba", align: "right" },
-                ]}
-                main="athlete_id"
-                data={inscriptions}
-              />
-            : 
-              <div id="noInscriptionsContainer">
-                <p>Aún no hay inscripciones!</p>
-              </div>
-            }
-          </div>
+                  <div className="separator"/>
+                </div>
+              );
+            })
+          ) : (
+            <p className="emptyMessage">No hay inscriptos en esta competencia</p>
+          )}
         </section>
       </main>
-
     </div>
-  )
+  );
 }
 
 export default Transition(Inscriptions);

@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import * as XLSX from "xlsx";
 import { makeRequest } from "../config/axios";
 import { useAuthClub } from "../contexts/AuthContextClub";
 import { profileImageGetter } from "../constants/imageGetter";
@@ -131,6 +132,26 @@ function ClubInscriptions() {
     }
   };
 
+  const handleDownloadExcel = () => {
+    const headers = ["Nombre del atleta", "Prueba", "Categoría"];
+    const rows = (clubInscriptions || []).map((inscription) => {
+      const athlete = clubAthletes?.find((a) => a.id === inscription.athlete_id);
+      return [
+        athlete?.name ?? "—",
+        inscription.discipline ?? "—",
+        athlete ? categoryGetter(athlete.born) : "—",
+      ];
+    });
+    const excelData = [headers, ...rows];
+    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+    worksheet["!cols"] = [{ wch: 28 }, { wch: 22 }, { wch: 14 }];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inscriptos");
+    const fileName = `${meet?.name || "Inscriptos"}_${new Date().toISOString().split("T")[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    toast.success("Excel descargado", { theme: "colored" });
+  };
+
   return (
     <div id="ClubInscriptions">
       <nav>
@@ -145,6 +166,12 @@ function ClubInscriptions() {
         <div className="navInfo">
           <h1>Mis Inscriptos</h1>
           <p>{meet.name}</p>
+          {Object.keys(groupedInscriptions).length > 0 && (
+            <button type="button" className="downloadExcelButton" onClick={handleDownloadExcel}>
+              <Icon name="pdf" size={20} color={COLORS.white_01} />
+              <span>Descargar Excel</span>
+            </button>
+          )}
         </div>
         {Object.keys(groupedInscriptions).length > 0 ? (
         <>

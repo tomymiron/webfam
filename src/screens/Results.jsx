@@ -1,46 +1,108 @@
-import { useEffect } from "react";
+import "material-react-toastify/dist/ReactToastify.css";
+import { useEffect, useRef, useCallback } from "react";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { makeRequest } from "../config/axios";
 import NavBar from "../components/NavBar";
 import Transition from "../Transition";
-import Icon from "../constants/Icon";
-import { COLORS } from "../constants/theme";
+import MeetItem from "../components/meets/MeetItem";
 
 function Results() {
-  useEffect(() => {import("./styles/results.scss")}, []);
+  useEffect(() => { import("./styles/results.scss"); }, []);
+
+  const { data: nextMeets, isLoading: isLoadingNext } = useQuery({
+    queryFn: () => makeRequest.get("/meets").then((res) => res.data),
+    queryKey: ["meets"],
+  });
+
+  const {
+    data: pastMeetsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingPast,
+  } = useInfiniteQuery({
+    queryKey: ["meets", "past"],
+    queryFn: ({ pageParam = 1 }) =>
+      makeRequest
+        .get("/meets/past", { params: { page: pageParam, limit: 10 } })
+        .then((res) => res.data),
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination?.hasMore ? lastPage.pagination.page + 1 : undefined,
+    initialPageParam: 1,
+  });
+
+  const observerTarget = useRef(null);
+  const pastMeets = pastMeetsData?.pages.flatMap((page) => page.data || []) || [];
+
+  const handleObserver = useCallback(
+    (entries) => {
+      const [target] = entries;
+      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
+
+  useEffect(() => {
+    const element = observerTarget.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(handleObserver, { threshold: 0.1 });
+    observer.observe(element);
+    return () => {
+      if (element) observer.unobserve(element);
+    };
+  }, [handleObserver]);
+
+  const hasAnyMeets = (nextMeets?.length > 0) || pastMeets.length > 0;
+  const isLoadingInitial = !hasAnyMeets && (isLoadingNext || isLoadingPast);
 
   return (
     <div id="Results">
       <NavBar />
 
       <main>
-        <section id="constructionSection">
-          <div id="constructionContainer">
-            <div id="constructionIcon">
-              <Icon name="tag" size={92} color={COLORS.blue_01} />
-            </div>
+        <section>
+          <div id="resultsHeader">
+            <h2>RESULTADOS</h2>
+            <div className="lineSeparator" />
+            <p>Elegí una competencia para ver sus resultados.</p>
+          </div>
 
-            <h1>Apartado en Construcción</h1>
-
-            <p className="constructionMessage">
-              Estamos trabajando en esta sección para traerte la mejor experiencia posible.
-              Pronto podrás ver todos los resultados aquí.
-            </p>
-
-            <div id="constructionDetails">
-              <div className="detailItem">
-                <Icon name="clock" size={24} color={COLORS.black_01} />
-                <span>Próximamente disponible</span>
-              </div>
-
-              <div className="detailItem">
-                <Icon name="tag" size={24} color={COLORS.black_01} />
-                <span>Resultados detallados</span>
-              </div>
-
-              <div className="detailItem">
-                <Icon name="user-check" size={24} color={COLORS.black_01} />
-                <span>Estadísticas completas</span>
-              </div>
-            </div>
+          <div id="resultsContainer">
+            {isLoadingInitial ? (
+              <p className="loadingMessage">Cargando torneos...</p>
+            ) : !hasAnyMeets ? (
+              <p className="emptyMessage">No hay torneos disponibles</p>
+            ) : (
+              <>
+                {nextMeets?.length > 0 && (
+                  <>
+                    <h3 className="sectionLabel">Próximas competencias</h3>
+                    <div className="meetsGrid">
+                      {nextMeets.map((meet) => (
+                        <MeetItem key={meet.id} meet={meet} linkToResults />
+                      ))}
+                    </div>
+                  </>
+                )}
+                {pastMeets.length > 0 && (
+                  <>
+                    <h3 className="sectionLabel">Competencias realizadas</h3>
+                    <div className="meetsGrid">
+                      {pastMeets.map((meet) => (
+                        <MeetItem key={meet.id} meet={meet} linkToResults />
+                      ))}
+                    </div>
+                    <div ref={observerTarget} style={{ width: "100%", height: "20px" }}>
+                      {isFetchingNextPage && (
+                        <p className="loadingMore">Cargando más...</p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
           </div>
         </section>
       </main>
