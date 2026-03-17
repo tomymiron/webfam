@@ -1,0 +1,288 @@
+@use "../../theme.scss" as theme;
+
+#MeetResultsEdit {
+  background-color: theme.$white_01;
+  letter-spacing: normal;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  min-height: 100vh;
+  display: flex;
+  width: 100vw;
+  top: 0;
+
+  @media (min-width: 926px) {
+    padding-right: 32px;
+  }
+
+  .loadingMessage {
+    padding: 48px;
+    font-size: theme.$f4;
+    color: theme.$black_01;
+  }
+
+  &.invalidLink {
+    justify-content: center;
+    align-items: center;
+    padding: 48px;
+    text-align: center;
+
+    p {
+      font-size: theme.$f3;
+      font-weight: 700;
+      color: theme.$black_01;
+      margin-bottom: 24px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: theme.$f4;
+      font-weight: 600;
+      background-color: theme.$purple_01;
+      color: theme.$white_01;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+
+  nav {
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    padding-top: 32px;
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    width: 100%;
+    top: 0;
+
+    #backButton {
+      background-color: theme.$purple_01;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px;
+      width: 102px;
+      display: flex;
+      height: 64px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #profileButton {
+      background-color: theme.$white_01;
+      border: 1px solid theme.$black_01;
+      justify-content: flex-end;
+      border-radius: 24px;
+      align-items: center;
+      margin-right: 24px;
+      padding: 12px;
+      display: flex;
+      height: 48px;
+      gap: 4px;
+      cursor: pointer;
+
+      p {
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        margin-right: 6px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  main {
+    padding: calc(84px + clamp(18px, 10vw, 64px)) 0 0 clamp(9px, 2.5vw, 32px);
+    flex-direction: column;
+    overflow-x: auto;
+    overflow-y: auto;
+    display: flex;
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+    flex: 1;
+    box-sizing: border-box;
+
+    section {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      flex-direction: column;
+      position: relative;
+      display: flex;
+      gap: 24px;
+
+      #meetHeader {
+        flex-direction: column;
+        display: flex;
+
+        #meetTimeLeft {
+          color: theme.$black_01;
+          font-size: theme.$f3;
+          font-weight: 700;
+        }
+
+        #meetTitleRow {
+          justify-content: space-between;
+          align-items: center;
+          margin: 2px 0;
+          display: flex;
+          gap: 16px;
+
+          #meetDate {
+            font-size: calc(theme.$f1 + 6px);
+            color: theme.$black_01;
+            font-weight: 900;
+            margin: 0;
+          }
+        }
+
+        #meetName {
+          color: theme.$black_01;
+          font-size: theme.$f4;
+          font-weight: 500;
+        }
+      }
+
+      #eventResults {
+        flex-direction: column;
+        display: flex;
+        scroll-margin-top: calc(84px + clamp(18px, 10vw, 64px));
+
+        .eventResultsHeader {
+          flex-direction: column;
+          display: flex;
+          gap: 8px;
+
+          h2 {
+            color: theme.$black_01;
+            font-size: theme.$f2;
+            font-weight: 900;
+          }
+
+          p {
+            color: theme.$black_01;
+            font-size: theme.$f4;
+            font-weight: 500;
+          }
+        }
+
+        .resultsTableWrap {
+          overflow-x: auto;
+          margin: 12px 0;
+          border: 2px solid theme.$black_01;
+        }
+
+        .resultsTable {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: theme.$f5;
+
+          th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(theme.$black_01, 0.12);
+            vertical-align: middle;
+          }
+
+          tbody tr {
+            background-color: theme.$white_01;
+
+            &:nth-of-type(even) {
+              background-color: rgba(theme.$black_01, 0.04);
+            }
+          }
+
+          th {
+            font-weight: 700;
+            color: theme.$black_01;
+            background-color: rgba(theme.$black_01, 0.06);
+            white-space: nowrap;
+          }
+
+          td input,
+          td select {
+            width: 100%;
+            min-width: 72px;
+            padding: 10px 12px;
+            border: 2px solid rgba(theme.$black_01, 0.25);
+            border-radius: 4px;
+            font-size: theme.$f5;
+            font-weight: 500;
+            color: theme.$black_01;
+            background-color: theme.$white_01;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+            &::placeholder {
+              color: rgba(theme.$black_01, 0.45);
+            }
+
+            &:focus {
+              outline: none;
+              border-color: theme.$purple_01;
+              box-shadow: 0 0 0 3px rgba(theme.$purple_01, 0.2);
+            }
+
+            &:hover:not(:disabled) {
+              border-color: rgba(theme.$black_01, 0.4);
+            }
+          }
+
+          td select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23000' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 32px;
+          }
+
+          td input:disabled,
+          td select:disabled {
+            background-color: rgba(theme.$black_01, 0.06);
+            color: rgba(theme.$black_01, 0.5);
+            cursor: not-allowed;
+            border-color: rgba(theme.$black_01, 0.15);
+          }
+        }
+
+        .updateResultsButton {
+          background-color: theme.$black_01;
+          color: theme.$white_01;
+          border: none;
+          padding: 12px 18px;
+          font-size: theme.$f5;
+          font-weight: 600;
+          cursor: pointer;
+          margin-top: 8px;
+          align-self: flex-start;
+
+          &:hover:not(:disabled) {
+            background-color: theme.$purple_01;
+          }
+          &:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .separator {
+        height: 0;
+      }
+
+      .emptyMessage {
+        text-align: center;
+        color: theme.$black_01;
+        font-size: theme.$f4;
+        font-weight: 500;
+        opacity: 0.7;
+        padding: 48px 0;
+      }
+    }
+  }
+}

@@ -8,6 +8,8 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { timeSince, dateOnlyFormatter } from "../constants/timeGetter";
 import { COLORS } from "../constants/theme";
 import Icon from "../constants/Icon";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function NewsDetail() {
   useEffect(() => { import("./styles/newsDetail.scss") }, []);
@@ -101,12 +103,17 @@ function NewsDetail() {
             )}
 
             <div className="newsBody">
-              <div className="newsDescription">
-                {(news.description ?? "")
-                  .split("\n")
-                  .map((paragraph, index) => (
-                    <p key={index}>{paragraph}</p>
-                  ))}
+              <div className="newsDescription newsDescriptionMarkdown">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    a: ({ node, ...props }) => (
+                      <a target="_blank" rel="noopener noreferrer" {...props} />
+                    ),
+                  }}
+                >
+                  {news.description ?? ""}
+                </ReactMarkdown>
               </div>
               {news.link && (
                 <a

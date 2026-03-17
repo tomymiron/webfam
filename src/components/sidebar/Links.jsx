@@ -64,6 +64,7 @@ export default function Links() {
     { label: "Inicio", path: "/" },
     { label: "Atletas", path: "/club/athletes" },
     { label: "Competencias", path: "/club/meets" },
+    { label: "Resultados", path: "/results" },
     { label: "Solicitudes", path: "/club/requests" },
     { label: "Aranceles", path: "/club/prices" },
     { label: "Ranking", path: "/ranking" },

@@ -12,6 +12,7 @@ import ClubDetail from "./ClubDetail";
 import Meets from "./Meets";
 import Meet from "./Meet";
 import MeetResults from "./MeetResults";
+import MeetResultsEdit from "./MeetResultsEdit";
 import ClubsRequest from "./ClubsRequest";
 import CreateClub from "./CreateClub";
 import ClubHome from "./ClubHome";
@@ -34,6 +35,7 @@ export {
 
   Meet,
   MeetResults,
+  MeetResultsEdit,
   Meets,
   Athlete,
   Athletes,

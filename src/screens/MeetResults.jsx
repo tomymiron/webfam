@@ -2,11 +2,12 @@ import "material-react-toastify/dist/ReactToastify.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../contexts/AuthContext";
+import { useAuthClub } from "../contexts/AuthContextClub";
 import { makeRequest } from "../config/axios";
 import { COLORS } from "../constants/theme";
 import Transition from "../Transition";
 import Icon from "../constants/Icon";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { dateFullFormatter } from "../constants/timeGetter";
 import { resultGetter, formatWeight } from "../constants/resultGetter";
 import RankingTable from "../components/RankingTable";
@@ -15,6 +16,7 @@ import { toast } from "material-react-toastify";
 function MeetResults() {
   useEffect(() => { import("./styles/meetResults.scss"); }, []);
   const { authState } = useAuth();
+  const { authState: clubAuthState } = useAuthClub();
   const navigate = useNavigate();
   const { id } = useParams();
   const queryClient = useQueryClient();
@@ -104,6 +106,43 @@ function MeetResults() {
   }, [sortedEventsResults]);
 
   const eventSectionRefs = useRef({});
+  const mainRef = useRef(null);
+  const prevShowScrollTopRef = useRef(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    if (prevShowScrollTopRef.current && !showScrollTop) setIsExiting(true);
+    prevShowScrollTopRef.current = showScrollTop;
+  }, [showScrollTop]);
+
+  const handleScroll = useCallback(() => {
+    const windowScroll = window.scrollY ?? document.documentElement.scrollTop;
+    const mainScroll = mainRef.current?.scrollTop ?? 0;
+    const scrolled = Math.max(windowScroll, mainScroll);
+    const threshold = window.innerHeight; // 100vh
+    setShowScrollTop(scrolled > threshold);
+  }, []);
+
+  useEffect(() => {
+    handleScroll();
+    const el = mainRef.current;
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    el?.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      mainRef.current?.removeEventListener("scroll", handleScroll);
+    };
+  }, [handleScroll]);
+
+  const scrollToTop = () => {
+    const el = mainRef.current;
+    if (el?.scrollTop > 0) {
+      el.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const buildTableDataForEvent = (eventData) => {
     const unit = eventData.discipline_unit || "m";
@@ -121,49 +160,67 @@ function MeetResults() {
     const hasWind = !!eventData.discipline_is_wind;
     const hasWeight = !!eventData.discipline_is_weight;
 
+    const disciplineLabel = eventData.discipline_alias || eventData.discipline_name || "";
+    const formatPruebaWithCategory = (categoryName) => {
+      const cat = categoryName ? String(categoryName).trim() : "";
+      if (!cat) return disciplineLabel;
+      const label = /master/i.test(cat) ? "Mayores" : cat;
+      return `${label} - ${disciplineLabel}`;
+    };
+
+    const rowWithCategory = (row, extra = {}) => ({
+      ...extra,
+      athlete_name: row.user_name,
+      athlete_born: row.birth_year ?? "—",
+      club_alias: row.club_alias || "—",
+      discipline: formatPruebaWithCategory(row.category_name),
+      athlete_id: row.user_id,
+    });
+
     const numericRows = sortedResults.map((row, index) => {
       const resultNum = row.result != null ? parseFloat(row.result) : null;
       const resultDisplay = resultNum != null ? resultGetter(resultNum, unit) : "—";
       const windDisplay = hasWind && row.wind != null && row.wind !== "" ? parseFloat(row.wind).toFixed(1) : "—";
       const weightDisplay = hasWeight && row.weight != null ? (formatWeight(row.weight) || "—") : "—";
-      return {
+      return rowWithCategory(row, {
         position: String(index + 1).padStart(3, "0"),
         result_display: resultDisplay,
         wind_display: windDisplay,
         weight_display: weightDisplay,
-        athlete_name: row.user_name,
-        athlete_born: row.birth_year ?? "—",
-        club_alias: row.club_alias || "—",
-        discipline: eventData.discipline_alias || eventData.discipline_name,
-        athlete_id: row.user_id,
-      };
+      });
     });
 
-    const statusRows = statusEntries.map((row) => ({
-      position: "—",
-      result_display: row.result_status || "—",
-      wind_display: "—",
-      weight_display: "—",
-      athlete_name: row.user_name,
-      athlete_born: row.birth_year ?? "—",
-      club_alias: row.club_alias || "—",
-      discipline: eventData.discipline_alias || eventData.discipline_name,
-      athlete_id: row.user_id,
-    }));
+    const statusRows = statusEntries.map((row) =>
+      rowWithCategory(row, {
+        position: "—",
+        result_display: row.result_status || "—",
+        wind_display: "—",
+        weight_display: "—",
+      })
+    );
 
-    const pendingRows = pendingEntries.map((row) => ({
-      position: "—",
-      result_display: "Pendiente",
-      wind_display: "—",
-      weight_display: "—",
-      athlete_name: row.user_name,
-      athlete_born: row.birth_year ?? "—",
-      club_alias: row.club_alias || "—",
-      discipline: eventData.discipline_alias || eventData.discipline_name,
-      athlete_id: row.user_id,
-    }));
+    const pendingRows = pendingEntries.map((row) =>
+      rowWithCategory(row, {
+        position: "—",
+        result_display: "Pendiente",
+        wind_display: "—",
+        weight_display: "—",
+      })
+    );
 
     return { numericRows, statusRows, pendingRows, hasWind, hasWeight };
+  };
+
+  // Agrupa filas por peso (weight_display) cuando la prueba tiene peso. Clave "" para sin peso.
+  const groupRowsByWeight = (rows, hasWeight) => {
+    if (!hasWeight || !rows.length) return [{ key: "", rows }];
+    const groups = {};
+    rows.forEach((row) => {
+      const key = row.weight_display && row.weight_display !== "—" ? row.weight_display : "—";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(row);
+    });
+    return Object.entries(groups).map(([key, r]) => ({ key, rows: r }));
   };
 
   if (isLoadingMeet || isLoadingResults) {
@@ -212,8 +269,13 @@ function MeetResults() {
         <button type="button" id="backButton" onClick={() => navigate(`/meet/${id}`)}>
           <Icon name="left-arrow" size={24} color={COLORS.black_01} />
         </button>
-        <button type="button" id="profileButton" onClick={() => navigate(authState.authenticated ? "/athlete" : "/login")}>
-          {authState.authenticated ? (
+        <button type="button" id="profileButton" onClick={() => navigate(clubAuthState?.authenticated ? "/club" : authState.authenticated ? "/athlete" : "/login")}>
+          {clubAuthState?.authenticated ? (
+            <>
+              <Icon name="users-group" size={24} color={COLORS.black_01} />
+              <p>{clubAuthState?.club?.alias || "Club"}</p>
+            </>
+          ) : authState.authenticated ? (
             <>
               <Icon name="user" size={24} color={COLORS.black_01} />
               <p>{authState?.user?.name}</p>
@@ -227,7 +289,7 @@ function MeetResults() {
         </button>
       </nav>
 
-      <main>
+      <main ref={mainRef}>
         <section>
           <div id="meetHeader">
             <p id="meetTimeLeft">{meet?.date && dateFullFormatter(meet.date)}</p>
@@ -279,36 +341,56 @@ function MeetResults() {
                     </div>
                   </div>
 
-                  {numericRows.length > 0 && (
-                    <RankingTable
-                      data={numericRows}
-                      main="athlete_id"
-                      showMedals={true}
-                      toShowColumns={getResultsColumns(hasWind, hasWeight)}
-                    />
-                  )}
+                  {numericRows.length > 0 &&
+                    groupRowsByWeight(numericRows, hasWeight).map(({ key: weightKey, rows }) => (
+                      <div key={weightKey || "numeric"} className="weightGroup">
+                        {hasWeight && weightKey && weightKey !== "—" && (
+                          <p className="weightGroupTitle">Peso {weightKey}</p>
+                        )}
+                        <RankingTable
+                          data={rows}
+                          main="athlete_id"
+                          showMedals={true}
+                          toShowColumns={getResultsColumns(hasWind, hasWeight)}
+                        />
+                      </div>
+                    ))}
 
                   {statusRows.length > 0 && (
                     <>
                       <p className="statusSectionTitle">Sin marca</p>
-                      <RankingTable
-                        data={statusRows}
-                        main="athlete_id"
-                        showMedals={false}
-                        toShowColumns={getStatusColumns(hasWind, hasWeight)}
-                      />
+                      {groupRowsByWeight(statusRows, hasWeight).map(({ key: weightKey, rows }) => (
+                        <div key={`status-${weightKey || "all"}`} className="weightGroup">
+                          {hasWeight && weightKey && weightKey !== "—" && (
+                            <p className="weightGroupTitle">Peso {weightKey}</p>
+                          )}
+                          <RankingTable
+                            data={rows}
+                            main="athlete_id"
+                            showMedals={false}
+                            toShowColumns={getStatusColumns(hasWind, hasWeight)}
+                          />
+                        </div>
+                      ))}
                     </>
                   )}
 
                   {pendingRows.length > 0 && (
                     <>
                       <p className="statusSectionTitle">Pendiente</p>
-                      <RankingTable
-                        data={pendingRows}
-                        main="athlete_id"
-                        showMedals={false}
-                        toShowColumns={getResultsColumns(hasWind, hasWeight)}
-                      />
+                      {groupRowsByWeight(pendingRows, hasWeight).map(({ key: weightKey, rows }) => (
+                        <div key={`pending-${weightKey || "all"}`} className="weightGroup">
+                          {hasWeight && weightKey && weightKey !== "—" && (
+                            <p className="weightGroupTitle">Peso {weightKey}</p>
+                          )}
+                          <RankingTable
+                            data={rows}
+                            main="athlete_id"
+                            showMedals={false}
+                            toShowColumns={getResultsColumns(hasWind, hasWeight)}
+                          />
+                        </div>
+                      ))}
                     </>
                   )}
 
@@ -321,6 +403,20 @@ function MeetResults() {
           )}
         </section>
       </main>
+
+      {(showScrollTop || isExiting) && (
+        <button
+          type="button"
+          className={`scrollToTopButton${isExiting ? " exiting" : ""}`}
+          onClick={scrollToTop}
+          onAnimationEnd={() => {
+            if (isExiting) setTimeout(() => setIsExiting(false), 50);
+          }}
+          aria-label="Subir arriba"
+        >
+          ↑
+        </button>
+      )}
     </div>
   );
 }

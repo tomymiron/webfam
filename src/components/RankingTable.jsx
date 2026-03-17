@@ -155,7 +155,7 @@ const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.pur
     );
   }
 
-  // Preparar columnas
+  // Preparar columnas (ocultar desktopOnly en viewport <= 768px)
   const columns = useMemo(() => {
     if (!Array.isArray(toShowColumns) || toShowColumns.length === 0) {
       return Object.keys(data[0]).map(key => ({
@@ -166,8 +166,9 @@ const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.pur
     }
     return toShowColumns
       .filter(colObj => Object.prototype.hasOwnProperty.call(data[0], colObj.key))
+      .filter(colObj => !(colObj.desktopOnly && isMobile))
       .map(colObj => ({ ...colObj, align: colObj.align || "left" }));
-  }, [data, toShowColumns]);
+  }, [data, toShowColumns, isMobile]);
 
   // Calcular anchos mínimos de columnas (para columnas fijas)
   const minColumnWidths = useMemo(() => {

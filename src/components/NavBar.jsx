@@ -51,6 +51,7 @@ export default function NavBar({ backgroundColor = COLORS.white_01 }) {
   const clubLinks = [
     { path: "/club/athletes", label: "Atletas", match: (path) => path.includes('/club/athletes') },
     { path: "/club/meets", label: "Competencias", match: (path) => path.includes('/club/meets') || path.includes('/club/meet/') },
+    { path: "/results", label: "Resultados", match: (path) => path.includes('/results') },
     { path: "/club/requests", label: "Solicitudes", match: (path) => path.includes('/club/requests') },
     { path: "/club/prices", label: "Aranceles", match: (path) => path.includes('/club/prices') },
     { path: "/ranking", label: "Ranking", match: (path) => path.includes('/ranking') },

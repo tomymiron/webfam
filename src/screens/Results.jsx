@@ -1,5 +1,5 @@
 import "material-react-toastify/dist/ReactToastify.css";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { makeRequest } from "../config/axios";
 import NavBar from "../components/NavBar";
@@ -8,6 +8,26 @@ import MeetItem from "../components/meets/MeetItem";
 
 function Results() {
   useEffect(() => { import("./styles/results.scss"); }, []);
+
+  const containerRef = useRef(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const handleScroll = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    setShowScrollTop(el.scrollTop > 300);
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  const scrollToTop = () => {
+    containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const { data: nextMeets, isLoading: isLoadingNext } = useQuery({
     queryFn: () => makeRequest.get("/meets").then((res) => res.data),
@@ -58,7 +78,7 @@ function Results() {
   const isLoadingInitial = !hasAnyMeets && (isLoadingNext || isLoadingPast);
 
   return (
-    <div id="Results">
+    <div id="Results" ref={containerRef}>
       <NavBar />
 
       <main>
@@ -106,6 +126,17 @@ function Results() {
           </div>
         </section>
       </main>
+
+      {showScrollTop && (
+        <button
+          type="button"
+          className="scrollToTopButton"
+          onClick={scrollToTop}
+          aria-label="Subir arriba"
+        >
+          ↑
+        </button>
+      )}
     </div>
   );
 }

@@ -19,15 +19,22 @@ export default function MeetItem({ meet, isClub = false, linkToResults = false }
   const visibleEvents = eventsList.slice(0, maxVisible);
   const remainingCount = Math.max(0, eventsList.length - maxVisible);
 
-  // Determinar si la competencia ya pasó
-  const isPast = () => {
-    if (!meet?.date) return false;
-    const meetDate = new Date(meet.date);
-    const now = new Date();
-    return meetDate < now;
+  // Comparación de día en UTC (mismo criterio que el backend)
+  const getMeetDayUTC = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   };
 
-  const past = isPast();
+  const now = new Date();
+  const todayStartUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const meetDayUTC = getMeetDayUTC(meet?.date);
+
+  // Determinar si la competencia ya pasó (comparar solo el día en UTC)
+  const past = meetDayUTC != null && meetDayUTC < todayStartUTC;
+
+  // Es el día del evento (hoy en UTC)
+  const isToday = meetDayUTC != null && meetDayUTC === todayStartUTC;
 
   // Determinar si las inscripciones están abiertas
   const inscriptionOpen = isInscriptionOpen(meet?.available);
@@ -38,18 +45,18 @@ export default function MeetItem({ meet, isClub = false, linkToResults = false }
     navigate(`/meet/${meet.id}`);
   };
 
-  const isClickable = linkToResults || !past;
+  const isClickable = true;
 
   return (
     <button
       className="meetItem"
-      style={{ opacity: (meet.visible && !past) || linkToResults ? 1 : 0.65 }}
+      style={{ opacity: past ? 0.65 : 1 }}
       role="button"
       tabIndex={isClickable ? 0 : -1}
       onClick={isClickable ? handleClick : undefined}
       disabled={!isClickable}
     >
-      <p className="date">{dateOnlyFormatter(meet.date)}</p>
+      <p className="date">{isToday ? "Hoy" : dateOnlyFormatter(meet.date)}</p>
 
       {!past && (
         <>
@@ -79,7 +86,7 @@ export default function MeetItem({ meet, isClub = false, linkToResults = false }
       <p className="name">{meet.name}</p>
       <p className="location">{meet.place_name}, {meet.place_address}</p>
       
-      <p className="timeLeft">{past ? `hace ${timeSince(meet.date)}` : `en ${timeLeft(meet.date)}`}</p>
+      <p className="timeLeft">{past ? `hace ${timeSince(meet.date)}` : isToday ? "Hoy" : `en ${timeLeft(meet.date)}`}</p>
     </button>
   );
 }

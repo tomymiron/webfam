@@ -218,6 +218,21 @@
           font-weight: 700;
           color: theme.$black_01;
         }
+
+        .weightGroup {
+          margin-top: 16px;
+
+          &:first-of-type {
+            margin-top: 0;
+          }
+        }
+
+        .weightGroupTitle {
+          margin-bottom: 8px;
+          font-size: theme.$f4;
+          font-weight: 700;
+          color: theme.$black_01;
+        }
       }
 
       .separator {
@@ -233,5 +248,62 @@
         padding: 48px 0;
       }
     }
+  }
+
+  .scrollToTopButton {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 100;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background-color: theme.$black_01;
+    color: theme.$white_01;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s, opacity 0.2s;
+    animation: scrollToTopAppear 0.3s ease-out forwards;
+
+    &.exiting {
+      animation: scrollToTopDisappear 0.3s ease-in forwards;
+      pointer-events: none;
+      transition: none;
+    }
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+@keyframes scrollToTopAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes scrollToTopDisappear {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.6) translateY(12px);
   }
 }
