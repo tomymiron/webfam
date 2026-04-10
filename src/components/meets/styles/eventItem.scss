@@ -36,4 +36,12 @@
     font-size: theme.$f1;
     font-weight: 900;
   }
+
+  &.adminOnly {
+    border-left: 4px solid theme.$orange_01;
+
+    .categories {
+      color: theme.$orange_01;
+    }
+  }
 }

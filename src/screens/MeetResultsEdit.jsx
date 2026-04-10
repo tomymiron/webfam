@@ -28,7 +28,9 @@ function formatResultForInput(val, unit) {
   if (num >= 60) {
     const min = Math.floor(num / 60);
     const sec = num % 60;
-    return `${min}.${sec.toFixed(2)}`;
+    const secWhole = Math.floor(sec);
+    const centis = Math.round((sec - secWhole) * 100);
+    return `${min}.${String(secWhole).padStart(2, '0')}.${String(centis).padStart(2, '0')}`;
   }
   return num.toFixed(2);
 }
@@ -93,12 +95,56 @@ function MeetResultsEdit() {
     enabled: !!id && !!token,
   });
 
-  const { data: resultEntries, isLoading: isLoadingEntries, isError: isEntriesError, error: entriesError } = useQuery({
+  const [relayResults, setRelayResults] = useState({});
+  const [relayStatuses, setRelayStatuses] = useState({});
+  const [savingRelayId, setSavingRelayId] = useState(null);
+
+  const { data: resultData, isLoading: isLoadingEntries, isError: isEntriesError, error: entriesError, refetch: refetchEntries } = useQuery({
     queryFn: () =>
       makeRequest.get(`/public/meets/${id}/result-entries`, { params: { token } }).then((res) => res.data),
     queryKey: ["publicMeetResultEntries", id, token],
     enabled: !!id && !!token,
   });
+
+  // Soportar respuesta vieja (array) y nueva ({ entries, relayInscriptions })
+  const resultEntries = Array.isArray(resultData) ? resultData : resultData?.entries || [];
+  const relayFromEntries = Array.isArray(resultData) ? [] : resultData?.relayInscriptions || [];
+
+  // Fallback: si el endpoint no devuelve relay data, buscarla del endpoint público de meets
+  const { data: relayFallback } = useQuery({
+    queryFn: () => makeRequest.get(`/meets/${id}/relay-inscriptions`).then(r => r.data),
+    queryKey: ["meetRelayInscriptionsFallback", id],
+    enabled: !!id && relayFromEntries.length === 0,
+  });
+
+  const relayInscriptions = relayFromEntries.length > 0 ? relayFromEntries : (relayFallback || []);
+
+  useEffect(() => {
+    if (!relayInscriptions?.length) return;
+    const initR = {};
+    const initS = {};
+    relayInscriptions.forEach(r => {
+      if (r.status) initS[r.relay_id] = r.status;
+      else if (r.result != null) initR[r.relay_id] = formatResultForInput(r.result, "s");
+    });
+    setRelayResults(prev => { const m = { ...initR }; Object.keys(prev).forEach(k => { if (prev[k] !== undefined && prev[k] !== "") m[k] = prev[k]; }); return m; });
+    setRelayStatuses(prev => { const m = { ...initS }; Object.keys(prev).forEach(k => { if (prev[k] !== undefined) m[k] = prev[k]; }); return m; });
+  }, [relayInscriptions]);
+
+  const handleSaveRelayResult = async (relayId) => {
+    const raw = relayResults[relayId];
+    const status = relayStatuses[relayId] || null;
+    const resultNum = parseResultInput(raw, "s");
+    setSavingRelayId(relayId);
+    try {
+      await makeRequest.put(`/public/meets/${id}/relay-results/${relayId}`, { result: resultNum, status }, { params: { token } });
+      toast.success("Resultado de posta guardado", { theme: "colored" });
+      refetchEntries();
+      queryClient.invalidateQueries(["meetRelayInscriptionsFallback", id]);
+    } catch (err) {
+      toast.error("Error al guardar resultado", { theme: "colored" });
+    } finally { setSavingRelayId(null); }
+  };
 
   const groupedByEvent = useMemo(() => {
     if (!resultEntries || !Array.isArray(resultEntries) || resultEntries.length === 0) return {};
@@ -403,9 +449,92 @@ function MeetResultsEdit() {
                 <div className="separator" />
               </div>
             ))
-          ) : (
+          ) : (resultData !== undefined && !relayInscriptions?.length) ? (
             <p className="emptyMessage">No hay inscriptos en esta competencia</p>
-          )}
+          ) : null}
+
+          {relayInscriptions?.length > 0 && (() => {
+            const grouped = {};
+            relayInscriptions.forEach(relay => {
+              const key = relay.event;
+              if (!grouped[key]) {
+                grouped[key] = {
+                  event_id: relay.event,
+                  discipline_alias: relay.discipline_alias,
+                  gender_name: relay.gender_name,
+                  event_time: relay.event_time,
+                  teams: []
+                };
+              }
+              grouped[key].teams.push(relay);
+            });
+
+            return Object.values(grouped).map(group => (
+              <div key={group.event_id} id="eventResults">
+                <div className="eventResultsHeader">
+                  <h2>{group.gender_name} {group.discipline_alias}</h2>
+                  <p>{formatTime(group.event_time)}</p>
+                </div>
+                <div className="resultsTableWrap">
+                  <table className="resultsTable">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Club</th>
+                        <th>Atletas</th>
+                        <th>Marca</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.teams.map((relay, idx) => {
+                        const hasStatus = !!relayStatuses[relay.relay_id];
+                        return (
+                          <tr key={relay.relay_id}>
+                            <td>{idx + 1}</td>
+                            <td>{relay.club_alias}</td>
+                            <td style={{ fontSize: "13px", maxWidth: "250px", whiteSpace: "normal" }}>{relay.athletes?.map(a => a.athlete_name).join(", ")}</td>
+                            <td>
+                              <input
+                                type="text"
+                                placeholder="Seg o MM.ss.mm"
+                                value={relayResults[relay.relay_id] ?? ""}
+                                onChange={(e) => setRelayResults(prev => ({ ...prev, [relay.relay_id]: e.target.value }))}
+                                disabled={hasStatus}
+                              />
+                            </td>
+                            <td>
+                              <select
+                                value={relayStatuses[relay.relay_id] || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setRelayStatuses(prev => ({ ...prev, [relay.relay_id]: val }));
+                                  if (val) setRelayResults(prev => ({ ...prev, [relay.relay_id]: "" }));
+                                }}
+                              >
+                                {STATUS_OPTIONS.map((opt) => (
+                                  <option key={opt.value || "empty"} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <button
+                  type="button"
+                  className="updateResultsButton"
+                  onClick={() => { group.teams.forEach(relay => handleSaveRelayResult(relay.relay_id)); }}
+                  disabled={savingRelayId != null}
+                >
+                  Actualizar Resultados
+                </button>
+                <div className="separator" />
+              </div>
+            ));
+          })()}
         </section>
       </main>
     </div>

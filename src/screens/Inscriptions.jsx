@@ -26,6 +26,11 @@ function Inscriptions() {
     queryKey: ["meetInscriptions", id],
   });
 
+  const { data: relayInscriptions } = useQuery({
+    queryFn: () => makeRequest.get(`/meets/${id}/relay-inscriptions`).then((res) => res.data),
+    queryKey: ["meetRelayInscriptions", id],
+  });
+
   const getGenderLabel = (gender) => {
     switch(gender) {
       case 1: return "Hombres";
@@ -53,6 +58,10 @@ function Inscriptions() {
           discipline_unit: inscription.discipline_unit,
           event_gender: inscription.event_gender,
           event_time: inscription.event_time,
+          event_only_fam: inscription.event_only_fam,
+          event_admin_only: inscription.event_admin_only,
+          event_label: inscription.event_label,
+          event_categories: inscription.event_categories,
           inscriptions: []
         };
       }
@@ -100,8 +109,8 @@ function Inscriptions() {
 
   const getGenderLetter = (gender) => {
     switch (gender) {
-      case 1: return "M";
-      case 2: return "F";
+      case 1: return "H";
+      case 2: return "M";
       case 3: return "X";
       default: return "?";
     }
@@ -110,11 +119,16 @@ function Inscriptions() {
   const eventsForChips = useMemo(() => {
     if (!groupedInscriptions || Object.keys(groupedInscriptions).length === 0) return [];
     return Object.entries(groupedInscriptions)
-      .map(([eventKey, group]) => ({
-        eventKey,
-        label: `${getGenderLetter(group.event_gender)} | ${group.discipline_alias || group.discipline_name || ""}`.trim(),
-        count: group.inscriptions.length
-      }))
+      .map(([eventKey, group]) => {
+        const flags = [group.event_only_fam ? "FAM" : null, group.event_label].filter(Boolean).join(" ");
+        return {
+          eventKey,
+          label: `${getGenderLetter(group.event_gender)} | ${group.discipline_alias || group.discipline_name || ""}${flags ? " | " + flags : ""}`.trim(),
+          count: group.inscriptions.length,
+          event_only_fam: group.event_only_fam,
+          event_admin_only: group.event_admin_only,
+        };
+      })
       .sort((a, b) => b.count - a.count);
   }, [groupedInscriptions]);
 
@@ -189,7 +203,7 @@ function Inscriptions() {
                     <button
                       key={chip.eventKey}
                       type="button"
-                      className="eventChip"
+                      className={`eventChip${chip.event_only_fam ? " fam" : ""}${chip.event_admin_only ? " adminOnly" : ""}`}
                       onClick={() => eventSectionRefs.current[chip.eventKey]?.scrollIntoView({ behavior: "smooth", block: "start" })}
                     >
                       {chip.label}
@@ -215,8 +229,12 @@ function Inscriptions() {
                   ref={(el) => { if (eventGroup.eventKey) eventSectionRefs.current[eventGroup.eventKey] = el; }}
                 >
                   <div id="eventInscriptionsHeader">
-                    <h2>{getGenderLabel(eventGroup.event_gender)} {eventGroup.discipline_alias || eventGroup.discipline_name}</h2>
-                    <p>{eventGroup.event_time && formatTime(eventGroup.event_time)}</p>
+                    <h2>
+                      {getGenderLabel(eventGroup.event_gender)} {eventGroup.discipline_alias || eventGroup.discipline_name}
+                      {eventGroup.event_only_fam ? <span className="eventBadge fam">FAM</span> : null}
+                      {eventGroup.event_label ? <span className="eventBadge label">{eventGroup.event_label}</span> : null}
+                    </h2>
+                    <p>{eventGroup.event_time && formatTime(eventGroup.event_time)}{eventGroup.event_categories ? ` | ${eventGroup.event_categories}` : ""}</p>
                   </div>
                   
                   <RankingTable
@@ -237,9 +255,53 @@ function Inscriptions() {
                 </div>
               );
             })
-          ) : (
+          ) : !relayInscriptions?.length ? (
             <p className="emptyMessage">No hay inscriptos en esta competencia</p>
-          )}
+          ) : null}
+
+          {relayInscriptions?.length > 0 && (() => {
+            // Agrupar por evento
+            const grouped = {};
+            relayInscriptions.forEach(relay => {
+              const key = relay.event;
+              if (!grouped[key]) {
+                grouped[key] = {
+                  event_id: relay.event,
+                  discipline_alias: relay.discipline_alias,
+                  discipline_name: relay.discipline_name,
+                  gender_name: relay.gender_name,
+                  event_gender: relay.event_gender,
+                  event_time: relay.event_time,
+                  teams: []
+                };
+              }
+              grouped[key].teams.push(relay);
+            });
+
+            return Object.values(grouped).map(group => (
+              <div key={group.event_id} id="eventInscriptions">
+                <div id="eventInscriptionsHeader">
+                  <h2>{group.gender_name} {group.discipline_alias}</h2>
+                  <p>{group.event_time && formatTime(group.event_time)}</p>
+                </div>
+
+                <div className="relayTeamsList">
+                  {group.teams.map(relay => (
+                    <div key={relay.relay_id} className="relayTeamRow">
+                      <p className="relayClub">{relay.club_alias || relay.club_name}</p>
+                      <div className="relayAthletesNames">
+                        {relay.athletes?.map(a => (
+                          <span key={a.id}>{a.name}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="separator"/>
+              </div>
+            ));
+          })()}
         </section>
       </main>
     </div>

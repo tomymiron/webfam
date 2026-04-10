@@ -166,6 +166,14 @@ body, html {
           &:active {
             opacity: 0.8;
           }
+
+          &.fam {
+            border-left: 3px solid theme.$purple_01;
+          }
+          &.adminOnly {
+            border-left: 3px solid theme.$orange_01;
+            color: theme.$orange_01;
+          }
         }
       }
 
@@ -187,6 +195,23 @@ body, html {
             color: theme.$black_01;
             font-size: theme.$f2;
             font-weight: 900;
+
+            .eventBadge {
+              font-size: theme.$f6;
+              font-weight: 800;
+              padding: 2px 8px;
+              margin-left: 8px;
+              vertical-align: middle;
+
+              &.fam {
+                background-color: theme.$purple_01;
+                color: theme.$black_01;
+              }
+              &.label {
+                background-color: theme.$orange_01;
+                color: theme.$black_01;
+              }
+            }
           }
 
           p {
@@ -217,9 +242,44 @@ body, html {
         opacity: 0.7;
         padding: 48px 0;
       }
+
+      .relayTeamsList {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 12px;
+
+        .relayTeamRow {
+          background-color: theme.$black_01;
+          padding: 14px 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+
+          .relayClub {
+            color: theme.$orange_01;
+            font-size: theme.$f3;
+            font-weight: 800;
+          }
+
+          .relayAthletesNames {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+
+            span {
+              color: theme.$white_01;
+              font-size: theme.$f5;
+              font-weight: 500;
+              background-color: rgba(255,255,255,0.1);
+              padding: 2px 8px;
+            }
+          }
+        }
+      }
     }
   }
-  
+
   @media (min-width: 926px) {
     main {
       padding-right: clamp(9px, 2.5vw, 32px);

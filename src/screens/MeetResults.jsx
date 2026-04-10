@@ -59,8 +59,8 @@ function MeetResults() {
 
   const getGenderLetter = (gender) => {
     switch (gender) {
-      case 1: return "M";
-      case 2: return "F";
+      case 1: return "H";
+      case 2: return "M";
       case 3: return "X";
       default: return "?";
     }
@@ -98,11 +98,16 @@ function MeetResults() {
 
   const eventsForChips = useMemo(() => {
     if (!sortedEventsResults || sortedEventsResults.length === 0) return [];
-    return sortedEventsResults.map((ev, idx) => ({
-      eventKey: ev.event_id,
-      label: `${getGenderLetter(ev.event_gender)} | ${ev.discipline_alias || ev.discipline_name || ""}`.trim(),
-      count: (ev.results?.length || 0) + (ev.status_entries?.length || 0) + (ev.pending_entries?.length || 0),
-    }));
+    return sortedEventsResults.map((ev, idx) => {
+      const flags = [ev.event_only_fam ? "FAM" : null, ev.event_label].filter(Boolean).join(" ");
+      return {
+        eventKey: ev.event_id,
+        label: `${getGenderLetter(ev.event_gender)} | ${ev.discipline_alias || ev.discipline_name || ""}${flags ? " | " + flags : ""}`.trim(),
+        count: (ev.results?.length || 0) + (ev.status_entries?.length || 0) + (ev.pending_entries?.length || 0),
+        event_only_fam: ev.event_only_fam,
+        event_admin_only: ev.event_admin_only,
+      };
+    });
   }, [sortedEventsResults]);
 
   const eventSectionRefs = useRef({});
@@ -228,7 +233,7 @@ function MeetResults() {
   }
 
   const hasAnyResults = sortedEventsResults && Array.isArray(sortedEventsResults) && sortedEventsResults.some(
-    (ev) => (ev.results && ev.results.length > 0) || (ev.status_entries && ev.status_entries.length > 0) || (ev.pending_entries && ev.pending_entries.length > 0)
+    (ev) => (ev.results && ev.results.length > 0) || (ev.status_entries && ev.status_entries.length > 0) || (ev.pending_entries && ev.pending_entries.length > 0) || (ev.relay_teams && ev.relay_teams.length > 0)
   );
 
   const getResultsColumns = (hasWind, hasWeight) => {
@@ -305,7 +310,7 @@ function MeetResults() {
                     <button
                       key={chip.eventKey}
                       type="button"
-                      className="eventChip"
+                      className={`eventChip${chip.event_only_fam ? " fam" : ""}${chip.event_admin_only ? " adminOnly" : ""}`}
                       onClick={() => eventSectionRefs.current[chip.eventKey]?.scrollIntoView({ behavior: "smooth", block: "start" })}
                     >
                       {chip.label}
@@ -318,6 +323,7 @@ function MeetResults() {
 
           {hasAnyResults ? (
             sortedEventsResults.map((eventData) => {
+              const isRelay = eventData.relay_teams?.length > 0;
               const { numericRows, statusRows, pendingRows, hasWind, hasWeight } = buildTableDataForEvent(eventData);
 
               return (
@@ -327,9 +333,13 @@ function MeetResults() {
                   ref={(el) => { if (eventData.event_id) eventSectionRefs.current[eventData.event_id] = el; }}
                 >
                   <div className="eventResultsHeader">
-                    <h2>{getGenderLabel(eventData.event_gender)} {eventData.discipline_alias || eventData.discipline_name}</h2>
+                    <h2>
+                      {getGenderLabel(eventData.event_gender)} {eventData.discipline_alias || eventData.discipline_name}
+                      {eventData.event_only_fam ? <span className="eventBadge fam">FAM</span> : null}
+                      {eventData.event_label ? <span className="eventBadge label">{eventData.event_label}</span> : null}
+                    </h2>
                     <div className="eventTimeWithRefresh">
-                      <span>{formatTime(eventData.event_time)} |</span>
+                      <span>{formatTime(eventData.event_time)}{eventData.event_categories ? ` | ${eventData.event_categories}` : ""} |</span>
                       <button
                         type="button"
                         className="refreshButton"
@@ -341,56 +351,102 @@ function MeetResults() {
                     </div>
                   </div>
 
-                  {numericRows.length > 0 &&
-                    groupRowsByWeight(numericRows, hasWeight).map(({ key: weightKey, rows }) => (
-                      <div key={weightKey || "numeric"} className="weightGroup">
-                        {hasWeight && weightKey && weightKey !== "—" && (
-                          <p className="weightGroupTitle">Peso {weightKey}</p>
-                        )}
-                        <RankingTable
-                          data={rows}
-                          main="athlete_id"
-                          showMedals={true}
-                          toShowColumns={getResultsColumns(hasWind, hasWeight)}
-                        />
+                  {isRelay ? (() => {
+                    // Separar equipos con marca, con status, y sin nada
+                    const withResult = eventData.relay_teams.filter(t => t.result != null && !t.status);
+                    const withStatus = eventData.relay_teams.filter(t => t.status);
+                    const pending = eventData.relay_teams.filter(t => t.result == null && !t.status);
+
+                    const sortedWithResult = [...withResult].sort((a, b) => a.result - b.result);
+
+                    const renderTeam = (team, position) => (
+                      <div key={team.relay_id} className={`relayResultTeam${team.status ? " statusTeam" : ""}`}>
+                        <div className="relayResultPosition">{position}</div>
+                        <div className="relayResultTeamInfo">
+                          <p className="relayResultClub">{team.club_alias || team.club_name}</p>
+                          <div className="relayResultAthletes">
+                            {team.athletes?.map(a => (
+                              <span key={a.user_id}>{a.user_name}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="relayResultMark">
+                          {team.status ? team.status : team.result != null ? resultGetter(team.result, "s") : "—"}
+                        </div>
                       </div>
-                    ))}
+                    );
 
-                  {statusRows.length > 0 && (
+                    return (
+                      <div className="relayResultsList">
+                        {sortedWithResult.map((team, idx) => renderTeam(team, idx + 1))}
+                        {withStatus.length > 0 && (
+                          <>
+                            <p className="statusSectionTitle">Sin marca</p>
+                            {withStatus.map(team => renderTeam(team, team.status))}
+                          </>
+                        )}
+                        {pending.length > 0 && (
+                          <>
+                            <p className="statusSectionTitle">Pendiente</p>
+                            {pending.map(team => renderTeam(team, "—"))}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })() : (
                     <>
-                      <p className="statusSectionTitle">Sin marca</p>
-                      {groupRowsByWeight(statusRows, hasWeight).map(({ key: weightKey, rows }) => (
-                        <div key={`status-${weightKey || "all"}`} className="weightGroup">
-                          {hasWeight && weightKey && weightKey !== "—" && (
-                            <p className="weightGroupTitle">Peso {weightKey}</p>
-                          )}
-                          <RankingTable
-                            data={rows}
-                            main="athlete_id"
-                            showMedals={false}
-                            toShowColumns={getStatusColumns(hasWind, hasWeight)}
-                          />
-                        </div>
-                      ))}
-                    </>
-                  )}
+                      {numericRows.length > 0 &&
+                        groupRowsByWeight(numericRows, hasWeight).map(({ key: weightKey, rows }) => (
+                          <div key={weightKey || "numeric"} className="weightGroup">
+                            {hasWeight && weightKey && weightKey !== "—" && (
+                              <p className="weightGroupTitle">Peso {weightKey}</p>
+                            )}
+                            <RankingTable
+                              data={rows}
+                              main="athlete_id"
+                              showMedals={true}
+                              toShowColumns={getResultsColumns(hasWind, hasWeight)}
+                            />
+                          </div>
+                        ))}
 
-                  {pendingRows.length > 0 && (
-                    <>
-                      <p className="statusSectionTitle">Pendiente</p>
-                      {groupRowsByWeight(pendingRows, hasWeight).map(({ key: weightKey, rows }) => (
-                        <div key={`pending-${weightKey || "all"}`} className="weightGroup">
-                          {hasWeight && weightKey && weightKey !== "—" && (
-                            <p className="weightGroupTitle">Peso {weightKey}</p>
-                          )}
-                          <RankingTable
-                            data={rows}
-                            main="athlete_id"
-                            showMedals={false}
-                            toShowColumns={getResultsColumns(hasWind, hasWeight)}
-                          />
-                        </div>
-                      ))}
+                      {statusRows.length > 0 && (
+                        <>
+                          <p className="statusSectionTitle">Sin marca</p>
+                          {groupRowsByWeight(statusRows, hasWeight).map(({ key: weightKey, rows }) => (
+                            <div key={`status-${weightKey || "all"}`} className="weightGroup">
+                              {hasWeight && weightKey && weightKey !== "—" && (
+                                <p className="weightGroupTitle">Peso {weightKey}</p>
+                              )}
+                              <RankingTable
+                                data={rows}
+                                main="athlete_id"
+                                showMedals={false}
+                                toShowColumns={getStatusColumns(hasWind, hasWeight)}
+                              />
+                            </div>
+                          ))}
+                        </>
+                      )}
+
+                      {pendingRows.length > 0 && (
+                        <>
+                          <p className="statusSectionTitle">Pendiente</p>
+                          {groupRowsByWeight(pendingRows, hasWeight).map(({ key: weightKey, rows }) => (
+                            <div key={`pending-${weightKey || "all"}`} className="weightGroup">
+                              {hasWeight && weightKey && weightKey !== "—" && (
+                                <p className="weightGroupTitle">Peso {weightKey}</p>
+                              )}
+                              <RankingTable
+                                data={rows}
+                                main="athlete_id"
+                                showMedals={false}
+                                toShowColumns={getResultsColumns(hasWind, hasWeight)}
+                              />
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </>
                   )}
 

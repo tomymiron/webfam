@@ -51,6 +51,15 @@ function ClubMeet() {
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
   const [clubFunds, setClubFunds] = useState(null);
 
+  // Relay / Posta states
+  const [activeTab, setActiveTab] = useState('individual');
+  const [composingRelayEvent, setComposingRelayEvent] = useState(null);
+  const [selectedRelayAthletes, setSelectedRelayAthletes] = useState([]);
+  const [isRelayProcessing, setIsRelayProcessing] = useState(false);
+  const [relaySearchTerm, setRelaySearchTerm] = useState("");
+  const [showRelayCheckout, setShowRelayCheckout] = useState(false);
+  const [relayCheckoutData, setRelayCheckoutData] = useState(null);
+
   const { data: meet, isLoading: isLoadingMeet } = useQuery({
     queryFn: () => makeRequest.get(`/meets/${id}`).then((res) => res.data),
     queryKey: ["meet", id],
@@ -112,19 +121,38 @@ function ClubMeet() {
     enabled: !!currentAthleteId && !!authState?.token,
   });
 
+  // Relay events disponibles para el club
+  const { data: relayEvents, refetch: refetchRelayEvents } = useQuery({
+    queryFn: () => makeRequest.get(`/meets/${id}/relay-events`, {
+      headers: { Authorization: authState?.token }
+    }).then((res) => res.data),
+    queryKey: ["relayEvents", id],
+    enabled: !!authState?.token,
+  });
+
+  // Relay inscriptions existentes del club
+  const { data: clubRelayInscriptions, refetch: refetchRelayInscriptions } = useQuery({
+    queryFn: () => makeRequest.get(`/clubs/own/relay-inscriptions/${id}`, {
+      headers: { Authorization: authState?.token }
+    }).then((res) => res.data),
+    queryKey: ["clubRelayInscriptions", id],
+    enabled: !!authState?.token,
+  });
+
   // Filtrar solo atletas habilitados
-  // 1. Certificado médico aprobado (cert_status === 2)
+  // 1. Certificado médico aprobado (cert_status == 2)
   // 2. Para atletas con federation = 1: tener pago aprobado este año (revalida, afiliación o pase de club)
   const enabledAthletes = clubAthletes?.filter(
-    athlete => athlete.cert_status === 2 &&
-               (athlete.federation !== 1 || athlete.has_valid_payment === 1)
+    athlete => parseInt(athlete.cert_status) === 2 &&
+               (parseInt(athlete.federation) !== 1 || parseInt(athlete.has_valid_payment) === 1)
   ) || [];
 
-  // Filtrar atletas por término de búsqueda
+  // Filtrar atletas por término de búsqueda (nombre o DNI)
   const filteredAthletes = enabledAthletes.filter(athlete => {
     if (!searchTerm.trim()) return true;
     const searchLower = searchTerm.toLowerCase().trim();
-    return athlete.name.toLowerCase().includes(searchLower);
+    return athlete.name.toLowerCase().includes(searchLower) ||
+           String(athlete.dni || "").includes(searchLower);
   });
 
   if(!meet || !events) return <div>Cargando...</div>
@@ -310,6 +338,87 @@ function ClubMeet() {
     handlePayment(true); // Forzar pago con MP
   };
 
+  // --- Relay helpers ---
+  const getRelaySize = (alias) => {
+    const match = alias?.match(/^(\d+)x/i);
+    return match ? parseInt(match[1]) : 4;
+  };
+
+  const handleToggleRelayAthlete = (athleteId) => {
+    setSelectedRelayAthletes(prev => {
+      if (prev.includes(athleteId)) return prev.filter(id => id !== athleteId);
+      const maxSize = composingRelayEvent ? getRelaySize(composingRelayEvent.discipline) : 4;
+      if (prev.length >= maxSize) return prev;
+      return [...prev, athleteId];
+    });
+    setRelaySearchTerm("");
+  };
+
+  const handleConfirmRelayTeam = () => {
+    if (!composingRelayEvent) return;
+    const requiredSize = getRelaySize(composingRelayEvent.discipline);
+    if (selectedRelayAthletes.length !== requiredSize) {
+      toast.error(`Selecciona exactamente ${requiredSize} atletas`, { theme: "colored" });
+      return;
+    }
+    // Obtener precio de la posta (viene del backend en relayEvents, o usar 0)
+    const price = composingRelayEvent.price ?? 0;
+    const athleteDetails = selectedRelayAthletes.map(id => enabledAthletes.find(a => a.id === id)).filter(Boolean);
+    setRelayCheckoutData({ event: composingRelayEvent, athleteIds: selectedRelayAthletes, athletes: athleteDetails, price });
+    setComposingRelayEvent(null);
+    setShowRelayCheckout(true);
+  };
+
+  const handleRelayPayment = async (forceMP = false) => {
+    if (!relayCheckoutData) return;
+    setIsRelayProcessing(true);
+    try {
+      const response = await makeRequest.post('/clubs/own/relay-inscriptions', {
+        event_id: relayCheckoutData.event.id,
+        athlete_ids: relayCheckoutData.athleteIds,
+        force_mp_payment: forceMP,
+      }, { headers: { Authorization: authState.token } });
+
+      if (response.data.init_point) {
+        sessionStorage.setItem('pendingClubMeetId', id);
+        window.location.href = response.data.init_point;
+        return;
+      }
+
+      if (response.data.paid_with_funds || response.status === 201) {
+        toast.success("Posta inscripta exitosamente", { theme: "colored" });
+        setShowRelayCheckout(false);
+        setRelayCheckoutData(null);
+        setSelectedRelayAthletes([]);
+        refetchRelayEvents();
+        refetchRelayInscriptions();
+      }
+    } catch (err) {
+      if (err.response?.status === 400 && err.response?.data?.insufficient_funds) {
+        toast.error("Fondos insuficientes. Pagá con Mercado Pago.", { theme: "colored" });
+      } else {
+        const msg = typeof err.response?.data === 'string' ? err.response.data : "Error al inscribir posta";
+        toast.error(msg, { theme: "colored" });
+      }
+    } finally {
+      setIsRelayProcessing(false);
+    }
+  };
+
+  const handleDeleteRelay = async (relayId) => {
+    if (!window.confirm("¿Eliminar esta posta?")) return;
+    try {
+      await makeRequest.delete(`/clubs/own/relay-inscriptions/${relayId}`, {
+        headers: { Authorization: authState.token }
+      });
+      toast.success("Posta eliminada", { theme: "colored" });
+      refetchRelayEvents();
+      refetchRelayInscriptions();
+    } catch (err) {
+      toast.error("Error al eliminar posta", { theme: "colored" });
+    }
+  };
+
   const currentAthlete = enabledAthletes.find(a => a.id === currentAthleteId);
   
   // Obtener inscripciones existentes del atleta actual
@@ -385,7 +494,7 @@ function ClubMeet() {
               <input
                 type="text"
                 id="athleteSearch"
-                placeholder="Buscar atleta por nombre..."
+                placeholder="Buscar por nombre o DNI..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -425,7 +534,134 @@ function ClubMeet() {
         <section>
           <div id="headerSpacer"/>
 
-          {currentAthlete && isInscriptionOpen(meet.available) && (
+          {authState.authenticated && isInscriptionOpen(meet.available) && relayEvents?.length > 0 && (
+            <div id="inscriptionTabs">
+              <button className={activeTab === 'individual' ? 'active' : ''} onClick={() => setActiveTab('individual')}>Individuales</button>
+              <button className={activeTab === 'relay' ? 'active' : ''} onClick={() => setActiveTab('relay')}>Relevos</button>
+            </div>
+          )}
+
+          {activeTab === 'relay' && isInscriptionOpen(meet.available) && (
+            <div id="relaySection">
+              <h4>Postas / Relevos</h4>
+
+              {/* Relay inscriptions existentes */}
+              {clubRelayInscriptions?.length > 0 && (
+                <div id="existingRelays">
+                  <p className="relaySubtitle">Tus postas inscriptas</p>
+                  {clubRelayInscriptions.map(relay => (
+                    <div key={relay.id} className="relayTeamCard inscribed">
+                      <div className="relayTeamInfo">
+                        <p className="relayDiscipline">{relay.discipline}</p>
+                        <p className="relayGender">{relay.gender_name}</p>
+                        <div className="relayAthletes">
+                          {relay.athletes?.map(a => (
+                            <span key={a.athlete_id} className="relayAthleteName">{a.athlete_name}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <button className="relayDeleteButton" onClick={() => handleDeleteRelay(relay.id)}>
+                        <Icon name="trash" size={18} color={COLORS.red_01} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Relay events disponibles */}
+              {relayEvents?.filter(e => !e.inscripted).length > 0 && (
+                <div id="availableRelays">
+                  <p className="relaySubtitle">Pruebas disponibles</p>
+                  {relayEvents.filter(e => !e.inscripted).map(event => (
+                    <div key={event.id} className="relayEventCard">
+                      <div className="relayEventInfo">
+                        <p className="relayEventTime">{timeGetter(event.time)}</p>
+                        <p className="relayEventDiscipline">{event.discipline}</p>
+                        <p className="relayEventGender">{event.gender_name}</p>
+                        {event.categories && <p className="relayEventCategories">{event.categories}</p>}
+                      </div>
+                      <button className="relayComposeButton" onClick={() => { setComposingRelayEvent(event); setSelectedRelayAthletes([]); setRelaySearchTerm(""); }}>
+                        Componer equipo ({getRelaySize(event.discipline)})
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {relayEvents?.filter(e => !e.inscripted).length === 0 && !clubRelayInscriptions?.length && (
+                <p className="emptyMessage">No hay pruebas de relevos disponibles</p>
+              )}
+            </div>
+          )}
+
+          {/* Modal composición de equipo */}
+          {composingRelayEvent && (
+            <div id="relayComposeModal" onClick={() => setComposingRelayEvent(null)}>
+              <div className="relayComposeContent" onClick={(e) => e.stopPropagation()}>
+                <div className="relayComposeHeader">
+                  <h3>{composingRelayEvent.discipline} - {composingRelayEvent.gender_name}</h3>
+                  <button onClick={() => setComposingRelayEvent(null)}>✕</button>
+                </div>
+                <p className="relayComposeSubtitle">Selecciona {getRelaySize(composingRelayEvent.discipline)} atletas</p>
+                {selectedRelayAthletes.length > 0 && (
+                  <div className="relaySelectedList">
+                    {selectedRelayAthletes.map(id => {
+                      const a = enabledAthletes.find(at => at.id === id);
+                      if (!a) return null;
+                      return (
+                        <div key={id} className="relaySelectedChip">
+                          <span>{a.name}</span>
+                          <button onClick={() => handleToggleRelayAthlete(id)}>✕</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="relaySearchContainer">
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre o DNI..."
+                    value={relaySearchTerm}
+                    onChange={(e) => setRelaySearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="relayAthletesList">
+                  {enabledAthletes.filter(a => {
+                    if (!relaySearchTerm.trim()) return true;
+                    const s = relaySearchTerm.toLowerCase().trim();
+                    return a.name.toLowerCase().includes(s) || String(a.dni || "").includes(s);
+                  }).map(athlete => {
+                    const isSelected = selectedRelayAthletes.includes(athlete.id);
+                    const maxReached = selectedRelayAthletes.length >= getRelaySize(composingRelayEvent.discipline);
+                    return (
+                      <button
+                        key={athlete.id}
+                        className={`relayAthleteOption ${isSelected ? 'selected' : ''}`}
+                        onClick={() => handleToggleRelayAthlete(athlete.id)}
+                        disabled={!isSelected && maxReached}
+                      >
+                        <img src={profileImageGetter(athlete.image)} alt={athlete.name} />
+                        <span>{athlete.name}</span>
+                        {isSelected && <Icon name="check" size={18} color={COLORS.white_01} />}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="relayComposeFooter">
+                  <p>{selectedRelayAthletes.length} / {getRelaySize(composingRelayEvent.discipline)} seleccionados</p>
+                  <button
+                    className="relayConfirmButton"
+                    onClick={handleConfirmRelayTeam}
+                    disabled={selectedRelayAthletes.length !== getRelaySize(composingRelayEvent.discipline)}
+                  >
+                    Continuar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'individual' && currentAthlete && isInscriptionOpen(meet.available) && (
             <div id="eventsSelection">
               <div id="athleteHeaderInfo">
                 <div>
@@ -515,7 +751,7 @@ function ClubMeet() {
             </div>
           )}
 
-          {(!currentAthlete || !isInscriptionOpen(meet.available)) && (
+          {activeTab === 'individual' && (!currentAthlete || !isInscriptionOpen(meet.available)) && (
             <div id="meetEvents">
               <h4>Horarios de Pruebas</h4>
 
@@ -656,6 +892,68 @@ function ClubMeet() {
             <div id="checkoutFooter" style={{ flexDirection: 'column', gap: '10px' }}>
               <button id="payButton" onClick={handlePayWithMP} disabled={isProcessing} style={{ width: '100%' }}>{isProcessing ? "Procesando..." : "PAGAR TODO CON MERCADO PAGO"}</button>
               <button onClick={() => setShowInsufficientFundsModal(false)} disabled={isProcessing} style={{ width: '100%', backgroundColor: '#ccc', color: '#000', border: 'none', padding: '12px', fontSize: '16px', cursor: isProcessing ? 'not-allowed' : 'pointer' }}>CANCELAR</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Checkout de Posta */}
+      {showRelayCheckout && relayCheckoutData && (
+        <div id="checkoutModal" onClick={() => { setShowRelayCheckout(false); setRelayCheckoutData(null); }}>
+          <div id="checkoutContent" onClick={(e) => e.stopPropagation()}>
+            <div id="checkoutHeader">
+              <h3>Resumen de Posta</h3>
+              <button onClick={() => { setShowRelayCheckout(false); setRelayCheckoutData(null); }}>✕</button>
+            </div>
+
+            <div id="checkoutBody">
+              <div className="checkoutAthlete">
+                <div className="athleteHeader">
+                  <div>
+                    <p className="athleteName">{relayCheckoutData.event.discipline}</p>
+                    <p className="athleteCategory">{relayCheckoutData.event.gender_name}</p>
+                  </div>
+                </div>
+                <div className="athleteEvents">
+                  {relayCheckoutData.athletes.map(athlete => (
+                    <div key={athlete.id} className="checkoutEvent">
+                      <div>
+                        <p>{athlete.name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div id="checkoutFooter">
+              <div id="checkoutTotal">
+                <p>TOTAL A PAGAR</p>
+                <p className="totalAmount">${formatPrice(relayCheckoutData.price)}</p>
+              </div>
+
+              <div id="paymentOptions">
+                <div className="paymentButtons">
+                  <button className="paymentOption mercadoPago" onClick={() => handleRelayPayment(true)} disabled={isRelayProcessing}>
+                    <div className="paymentInfo">
+                      <span className="paymentTitle">{isRelayProcessing ? "Procesando..." : "Mercado Pago"}</span>
+                      <span className="paymentSubtitle">{isRelayProcessing ? "Redirigiendo..." : "Tarjeta de crédito/débito"}</span>
+                    </div>
+                  </button>
+
+                  <button className="paymentOption clubFunds" onClick={() => handleRelayPayment(false)} disabled={isRelayProcessing}>
+                    <div className="paymentInfo">
+                      <span className="paymentTitle">{isRelayProcessing ? "Procesando..." : "Fondos del Club"}</span>
+                      {isFundVisible && (
+                        <span className="paymentSubtitle">{isRelayProcessing ? "Verificando fondos..." : `Disponible: $${formatPrice(clubFunds || 0)}`}</span>
+                      )}
+                      {!isFundVisible && (
+                        <span className="paymentSubtitle">{isRelayProcessing ? "Verificando fondos..." : "Usar fondos del club"}</span>
+                      )}
+                    </div>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -146,6 +146,14 @@
           cursor: pointer;
           white-space: nowrap;
           flex-shrink: 0;
+
+          &.fam {
+            border-left: 3px solid theme.$purple_01;
+          }
+          &.adminOnly {
+            border-left: 3px solid theme.$orange_01;
+            color: theme.$orange_01;
+          }
         }
       }
 
@@ -163,6 +171,23 @@
             color: theme.$black_01;
             font-size: theme.$f2;
             font-weight: 900;
+
+            .eventBadge {
+              font-size: theme.$f6;
+              font-weight: 800;
+              padding: 2px 8px;
+              margin-left: 8px;
+              vertical-align: middle;
+
+              &.fam {
+                background-color: theme.$purple_01;
+                color: theme.$black_01;
+              }
+              &.label {
+                background-color: theme.$orange_01;
+                color: theme.$black_01;
+              }
+            }
           }
 
           p {
@@ -237,6 +262,80 @@
 
       .separator {
         height: 0;
+      }
+
+      .relayResultsList {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 12px;
+
+        .relayResultTeam {
+          background-color: theme.$black_01;
+          padding: 14px 18px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+
+          .relayResultPosition {
+            color: theme.$white_01;
+            font-size: theme.$f1;
+            font-weight: 900;
+            min-width: 36px;
+            text-align: center;
+          }
+
+          .relayResultTeamInfo {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            .relayResultClub {
+              color: theme.$orange_01;
+              font-size: theme.$f3;
+              font-weight: 800;
+            }
+
+            .relayResultAthletes {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 6px;
+
+              span {
+                color: theme.$white_01;
+                font-size: theme.$f5;
+                font-weight: 500;
+                background-color: rgba(255,255,255,0.1);
+                padding: 2px 8px;
+              }
+            }
+          }
+
+          .relayResultMark {
+            color: theme.$white_01;
+            font-size: theme.$f1;
+            font-weight: 900;
+            white-space: nowrap;
+          }
+
+          &.statusTeam {
+            opacity: 0.6;
+
+            .relayResultMark {
+              color: theme.$red_01;
+            }
+          }
+        }
+
+        .statusSectionTitle {
+          margin-top: 16px;
+          margin-bottom: 4px;
+          font-size: theme.$f4;
+          font-weight: 700;
+          color: theme.$black_01;
+          opacity: 0.6;
+        }
       }
 
       .emptyMessage {
