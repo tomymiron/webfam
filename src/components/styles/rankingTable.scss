@@ -126,6 +126,24 @@
             }
           }
 
+          // Badge para atletas que hoy no pertenecen a FAM. La marca sigue
+          // contando por el club que tenían al hacerla.
+          .badge-no-fam {
+            background-color: rgba(theme.$orange_01, 0.12);
+            border: 1px solid rgba(theme.$orange_01, 0.5);
+            color: theme.$orange_01;
+            font-size: theme.$f7;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            line-height: 1;
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-left: 6px;
+            white-space: nowrap;
+            vertical-align: middle;
+            display: inline-block;
+          }
+
           // Estilos para celdas clickeables
           &.clickable {
             transition: background-color 0.2s ease, opacity 0.2s ease;

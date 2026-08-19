@@ -107,7 +107,7 @@ function Meet() {
             <div id="meetTags">
               <button className="tag" onClick={handleMapClick} type="button" >
                 <Icon name="map" size={18} color={COLORS.white_01} />
-                <p>{meet.place_name}</p>
+                <p>{meet.place_name}{meet.place_description ? ` · ${meet.place_description}` : ""}</p>
               </button>
               {meet.program && (
                 <button className="tag" onClick={handleProgramClick} type="button">

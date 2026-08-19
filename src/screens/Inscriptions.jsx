@@ -240,7 +240,6 @@ function Inscriptions() {
                   <RankingTable
                     data={tableData}
                     main="athlete_id"
-                    showMedals={false}
                     toShowColumns={[
                       { key: "position", label: "#", align: "center", fixed: true, bold: true, minWidth: 64 },
                       { key: "best_mark", label: "Marca", align: "right", fixed: true },
@@ -278,29 +277,35 @@ function Inscriptions() {
               grouped[key].teams.push(relay);
             });
 
-            return Object.values(grouped).map(group => (
-              <div key={group.event_id} id="eventInscriptions">
-                <div id="eventInscriptionsHeader">
-                  <h2>{group.gender_name} {group.discipline_alias}</h2>
-                  <p>{group.event_time && formatTime(group.event_time)}</p>
-                </div>
+            return Object.values(grouped).map(group => {
+              const tableData = group.teams.map((relay, idx) => ({
+                team_id: relay.relay_id,
+                position: String(idx + 1).padStart(3, "0"),
+                club_alias: relay.club_alias || relay.club_name,
+                athletes_names: (relay.athletes || []).map(a => a.name).join(", "),
+              }));
 
-                <div className="relayTeamsList">
-                  {group.teams.map(relay => (
-                    <div key={relay.relay_id} className="relayTeamRow">
-                      <p className="relayClub">{relay.club_alias || relay.club_name}</p>
-                      <div className="relayAthletesNames">
-                        {relay.athletes?.map(a => (
-                          <span key={a.id}>{a.name}</span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              return (
+                <div key={group.event_id} id="eventInscriptions">
+                  <div id="eventInscriptionsHeader">
+                    <h2>{group.gender_name} {group.discipline_alias}</h2>
+                    <p>{group.event_time && formatTime(group.event_time)}</p>
+                  </div>
 
-                <div className="separator"/>
-              </div>
-            ));
+                  <RankingTable
+                    data={tableData}
+                    main="team_id"
+                    toShowColumns={[
+                      { key: "position", label: "#", align: "center", fixed: true, bold: true, minWidth: 64 },
+                      { key: "club_alias", label: "Club", align: "left", bold: true },
+                      { key: "athletes_names", label: "Atletas", align: "left" },
+                    ]}
+                  />
+
+                  <div className="separator"/>
+                </div>
+              );
+            });
           })()}
         </section>
       </main>

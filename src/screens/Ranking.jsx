@@ -13,6 +13,11 @@ import Transition from "../Transition";
 import { motion } from "framer-motion";
 import Select from "react-select";
 
+const formatWeightLabel = (grams) => {
+  if (grams == null) return "";
+  return grams >= 1000 ? `${(grams / 1000).toFixed(2)} kg` : `${grams} g`;
+};
+
 const customSelectStyles = {
   container: (base) => ({
     ...base,
@@ -137,7 +142,8 @@ function Ranking() {
     return disciplinesData.map(d => ({
       value: d.id,
       label: d.alias || d.name,
-      type: d.type
+      type: d.type,
+      isWeight: d.isWeight,
     }));
   }, [disciplinesData]);
 
@@ -147,7 +153,25 @@ function Ranking() {
   const [showLoader, setShowLoader] = useState(false);
   const [discipline, setDiscipline] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [weights, setWeights] = useState([]);
   const [gender, setGender] = useState(1);
+
+  const disciplineUsesWeights = discipline?.isWeight === 1;
+
+  const { data: disciplineWeightsData, isLoading: isLoadingWeights } = useQuery({
+    queryFn: () => makeRequest.get(`/results/disciplines/${discipline.value}/weights`).then((res) => res.data),
+    queryKey: ["discipline-weights", discipline?.value],
+    enabled: !!discipline && disciplineUsesWeights,
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const weightOptions = useMemo(() => {
+    if (!disciplineWeightsData || disciplineWeightsData.length === 0) return [];
+    return disciplineWeightsData.map(w => ({
+      value: w.id,
+      label: w.label || formatWeightLabel(w.weight),
+    }));
+  }, [disciplineWeightsData]);
 
   const yearOptions = (() => {
     const currentYear = new Date().getFullYear();
@@ -213,8 +237,21 @@ function Ranking() {
     });
   };
 
+  const handleWeightToggle = (weightValue) => {
+    setWeights(prev => {
+      if (prev.includes(weightValue)) return prev.filter(w => w !== weightValue);
+      else return [...prev, weightValue];
+    });
+  };
+
+  const handleDisciplineChange = (selectedDiscipline) => {
+    setDiscipline(selectedDiscipline);
+    setWeights([]);
+  };
+
   const handleDisciplineTypeChange = (selectedType) => {
     setDisciplineType(selectedType);
+    setWeights([]);
     const newFilteredDisciplines = disciplineOptions.filter(discipline => discipline.type === selectedType.value);
     if (newFilteredDisciplines.length > 0) {
       // Si es "Velocidad", buscar "100m", sino seleccionar la primera
@@ -232,8 +269,14 @@ function Ranking() {
   const handleSearch = () => {
     if (discipline) {
       setShowLoader(true);
-      setSearchParams({ year, gender, discipline: discipline.value, categories: JSON.stringify(categories) });
-      
+      setSearchParams({
+        year,
+        gender,
+        discipline: discipline.value,
+        categories: JSON.stringify(categories),
+        ...(disciplineUsesWeights ? { weights: JSON.stringify(weights) } : {}),
+      });
+
       setTimeout(() => { setShowLoader(false); }, 1000);
     }
   };
@@ -279,7 +322,7 @@ function Ranking() {
               <Select
                 placeholder={isLoadingDisciplines ? "Cargando disciplinas..." : "Selecciona disciplina"}
                 options={filteredDisciplines}
-                onChange={setDiscipline}
+                onChange={handleDisciplineChange}
                 styles={customSelectStyles}
                 isSearchable={true}
                 value={discipline}
@@ -288,6 +331,26 @@ function Ranking() {
                 className="react-select-container"
                 classNamePrefix="react-select"
               />
+
+              {disciplineUsesWeights && (
+                <div id="weightsContainer">
+                  {isLoadingWeights ? (
+                    <p className="weightsHint">Cargando implementos...</p>
+                  ) : weightOptions.length === 0 ? (
+                    <p className="weightsHint">Sin implementos cargados</p>
+                  ) : (
+                    weightOptions.map((weight) => (
+                      <button
+                        key={weight.value}
+                        className={`weightButton ${weights.includes(weight.value) ? 'selected' : ''}`}
+                        onClick={() => handleWeightToggle(weight.value)}
+                      >
+                        {weight.label}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             <div id="rightColumn">
@@ -356,7 +419,9 @@ function Ranking() {
               }
               
               if (showWeight) {
-                baseColumns.push({ key: "weight", label: "Peso", align: "right" });
+                const searchedDiscipline = disciplineOptions.find(d => d.value === searchParams?.discipline);
+                const isHurdles = /c\/v/i.test(searchedDiscipline?.label || "");
+                baseColumns.push({ key: "weight", label: isHurdles ? "Valla" : "Peso", align: "right" });
               }
               
               // Agregar el resto de columnas

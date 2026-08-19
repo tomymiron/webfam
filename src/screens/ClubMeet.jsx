@@ -460,7 +460,7 @@ function ClubMeet() {
             <div id="meetTags">
               <button className="tag" onClick={handleMapClick} type="button" >
                 <Icon name="map" size={18} color={COLORS.white_01} />
-                <p>{meet.place_name}</p>
+                <p>{meet.place_name}{meet.place_description ? ` · ${meet.place_description}` : ""}</p>
               </button>
               {meet.program && (
                 <button className="tag" onClick={handleProgramClick} type="button">
@@ -568,11 +568,11 @@ function ClubMeet() {
                 </div>
               )}
 
-              {/* Relay events disponibles */}
-              {relayEvents?.filter(e => !e.inscripted).length > 0 && (
+              {/* Relay events disponibles (hasta 2 equipos por prueba) */}
+              {relayEvents?.filter(e => (e.team_count ?? 0) < 2).length > 0 && (
                 <div id="availableRelays">
                   <p className="relaySubtitle">Pruebas disponibles</p>
-                  {relayEvents.filter(e => !e.inscripted).map(event => (
+                  {relayEvents.filter(e => (e.team_count ?? 0) < 2).map(event => (
                     <div key={event.id} className="relayEventCard">
                       <div className="relayEventInfo">
                         <p className="relayEventTime">{timeGetter(event.time)}</p>
@@ -588,7 +588,7 @@ function ClubMeet() {
                 </div>
               )}
 
-              {relayEvents?.filter(e => !e.inscripted).length === 0 && !clubRelayInscriptions?.length && (
+              {relayEvents?.filter(e => (e.team_count ?? 0) < 2).length === 0 && !clubRelayInscriptions?.length && (
                 <p className="emptyMessage">No hay pruebas de relevos disponibles</p>
               )}
             </div>
@@ -626,26 +626,35 @@ function ClubMeet() {
                   />
                 </div>
                 <div className="relayAthletesList">
-                  {enabledAthletes.filter(a => {
-                    if (!relaySearchTerm.trim()) return true;
-                    const s = relaySearchTerm.toLowerCase().trim();
-                    return a.name.toLowerCase().includes(s) || String(a.dni || "").includes(s);
-                  }).map(athlete => {
-                    const isSelected = selectedRelayAthletes.includes(athlete.id);
-                    const maxReached = selectedRelayAthletes.length >= getRelaySize(composingRelayEvent.discipline);
-                    return (
-                      <button
-                        key={athlete.id}
-                        className={`relayAthleteOption ${isSelected ? 'selected' : ''}`}
-                        onClick={() => handleToggleRelayAthlete(athlete.id)}
-                        disabled={!isSelected && maxReached}
-                      >
-                        <img src={profileImageGetter(athlete.image)} alt={athlete.name} />
-                        <span>{athlete.name}</span>
-                        {isSelected && <Icon name="check" size={18} color={COLORS.white_01} />}
-                      </button>
+                  {(() => {
+                    const lockedIds = new Set(
+                      (clubRelayInscriptions || [])
+                        .filter(r => r.event === composingRelayEvent.id)
+                        .flatMap(r => (r.athletes || []).map(a => a.athlete_id))
                     );
-                  })}
+                    return enabledAthletes.filter(a => {
+                      if (!relaySearchTerm.trim()) return true;
+                      const s = relaySearchTerm.toLowerCase().trim();
+                      return a.name.toLowerCase().includes(s) || String(a.dni || "").includes(s);
+                    }).map(athlete => {
+                      const isSelected = selectedRelayAthletes.includes(athlete.id);
+                      const maxReached = selectedRelayAthletes.length >= getRelaySize(composingRelayEvent.discipline);
+                      const lockedInOtherTeam = lockedIds.has(athlete.id);
+                      return (
+                        <button
+                          key={athlete.id}
+                          className={`relayAthleteOption ${isSelected ? 'selected' : ''} ${lockedInOtherTeam ? 'locked' : ''}`}
+                          onClick={() => handleToggleRelayAthlete(athlete.id)}
+                          disabled={lockedInOtherTeam || (!isSelected && maxReached)}
+                          title={lockedInOtherTeam ? 'Ya inscripto en el otro equipo' : undefined}
+                        >
+                          <img src={profileImageGetter(athlete.image)} alt={athlete.name} />
+                          <span>{athlete.name}{lockedInOtherTeam ? ' (en el otro equipo)' : ''}</span>
+                          {isSelected && <Icon name="check" size={18} color={COLORS.white_01} />}
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
                 <div className="relayComposeFooter">
                   <p>{selectedRelayAthletes.length} / {getRelaySize(composingRelayEvent.discipline)} seleccionados</p>

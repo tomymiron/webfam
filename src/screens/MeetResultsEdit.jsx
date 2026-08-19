@@ -205,7 +205,7 @@ function MeetResultsEdit() {
       if (!disciplineId || !q.data) return;
       map[disciplineId] = (q.data || []).map((w) => ({
         value: String(w.id),
-        label: w.weight >= 1000 ? `${(w.weight / 1000).toFixed(2)} kg` : `${w.weight} g`,
+        label: w.label || (w.weight >= 1000 ? `${(w.weight / 1000).toFixed(2)} kg` : `${w.weight} g`),
       }));
     });
     return map;
@@ -365,7 +365,7 @@ function MeetResultsEdit() {
                         <th>Club</th>
                         <th>Marca</th>
                         {group.discipline_is_wind && <th>Viento</th>}
-                        {group.discipline_is_weight && <th>Peso</th>}
+                        {group.discipline_is_weight && <th>{/c\/v/i.test(group.discipline_alias || group.discipline_name || "") ? "Valla" : "Peso"}</th>}
                         <th>Estado</th>
                       </tr>
                     </thead>
@@ -410,7 +410,7 @@ function MeetResultsEdit() {
                             <td>
                               <Select
                                 isClearable
-                                placeholder="Peso"
+                                placeholder={/c\/v/i.test(group.discipline_alias || group.discipline_name || "") ? "Valla" : "Peso"}
                                 isDisabled={!!getEntryValue(entry, eventKey, "status")}
                                 options={weightOptionsByDiscipline[group.discipline_id] || []}
                                 value={(weightOptionsByDiscipline[group.discipline_id] || []).find(

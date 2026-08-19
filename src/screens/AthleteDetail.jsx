@@ -309,6 +309,7 @@ function AthleteDetail() {
                     location={result.place_name}
                     wind={result.wind}
                     weight={result.weight}
+                    weightLabel={result.weight_label}
                     isWind={result.isWind}
                     isWeight={result.isWeight}
                   />

@@ -22,7 +22,8 @@ const throwsWeightsMap = {
   20: 2000   // Disco 2kg
 };
 
-export const formatWeight = (weightId) => {
+export const formatWeight = (weightId, label) => {
+  if (label) return label;
   if (!weightId || weightId === null || weightId === undefined) return null;
 
   const weightIdNum = parseInt(weightId);

@@ -264,77 +264,52 @@
         height: 0;
       }
 
-      .relayResultsList {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        margin-top: 12px;
+      .combinedBreakdown {
+        margin-top: -72px;
+        // margin-left: 24px;
+        padding-left: 20px;
+        border-left: 1px solid rgba(theme.$black_01, 0.25);
+        margin-bottom: 32px;
 
-        .relayResultTeam {
-          background-color: theme.$black_01;
-          padding: 14px 18px;
+        .combinedSubEvents {
           display: flex;
-          align-items: center;
-          gap: 16px;
+          flex-direction: column;
+          gap: 20px;
+        }
 
-          .relayResultPosition {
-            color: theme.$white_01;
-            font-size: theme.$f1;
-            font-weight: 900;
-            min-width: 36px;
-            text-align: center;
-          }
+        .combinedSubEvent {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
 
-          .relayResultTeamInfo {
-            flex: 1;
+          .combinedSubEventTitle {
+            font-size: theme.$f3;
+            font-weight: 800;
+            color: theme.$black_01;
+            margin: 0;
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
 
-            .relayResultClub {
-              color: theme.$orange_01;
-              font-size: theme.$f3;
-              font-weight: 800;
-            }
-
-            .relayResultAthletes {
-              display: flex;
-              flex-wrap: wrap;
-              gap: 6px;
-
-              span {
-                color: theme.$white_01;
-                font-size: theme.$f5;
-                font-weight: 500;
-                background-color: rgba(255,255,255,0.1);
-                padding: 2px 8px;
-              }
-            }
-          }
-
-          .relayResultMark {
-            color: theme.$white_01;
-            font-size: theme.$f1;
-            font-weight: 900;
-            white-space: nowrap;
-          }
-
-          &.statusTeam {
-            opacity: 0.6;
-
-            .relayResultMark {
-              color: theme.$red_01;
+            .combinedSubEventTag {
+              font-size: theme.$f6;
+              font-weight: 700;
+              color: theme.$black_01;
+              background-color: rgba(theme.$black_01, 0.08);
+              padding: 3px 10px;
+              border-radius: 12px;
+              letter-spacing: 0.3px;
+              white-space: nowrap;
             }
           }
         }
 
-        .statusSectionTitle {
-          margin-top: 16px;
-          margin-bottom: 4px;
-          font-size: theme.$f4;
-          font-weight: 700;
-          color: theme.$black_01;
-          opacity: 0.6;
+        .combinedSubEventEmpty {
+          font-size: theme.$f5;
+          color: rgba(theme.$black_01, 0.55);
+          font-style: italic;
+          padding: 4px 0;
         }
       }
 

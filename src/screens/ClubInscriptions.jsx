@@ -101,19 +101,20 @@ function ClubInscriptions() {
     );
   }
 
-  // Agrupar inscripciones por horario/prueba
+  // Agrupar inscripciones por prueba (event_id): dos pruebas distintas pueden compartir horario
   const groupedInscriptions = {};
   clubInscriptions?.forEach(inscription => {
-    const timeKey = timeGetter(inscription.time);
-    if (!groupedInscriptions[timeKey]) {
-      groupedInscriptions[timeKey] = {
+    if (!groupedInscriptions[inscription.event_id]) {
+      groupedInscriptions[inscription.event_id] = {
+        event_id: inscription.event_id,
         time: inscription.time,
         discipline: inscription.discipline,
         athletes: []
       };
     }
-    groupedInscriptions[timeKey].athletes.push(inscription);
+    groupedInscriptions[inscription.event_id].athletes.push(inscription);
   });
+  const groupedEvents = Object.values(groupedInscriptions).sort((a, b) => String(a.time).localeCompare(String(b.time)));
 
   // Calcular total gastado
   const totalSpent = clubInscriptions?.reduce((total, inscription) => {
@@ -166,22 +167,22 @@ function ClubInscriptions() {
         <div className="navInfo">
           <h1>Mis Inscriptos</h1>
           <p>{meet.name}</p>
-          {Object.keys(groupedInscriptions).length > 0 && (
+          {groupedEvents.length > 0 && (
             <button type="button" className="downloadExcelButton" onClick={handleDownloadExcel}>
               <Icon name="pdf" size={20} color={COLORS.white_01} />
               <span>Descargar Excel</span>
             </button>
           )}
         </div>
-        {Object.keys(groupedInscriptions).length > 0 ? (
+        {groupedEvents.length > 0 ? (
         <>
           <div className="inscriptionsGrid">
-            {Object.entries(groupedInscriptions).map(([timeKey, eventData]) => (
-              <div key={timeKey} className="eventCard">
+            {groupedEvents.map((eventData) => (
+              <div key={eventData.event_id} className="eventCard">
                 <div className="eventHeader">
                   <div className="eventTimeBadge">
                     <Icon name="clock" size={24} color={COLORS.white_01} />
-                    <span>{timeKey}</span>
+                    <span>{timeGetter(eventData.time)}</span>
                   </div>
                   <div className="eventInfo">
                     <h3 className="eventDiscipline">{eventData.discipline}</h3>
@@ -199,7 +200,7 @@ function ClubInscriptions() {
                     const isPaidWithFunds = inscription.payment_type === 'club_funds';
 
                     return (
-                      <div key={inscription.inscription_id} className="athleteCard">
+                      <div key={inscription.athlete_id} className="athleteCard">
                         <div className="athleteInfo">
                           <img
                             src={profileImageGetter(athlete.image)}

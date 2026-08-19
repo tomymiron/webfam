@@ -65,7 +65,7 @@ const getJustifyAlign = (align) => {
   return align === "right" ? "flex-end" : align === "center" ? "center" : "flex-start";
 };
 
-const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.purple_01, showMedals = true }) => {
+const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.purple_01 }) => {
   const { authState } = useAuth();
   const { authState: clubAuthState } = useAuthClub();
   const navigate = useNavigate();
@@ -189,9 +189,12 @@ const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.pur
         // Formatear según el tipo de columna
         if (colObj.key === 'best_mark') return formatMark(value, row.unit);
         if (colObj.key === 'wind') return formatWind(value);
-        if (colObj.key === 'weight') return formatWeight(value) || '-';
+        if (colObj.key === 'weight') return formatWeight(value, row.weight_label) || '-';
         if (colObj.key === 'athlete_born') return formatBorn(value);
         if (colObj.key === 'position') return formatRankingNumber(value);
+        // El badge "NO FAM" ocupa lugar dentro de la celda del nombre: hay que
+        // reservarlo acá o la columna queda corta y el badge se solapa.
+        if (colObj.key === 'athlete_name') return String(value) + (row.is_fam === false ? '  NO FAM ' : '');
         return String(value);
       });
 
@@ -326,7 +329,7 @@ const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.pur
       return formatWind(value);
     }
     if (colObj.key === 'weight') {
-      return formatWeight(value) || '-';
+      return formatWeight(value, row.weight_label) || '-';
     }
     if (colObj.key === 'athlete_born') {
       return formatBorn(value);
@@ -425,20 +428,11 @@ const RankingTable = ({ data, toShowColumns, main, highlightedColor = COLORS.pur
                       } : undefined}
                     >
                       <p>
-                        {colObj.bold ? (
-                          <b>
-                            {displayValue}
-                            {showMedals && colObj.key === 'athlete_name' && index < 3 && (
-                              index === 0 ? ' 🥇' : index === 1 ? ' 🥈' : ' 🥉'
-                            )}
-                          </b>
-                        ) : (
-                          <>
-                            {displayValue}
-                            {showMedals && colObj.key === 'athlete_name' && index < 3 && (
-                              index === 0 ? ' 🥇' : index === 1 ? ' 🥈' : ' 🥉'
-                            )}
-                          </>
+                        {colObj.bold ? <b>{displayValue}</b> : displayValue}
+                        {colObj.key === 'athlete_name' && row.is_fam === false && (
+                          <span className="badge-no-fam" title="El atleta ya no pertenece a FAM. La marca cuenta por el club que tenía cuando la hizo.">
+                            NO FAM
+                          </span>
                         )}
                       </p>
                     </div>

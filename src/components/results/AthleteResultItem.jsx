@@ -2,7 +2,7 @@ import { resultGetter, formatWeight } from "../../constants/resultGetter";
 import { useEffect, useState, useCallback } from "react";
 import { shortDate } from "../../constants/timeGetter";
 
-export default function AthleteResultItem({ event, unit, result, date, location, wind, weight, isWind, isWeight }) {
+export default function AthleteResultItem({ event, unit, result, date, location, wind, weight, weightLabel, isWind, isWeight }) {
   useEffect(() => {import("./styles/athleteResultItem.scss")}, []);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +38,7 @@ export default function AthleteResultItem({ event, unit, result, date, location,
               <span className="wind">{formatWind(wind)}</span>
             )}
             {isWeight == 1 && weight !== null && weight !== undefined && (
-              <span className="weight">{formatWeight(weight)}</span>
+              <span className="weight">{formatWeight(weight, weightLabel)}</span>
             )}
           </div>
         ) : null}

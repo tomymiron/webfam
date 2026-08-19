@@ -221,7 +221,7 @@ export function Home() {
                     <p className="competitionItemDate">{dateOnlyFormatter(item.date)}</p>
                     <p className="competitionItemTitle">{item.name}</p>
                     <div>
-                      <p className="competitionItemLocation">{item.place_name}, {item.place_address}</p>
+                      <p className="competitionItemLocation">{item.place_name}{item.place_description ? ` · ${item.place_description}` : ""}, {item.place_address}</p>
                       <p className="competitionItemTimeLeft">en {timeLeft(item.date)}</p>
                     </div>
                   </button>
@@ -274,7 +274,7 @@ export function Home() {
                     >
                       <p className="resultItemTitle">{item.name}</p>
                       <p className="resultItemDate">{dateOnlyFormatter(item.date)}</p>
-                      <p className="resultItemLocation">{item.place_name}, {item.place_address}</p>
+                      <p className="resultItemLocation">{item.place_name}{item.place_description ? ` · ${item.place_description}` : ""}, {item.place_address}</p>
                       <div className="resultIconContainer">
                         <Icon name="right-arrow" size={24} color={COLORS.black_01} />
                       </div>

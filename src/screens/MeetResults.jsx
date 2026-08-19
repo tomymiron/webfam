@@ -21,6 +21,16 @@ function MeetResults() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [refreshingEvents, setRefreshingEvents] = useState(new Set());
+  const [expandedCombined, setExpandedCombined] = useState(() => new Set());
+
+  const toggleCombined = (eventId) => {
+    setExpandedCombined(prev => {
+      const next = new Set(prev);
+      if (next.has(eventId)) next.delete(eventId);
+      else next.add(eventId);
+      return next;
+    });
+  };
 
   const { data: meet, isLoading: isLoadingMeet } = useQuery({
     queryFn: () => makeRequest.get(`/meets/${id}`).then((res) => res.data),
@@ -166,6 +176,7 @@ function MeetResults() {
     const hasWeight = !!eventData.discipline_is_weight;
 
     const disciplineLabel = eventData.discipline_alias || eventData.discipline_name || "";
+    const implementLabel = /c\/v/i.test(disciplineLabel) ? "Valla" : "Peso";
     const formatPruebaWithCategory = (categoryName) => {
       const cat = categoryName ? String(categoryName).trim() : "";
       if (!cat) return disciplineLabel;
@@ -186,7 +197,7 @@ function MeetResults() {
       const resultNum = row.result != null ? parseFloat(row.result) : null;
       const resultDisplay = resultNum != null ? resultGetter(resultNum, unit) : "—";
       const windDisplay = hasWind && row.wind != null && row.wind !== "" ? parseFloat(row.wind).toFixed(1) : "—";
-      const weightDisplay = hasWeight && row.weight != null ? (formatWeight(row.weight) || "—") : "—";
+      const weightDisplay = hasWeight && row.weight != null ? (formatWeight(row.weight, row.weight_label) || "—") : "—";
       return rowWithCategory(row, {
         position: String(index + 1).padStart(3, "0"),
         result_display: resultDisplay,
@@ -213,7 +224,7 @@ function MeetResults() {
       })
     );
 
-    return { numericRows, statusRows, pendingRows, hasWind, hasWeight };
+    return { numericRows, statusRows, pendingRows, hasWind, hasWeight, implementLabel };
   };
 
   // Agrupa filas por peso (weight_display) cuando la prueba tiene peso. Clave "" para sin peso.
@@ -236,13 +247,13 @@ function MeetResults() {
     (ev) => (ev.results && ev.results.length > 0) || (ev.status_entries && ev.status_entries.length > 0) || (ev.pending_entries && ev.pending_entries.length > 0) || (ev.relay_teams && ev.relay_teams.length > 0)
   );
 
-  const getResultsColumns = (hasWind, hasWeight) => {
+  const getResultsColumns = (hasWind, hasWeight, implementLabel = "Peso") => {
     const cols = [
       { key: "position", label: "#", align: "center", fixed: true, bold: true, minWidth: 64 },
       { key: "result_display", label: "Resultado", align: "right", fixed: true },
     ];
     if (hasWind) cols.push({ key: "wind_display", label: "Viento", align: "right" });
-    if (hasWeight) cols.push({ key: "weight_display", label: "Peso", align: "right" });
+    if (hasWeight) cols.push({ key: "weight_display", label: implementLabel, align: "right" });
     cols.push(
       { key: "athlete_name", label: "Atleta", align: "left", bold: true },
       { key: "athlete_born", label: "FDN", align: "right" },
@@ -252,13 +263,13 @@ function MeetResults() {
     return cols;
   };
 
-  const getStatusColumns = (hasWind, hasWeight) => {
+  const getStatusColumns = (hasWind, hasWeight, implementLabel = "Peso") => {
     const cols = [
       { key: "position", label: "#", align: "center", fixed: true, minWidth: 64 },
       { key: "result_display", label: "Estado", align: "right", fixed: true },
     ];
     if (hasWind) cols.push({ key: "wind_display", label: "Viento", align: "right" });
-    if (hasWeight) cols.push({ key: "weight_display", label: "Peso", align: "right" });
+    if (hasWeight) cols.push({ key: "weight_display", label: implementLabel, align: "right" });
     cols.push(
       { key: "athlete_name", label: "Atleta", align: "left", bold: true },
       { key: "athlete_born", label: "FDN", align: "right" },
@@ -324,7 +335,7 @@ function MeetResults() {
           {hasAnyResults ? (
             sortedEventsResults.map((eventData) => {
               const isRelay = eventData.relay_teams?.length > 0;
-              const { numericRows, statusRows, pendingRows, hasWind, hasWeight } = buildTableDataForEvent(eventData);
+              const { numericRows, statusRows, pendingRows, hasWind, hasWeight, implementLabel } = buildTableDataForEvent(eventData);
 
               return (
                 <div
@@ -348,50 +359,82 @@ function MeetResults() {
                       >
                         {refreshingEvents.has(eventData.event_id) ? "Actualizando..." : "Actualizar"}
                       </button>
+                      {eventData.discipline_type === 'Combinadas' && (() => {
+                        const isOpen = expandedCombined.has(eventData.event_id);
+                        const subCount = (eventData.sub_events || []).length;
+                        return (
+                          <>
+                            <span>|</span>
+                            <button
+                              type="button"
+                              className="refreshButton"
+                              onClick={() => toggleCombined(eventData.event_id)}
+                              aria-expanded={isOpen}
+                            >
+                              {isOpen ? "Ocultar sub-pruebas" : `Ver sub-pruebas${subCount > 0 ? ` (${subCount})` : ""}`}
+                            </button>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
 
                   {isRelay ? (() => {
-                    // Separar equipos con marca, con status, y sin nada
                     const withResult = eventData.relay_teams.filter(t => t.result != null && !t.status);
                     const withStatus = eventData.relay_teams.filter(t => t.status);
                     const pending = eventData.relay_teams.filter(t => t.result == null && !t.status);
-
                     const sortedWithResult = [...withResult].sort((a, b) => a.result - b.result);
 
-                    const renderTeam = (team, position) => (
-                      <div key={team.relay_id} className={`relayResultTeam${team.status ? " statusTeam" : ""}`}>
-                        <div className="relayResultPosition">{position}</div>
-                        <div className="relayResultTeamInfo">
-                          <p className="relayResultClub">{team.club_alias || team.club_name}</p>
-                          <div className="relayResultAthletes">
-                            {team.athletes?.map(a => (
-                              <span key={a.user_id}>{a.user_name}</span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="relayResultMark">
-                          {team.status ? team.status : team.result != null ? resultGetter(team.result, "s") : "—"}
-                        </div>
-                      </div>
-                    );
+                    const toRow = (team, position) => ({
+                      team_id: team.relay_id,
+                      position,
+                      best_mark: team.status ? team.status : team.result != null ? team.result : "—",
+                      unit: "s",
+                      club_alias: team.club_alias || team.club_name,
+                      athletes_names: (team.athletes || []).map(a => a.user_name).join(", "),
+                    });
+
+                    const relayColumns = [
+                      { key: "position", label: "#", align: "center", fixed: true, bold: true, minWidth: 64 },
+                      { key: "best_mark", label: "Marca", align: "right", fixed: true },
+                      { key: "club_alias", label: "Club", align: "left", bold: true },
+                      { key: "athletes_names", label: "Atletas", align: "left" },
+                    ];
+
+                    const rowsWithResult = sortedWithResult.map((team, idx) => toRow(team, String(idx + 1).padStart(3, "0")));
+                    const rowsWithStatus = withStatus.map(team => toRow(team, team.status));
+                    const rowsPending = pending.map(team => toRow(team, "—"));
 
                     return (
-                      <div className="relayResultsList">
-                        {sortedWithResult.map((team, idx) => renderTeam(team, idx + 1))}
-                        {withStatus.length > 0 && (
+                      <>
+                        {rowsWithResult.length > 0 && (
+                          <RankingTable
+                            data={rowsWithResult}
+                            main="team_id"
+                            toShowColumns={relayColumns}
+                          />
+                        )}
+                        {rowsWithStatus.length > 0 && (
                           <>
                             <p className="statusSectionTitle">Sin marca</p>
-                            {withStatus.map(team => renderTeam(team, team.status))}
+                            <RankingTable
+                              data={rowsWithStatus}
+                              main="team_id"
+                              toShowColumns={relayColumns}
+                            />
                           </>
                         )}
-                        {pending.length > 0 && (
+                        {rowsPending.length > 0 && (
                           <>
                             <p className="statusSectionTitle">Pendiente</p>
-                            {pending.map(team => renderTeam(team, "—"))}
+                            <RankingTable
+                              data={rowsPending}
+                              main="team_id"
+                              toShowColumns={relayColumns}
+                            />
                           </>
                         )}
-                      </div>
+                      </>
                     );
                   })() : (
                     <>
@@ -399,13 +442,12 @@ function MeetResults() {
                         groupRowsByWeight(numericRows, hasWeight).map(({ key: weightKey, rows }) => (
                           <div key={weightKey || "numeric"} className="weightGroup">
                             {hasWeight && weightKey && weightKey !== "—" && (
-                              <p className="weightGroupTitle">Peso {weightKey}</p>
+                              <p className="weightGroupTitle">{implementLabel} {weightKey}</p>
                             )}
                             <RankingTable
                               data={rows}
                               main="athlete_id"
-                              showMedals={true}
-                              toShowColumns={getResultsColumns(hasWind, hasWeight)}
+                              toShowColumns={getResultsColumns(hasWind, hasWeight, implementLabel)}
                             />
                           </div>
                         ))}
@@ -416,13 +458,12 @@ function MeetResults() {
                           {groupRowsByWeight(statusRows, hasWeight).map(({ key: weightKey, rows }) => (
                             <div key={`status-${weightKey || "all"}`} className="weightGroup">
                               {hasWeight && weightKey && weightKey !== "—" && (
-                                <p className="weightGroupTitle">Peso {weightKey}</p>
+                                <p className="weightGroupTitle">{implementLabel} {weightKey}</p>
                               )}
                               <RankingTable
                                 data={rows}
                                 main="athlete_id"
-                                showMedals={false}
-                                toShowColumns={getStatusColumns(hasWind, hasWeight)}
+                                toShowColumns={getStatusColumns(hasWind, hasWeight, implementLabel)}
                               />
                             </div>
                           ))}
@@ -435,13 +476,12 @@ function MeetResults() {
                           {groupRowsByWeight(pendingRows, hasWeight).map(({ key: weightKey, rows }) => (
                             <div key={`pending-${weightKey || "all"}`} className="weightGroup">
                               {hasWeight && weightKey && weightKey !== "—" && (
-                                <p className="weightGroupTitle">Peso {weightKey}</p>
+                                <p className="weightGroupTitle">{implementLabel} {weightKey}</p>
                               )}
                               <RankingTable
                                 data={rows}
                                 main="athlete_id"
-                                showMedals={false}
-                                toShowColumns={getResultsColumns(hasWind, hasWeight)}
+                                toShowColumns={getResultsColumns(hasWind, hasWeight, implementLabel)}
                               />
                             </div>
                           ))}
@@ -449,6 +489,66 @@ function MeetResults() {
                       )}
                     </>
                   )}
+
+                  {eventData.discipline_type === 'Combinadas' && expandedCombined.has(eventData.event_id) && (() => {
+                    const subs = eventData.sub_events || [];
+                    return (
+                      <div className="combinedBreakdown">
+                          <div className="combinedSubEvents">
+                            {subs.length === 0 && (
+                              <p className="combinedSubEventEmpty">
+                                Esta combinada todavía no tiene sub-pruebas cargadas.
+                              </p>
+                            )}
+                            {subs.map(sub => {
+                              const subData = buildTableDataForEvent(sub);
+                              const parentName = eventData.discipline_alias || eventData.discipline_name;
+                              return (
+                                <div key={sub.sub_event_id} className="combinedSubEvent">
+                                  <h3 className="combinedSubEventTitle">
+                                    {sub.display || sub.discipline_alias || sub.discipline_name}
+                                    <span className="combinedSubEventTag">parte de {parentName}</span>
+                                  </h3>
+                                  {subData.numericRows.length === 0 && subData.statusRows.length === 0 ? (
+                                    <p className="combinedSubEventEmpty">Sin marcas cargadas todavía.</p>
+                                  ) : (
+                                    <>
+                                      {subData.numericRows.length > 0 &&
+                                        groupRowsByWeight(subData.numericRows, subData.hasWeight).map(({ key: weightKey, rows }) => (
+                                          <div key={`sub-num-${weightKey || "all"}`} className="weightGroup">
+                                            {subData.hasWeight && weightKey && weightKey !== "—" && (
+                                              <p className="weightGroupTitle">{subData.implementLabel} {weightKey}</p>
+                                            )}
+                                            <RankingTable
+                                              data={rows}
+                                              main="athlete_id"
+                                              toShowColumns={getResultsColumns(subData.hasWind, subData.hasWeight, subData.implementLabel)}
+                                            />
+                                          </div>
+                                        ))}
+                                      {subData.statusRows.length > 0 && (
+                                        <>
+                                          <p className="statusSectionTitle">Sin marca</p>
+                                          {groupRowsByWeight(subData.statusRows, subData.hasWeight).map(({ key: weightKey, rows }) => (
+                                            <div key={`sub-status-${weightKey || "all"}`} className="weightGroup">
+                                              <RankingTable
+                                                data={rows}
+                                                main="athlete_id"
+                                                toShowColumns={getStatusColumns(subData.hasWind, subData.hasWeight, subData.implementLabel)}
+                                              />
+                                            </div>
+                                          ))}
+                                        </>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                      </div>
+                    );
+                  })()}
 
                   <div className="separator" />
                 </div>

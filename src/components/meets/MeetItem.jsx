@@ -84,7 +84,7 @@ export default function MeetItem({ meet, isClub = false, linkToResults = false }
         {inscriptionOpen ? `Inscripciones hasta ${shortDate(meet.available)}` : `Inscripciones cerradas` }
       </p>}
       <p className="name">{meet.name}</p>
-      <p className="location">{meet.place_name}, {meet.place_address}</p>
+      <p className="location">{meet.place_name}{meet.place_description ? ` · ${meet.place_description}` : ""}, {meet.place_address}</p>
       
       <p className="timeLeft">{past ? `hace ${timeSince(meet.date)}` : isToday ? "Hoy" : `en ${timeLeft(meet.date)}`}</p>
     </button>

@@ -102,6 +102,52 @@ body, html {
           flex-direction: column;
           gap: 8px;
           flex: 1;
+
+          #weightsContainer {
+            background-color: theme.$black_01;
+            flex-direction: row;
+            align-items: stretch;
+            flex-wrap: wrap;
+            display: flex;
+            padding: 8px;
+            gap: 4px;
+
+            .weightButton {
+              background-color: theme.$black_01;
+              border: 1px solid theme.$orange_01;
+              color: theme.$orange_01;
+              justify-content: center;
+              font-size: theme.$f5;
+              align-items: center;
+              text-align: center;
+              padding: 8px 12px;
+              font-weight: 600;
+              cursor: pointer;
+              min-height: 0;
+              height: auto;
+              flex: 1 1 auto;
+              display: flex;
+
+              &.selected {
+                background-color: theme.$orange_01;
+                color: theme.$black_01;
+              }
+
+              &:hover {
+                opacity: 0.8;
+              }
+            }
+
+            .weightsHint {
+              color: theme.$orange_01;
+              font-size: theme.$f5;
+              font-weight: 600;
+              padding: 8px;
+              margin: 0;
+              flex: 1;
+              text-align: center;
+            }
+          }
         }
 
         #rightColumn {
