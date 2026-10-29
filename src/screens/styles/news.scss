@@ -172,6 +172,33 @@
           }
         }
       }
+
+      .loadMore {
+        justify-content: center;
+        display: flex;
+        width: 100%;
+
+        button {
+          background-color: theme.$black_01;
+          color: theme.$white_01;
+          font-size: theme.$f5;
+          border-radius: 8px;
+          padding: 12px 32px;
+          font-weight: 700;
+          cursor: pointer;
+          border: none;
+          transition: opacity 0.2s ease;
+
+          &:hover {
+            opacity: 0.85;
+          }
+
+          &:disabled {
+            cursor: default;
+            opacity: 0.6;
+          }
+        }
+      }
     }
   }
 }

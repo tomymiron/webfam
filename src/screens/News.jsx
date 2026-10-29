@@ -1,9 +1,9 @@
 import "material-react-toastify/dist/ReactToastify.css";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { makeRequest } from "../config/axios";
 import NavBar from "../components/NavBar";
 import Transition from "../Transition";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { timeSince } from "../constants/timeGetter";
 import { COLORS } from "../constants/theme";
@@ -12,14 +12,45 @@ import Icon from "../constants/Icon";
 function News() {
   useEffect(() => { import("./styles/news.scss") }, []);
   const navigate = useNavigate();
+  const observerTarget = useRef(null);
 
-  const { data: rawNews, isLoading, isError, error } = useQuery({
-    queryKey: ["news"],
-    queryFn: () =>
-      makeRequest.get("/news/latest", { params: { limit: 100 } }).then((res) => res.data),
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error
+  } = useInfiniteQuery({
+    queryKey: ["news", "all"],
+    queryFn: ({ pageParam }) =>
+      makeRequest.get("/news", { params: { page: pageParam, limit: 20 } }).then((res) => res.data),
+    getNextPageParam: ({ pagination }) =>
+      pagination.page < pagination.totalPages ? pagination.page + 1 : undefined,
+    initialPageParam: 1,
   });
 
-  const news = Array.isArray(rawNews) ? rawNews : (rawNews?.news ?? []);
+  const news = data?.pages.flatMap((page) => page.news) ?? [];
+
+  const handleObserver = useCallback(
+    ([target]) => {
+      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage]
+  );
+
+  useEffect(() => {
+    const element = observerTarget.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(handleObserver, { rootMargin: "400px" });
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [handleObserver]);
 
   const getImageUrl = (image) => {
     if (!image) return null;
@@ -84,6 +115,14 @@ function News() {
               <p className="emptyMessage">No hay noticias disponibles</p>
             )}
           </div>
+
+          {hasNextPage && (
+            <div ref={observerTarget} className="loadMore">
+              <button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+                {isFetchingNextPage ? "Cargando..." : "Cargar más noticias"}
+              </button>
+            </div>
+          )}
         </section>
       </main>
     </div>
